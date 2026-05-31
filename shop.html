@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop – Enzo's Art Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: #fff9f0;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #a29bfe);
+      background-size: 300% 300%;
+      animation: gradientShift 8s ease infinite;
+      padding: 22px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    @keyframes gradientShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .back-btn {
+      background: white;
+      border: none;
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #ff6b6b;
+      text-decoration: none;
+      transition: transform 0.2s;
+      white-space: nowrap;
+    }
+    .back-btn:hover { transform: scale(1.07); }
+
+    header h1 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.8rem;
+      color: white;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    /* ── Search bar ── */
+    .search-wrap {
+      max-width: 700px;
+      margin: 36px auto 0;
+      padding: 0 20px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .search-wrap input {
+      flex: 1;
+      padding: 16px 24px;
+      border-radius: 50px;
+      border: 3px solid #feca57;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.1rem;
+      outline: none;
+      box-shadow: 0 4px 15px rgba(254,202,87,0.3);
+      transition: border-color 0.2s;
+    }
+    .search-wrap input:focus { border-color: #ff6b6b; }
+
+    .search-wrap button {
+      background: linear-gradient(135deg, #ff6b6b, #feca57);
+      border: none;
+      border-radius: 50px;
+      padding: 16px 28px;
+      color: white;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+      transition: transform 0.2s;
+    }
+    .search-wrap button:hover { transform: scale(1.06); }
+
+    /* ── Filter chips ── */
+    .filters {
+      max-width: 900px;
+      margin: 20px auto 0;
+      padding: 0 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      background: white;
+      border: 2.5px solid #e0e0e0;
+      border-radius: 50px;
+      padding: 7px 20px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #555;
+    }
+    .chip:hover, .chip.active {
+      border-color: #ff6b6b;
+      background: #fff0f0;
+      color: #ff6b6b;
+      transform: translateY(-2px);
+    }
+
+    /* ── Grid ── */
+    .section-label {
+      max-width: 900px;
+      margin: 30px auto 16px;
+      padding: 0 20px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.4rem;
+      color: #444;
+    }
+
+    .grid {
+      max-width: 900px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: transform 0.25s, box-shadow 0.25s;
+      border: 3px solid transparent;
+    }
+    .card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 14px 35px rgba(0,0,0,0.13);
+      border-color: #feca57;
+    }
+
+    .card-img {
+      width: 100%;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 5rem;
+      user-select: none;
+    }
+
+    .card-body {
+      padding: 14px 16px 18px;
+    }
+    .card-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    .card-tag {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .card-price {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.2rem;
+      color: #ff6b6b;
+    }
+    .card-btn {
+      display: block;
+      margin-top: 12px;
+      background: linear-gradient(135deg, #a29bfe, #ff9ff3);
+      border: none;
+      border-radius: 50px;
+      padding: 9px 0;
+      width: 100%;
+      color: white;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .card-btn:hover { opacity: 0.85; }
+
+    /* ── No results ── */
+    .no-results {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      text-align: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.5rem;
+      color: #bbb;
+    }
+
+    /* ── Modal overlay ── */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .overlay.open { display: flex; }
+
+    .modal {
+      background: white;
+      border-radius: 32px;
+      max-width: 480px;
+      width: 100%;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.6); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .modal-img {
+      width: 100%;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9rem;
+    }
+
+    .modal-body {
+      padding: 24px 28px 32px;
+    }
+    .modal-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.8rem;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .modal-tag {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .modal-desc {
+      font-size: 1rem;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+    .modal-price {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2rem;
+      color: #ff6b6b;
+      margin-bottom: 20px;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .btn-buy {
+      flex: 1;
+      background: linear-gradient(135deg, #ff6b6b, #feca57);
+      border: none;
+      border-radius: 50px;
+      padding: 14px;
+      color: white;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .btn-buy:hover { transform: scale(1.04); }
+    .btn-close {
+      background: #f0f0f0;
+      border: none;
+      border-radius: 50px;
+      padding: 14px 20px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #888;
+      transition: background 0.2s;
+    }
+    .btn-close:hover { background: #e0e0e0; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="back-btn">← Back</a>
+    <h1>🎨 Enzo's Art Shop</h1>
+  </header>
+
+  <div class="search-wrap">
+    <input id="searchInput" type="text" placeholder="Search for art... 🔍" oninput="renderGrid()" />
+    <button onclick="renderGrid()">Search</button>
+  </div>
+
+  <div class="filters" id="filters"></div>
+
+  <p class="section-label" id="sectionLabel">All Artworks ✨</p>
+  <div class="grid" id="grid"></div>
+  <p class="no-results" id="noResults" style="display:none">No art found! Try a different search 🎭</p>
+
+  <!-- Preview Modal -->
+  <div class="overlay" id="overlay" onclick="closeModal(event)">
+    <div class="modal" id="modal">
+      <div class="modal-img" id="modalImg"></div>
+      <div class="modal-body">
+        <p class="modal-tag" id="modalTag"></p>
+        <h2 class="modal-title" id="modalTitle"></h2>
+        <p class="modal-desc" id="modalDesc"></p>
+        <p class="modal-price" id="modalPrice"></p>
+        <div class="modal-actions">
+          <button class="btn-buy" onclick="alert('Yay! 🎉 Thanks for buying!')">🛒 Buy Now!</button>
+          <button class="btn-close" onclick="closeModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const artworks = [
+      { id:1,  emoji:'🌈', title:'Rainbow Sky',       tag:'painting',    price:'$8',  bg:'#fff5f5', desc:'A big bright rainbow stretching across a sunny sky, painted with watercolors.' },
+      { id:2,  emoji:'🦋', title:'Magic Butterfly',   tag:'drawing',     price:'$6',  bg:'#f5f0ff', desc:'A sparkly butterfly with wings full of swirls and dots.' },
+      { id:3,  emoji:'🌻', title:'Sunny Sunflower',   tag:'painting',    price:'$7',  bg:'#fffbf0', desc:'A tall sunflower smiling at the sun, painted in bright yellows.' },
+      { id:4,  emoji:'🐉', title:'Friendly Dragon',   tag:'drawing',     price:'$9',  bg:'#f0fff8', desc:'A cute green dragon that breathes rainbow fire instead of regular fire!' },
+      { id:5,  emoji:'🏠', title:'Dream House',       tag:'crayon',      price:'$5',  bg:'#f0f8ff', desc:'A cozy little house with a red roof and flowers in the garden.' },
+      { id:6,  emoji:'🚀', title:'Space Adventure',   tag:'painting',    price:'$10', bg:'#f5f0ff', desc:'A rocket blasting off into space past stars and colorful planets.' },
+      { id:7,  emoji:'🐠', title:'Tropical Fish',     tag:'watercolor',  price:'$7',  bg:'#f0fffe', desc:'A bright orange fish swimming through a coral reef.' },
+      { id:8,  emoji:'🌙', title:'Moonlit Night',     tag:'painting',    price:'$8',  bg:'#f0f2ff', desc:'A magical night scene with a big glowing moon and twinkling stars.' },
+      { id:9,  emoji:'🦁', title:'Lion King',         tag:'crayon',      price:'$6',  bg:'#fffaf0', desc:'A majestic lion with a big fluffy mane, drawn in bold crayon strokes.' },
+      { id:10, emoji:'🍦', title:'Ice Cream Dream',   tag:'drawing',     price:'$5',  bg:'#fff0f5', desc:'A giant ice cream cone with every flavor stacked up to the clouds!' },
+      { id:11, emoji:'🌊', title:'Ocean Waves',       tag:'watercolor',  price:'$9',  bg:'#f0faff', desc:'Rolling blue waves with little white caps, made with swirly brushstrokes.' },
+      { id:12, emoji:'🦄', title:'Magical Unicorn',   tag:'drawing',     price:'$11', bg:'#fff0ff', desc:'A sparkly unicorn running through a field of rainbow flowers.' },
+      { id:13, emoji:'🐸', title:'Happy Frog',        tag:'crayon',      price:'$5',  bg:'#f0fff5', desc:'A big green frog sitting on a lily pad with a huge smile.' },
+      { id:14, emoji:'🌋', title:'Volcano Eruption',  tag:'painting',    price:'$8',  bg:'#fff5f0', desc:'A fiery volcano erupting with lava flowing down into a colorful jungle.' },
+      { id:15, emoji:'🦊', title:'Fox in the Forest', tag:'watercolor',  price:'$9',  bg:'#fff8f0', desc:'A fluffy orange fox peeking through autumn leaves in the forest.' },
+      { id:16, emoji:'🎪', title:'Circus Fun',        tag:'drawing',     price:'$7',  bg:'#fdf0ff', desc:'A colorful circus tent with clowns, elephants, and popcorn everywhere!' },
+    ];
+
+    const tags = ['all', ...new Set(artworks.map(a => a.tag))];
+    let activeTag = 'all';
+
+    // Build filter chips
+    const filtersEl = document.getElementById('filters');
+    tags.forEach(tag => {
+      const chip = document.createElement('button');
+      chip.className = 'chip' + (tag === 'all' ? ' active' : '');
+      chip.textContent = tag === 'all' ? '🎨 All' : tag.charAt(0).toUpperCase() + tag.slice(1);
+      chip.onclick = () => {
+        activeTag = tag;
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        renderGrid();
+      };
+      filtersEl.appendChild(chip);
+    });
+
+    function renderGrid() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const grid = document.getElementById('grid');
+      const noResults = document.getElementById('noResults');
+      const label = document.getElementById('sectionLabel');
+
+      const filtered = artworks.filter(a => {
+        const matchTag = activeTag === 'all' || a.tag === activeTag;
+        const matchQuery = !query || a.title.toLowerCase().includes(query) || a.tag.toLowerCase().includes(query);
+        return matchTag && matchQuery;
+      });
+
+      grid.innerHTML = '';
+
+      if (filtered.length === 0) {
+        noResults.style.display = 'block';
+        label.style.display = 'none';
+      } else {
+        noResults.style.display = 'none';
+        label.style.display = 'block';
+        const count = filtered.length;
+        label.textContent = query
+          ? `${count} result${count !== 1 ? 's' : ''} for "${query}" ✨`
+          : activeTag === 'all' ? 'All Artworks ✨' : `${activeTag.charAt(0).toUpperCase() + activeTag.slice(1)} Art ✨`;
+      }
+
+      filtered.forEach(art => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-img" style="background:${art.bg}">${art.emoji}</div>
+          <div class="card-body">
+            <p class="card-tag">${art.tag}</p>
+            <p class="card-title">${art.title}</p>
+            <p class="card-price">${art.price}</p>
+            <button class="card-btn" onclick="openModal(${art.id})">👀 Preview</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function openModal(id) {
+      const art = artworks.find(a => a.id === id);
+      document.getElementById('modalImg').textContent   = art.emoji;
+      document.getElementById('modalImg').style.background = art.bg;
+      document.getElementById('modalTag').textContent   = art.tag.toUpperCase();
+      document.getElementById('modalTitle').textContent = art.title;
+      document.getElementById('modalDesc').textContent  = art.desc;
+      document.getElementById('modalPrice').textContent = art.price;
+      document.getElementById('overlay').classList.add('open');
+    }
+
+    function closeModal(e) {
+      if (!e || e.target === document.getElementById('overlay')) {
+        document.getElementById('overlay').classList.remove('open');
+      }
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    renderGrid();
+  </script>
+</body>
+</html>
