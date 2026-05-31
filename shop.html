@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop – Enzo's Art Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: #fff9f0;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    header {
+      background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #a29bfe);
+      background-size: 300% 300%;
+      animation: gradientShift 8s ease infinite;
+      padding: 22px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    @keyframes gradientShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .back-btn {
+      background: white;
+      border: none;
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #ff6b6b;
+      text-decoration: none;
+      transition: transform 0.2s;
+      white-space: nowrap;
+    }
+    .back-btn:hover { transform: scale(1.07); }
+
+    header h1 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.8rem;
+      color: white;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .search-wrap {
+      max-width: 700px;
+      margin: 36px auto 0;
+      padding: 0 20px;
+      display: flex;
+      gap: 12px;
+    }
+    .search-wrap input {
+      flex: 1;
+      padding: 16px 24px;
+      border-radius: 50px;
+      border: 3px solid #feca57;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.1rem;
+      outline: none;
+      box-shadow: 0 4px 15px rgba(254,202,87,0.3);
+      transition: border-color 0.2s;
+    }
+    .search-wrap input:focus { border-color: #ff6b6b; }
+
+    .section-label {
+      max-width: 900px;
+      margin: 30px auto 16px;
+      padding: 0 20px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.4rem;
+      color: #444;
+    }
+
+    .grid {
+      max-width: 900px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: transform 0.25s, box-shadow 0.25s;
+      border: 3px solid transparent;
+    }
+    .card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 14px 35px rgba(0,0,0,0.13);
+      border-color: #feca57;
+    }
+
+    .card-img {
+      width: 100%;
+      display: block;
+      object-fit: contain;
+      background: #fafafa;
+    }
+
+    .card-body { padding: 14px 16px 18px; }
+    .card-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .card-price {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.2rem;
+      color: #ff6b6b;
+      margin-bottom: 12px;
+    }
+    .card-btn {
+      display: block;
+      background: linear-gradient(135deg, #a29bfe, #ff9ff3);
+      border: none;
+      border-radius: 50px;
+      padding: 9px 0;
+      width: 100%;
+      color: white;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .card-btn:hover { opacity: 0.85; }
+
+    .empty-state {
+      max-width: 900px;
+      margin: 80px auto;
+      text-align: center;
+      padding: 0 20px;
+    }
+    .empty-state .icon { font-size: 5rem; margin-bottom: 16px; }
+    .empty-state h2 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.8rem;
+      color: #ccc;
+      margin-bottom: 8px;
+    }
+    .empty-state p { color: #aaa; font-size: 1rem; }
+
+    .no-results {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      text-align: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.5rem;
+      color: #bbb;
+    }
+
+    /* Modal */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .overlay.open { display: flex; }
+
+    .modal {
+      background: white;
+      border-radius: 32px;
+      max-width: 480px;
+      width: 100%;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.6); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .modal-img {
+      width: 100%;
+      display: block;
+      object-fit: contain;
+      background: #fafafa;
+    }
+
+    .modal-body { padding: 24px 28px 32px; }
+    .modal-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.8rem;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .modal-price {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2rem;
+      color: #ff6b6b;
+      margin-bottom: 20px;
+    }
+    .modal-actions { display: flex; gap: 12px; }
+    .btn-buy {
+      flex: 1;
+      background: linear-gradient(135deg, #ff6b6b, #feca57);
+      border: none;
+      border-radius: 50px;
+      padding: 14px;
+      color: white;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .btn-buy:hover { transform: scale(1.04); }
+    .btn-close {
+      background: #f0f0f0;
+      border: none;
+      border-radius: 50px;
+      padding: 14px 20px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #888;
+    }
+    .btn-close:hover { background: #e0e0e0; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="back-btn">← Back</a>
+    <h1>🎨 Enzo's Art Shop</h1>
+  </header>
+
+  <div class="search-wrap">
+    <input id="searchInput" type="text" placeholder="Search for art... 🔍" oninput="renderGrid()" />
+  </div>
+
+  <p class="section-label" id="sectionLabel"></p>
+  <div class="grid" id="grid"></div>
+  <p class="no-results" id="noResults" style="display:none">No art found! Try a different search 🎭</p>
+
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="icon">🖌️</div>
+    <h2>No art yet!</h2>
+    <p>Check back soon — Enzo is painting!</p>
+  </div>
+
+  <!-- Modal -->
+  <div class="overlay" id="overlay" onclick="closeModal(event)">
+    <div class="modal">
+      <img class="modal-img" id="modalImg" src="" alt="" />
+      <div class="modal-body">
+        <h2 class="modal-title" id="modalTitle"></h2>
+        <p class="modal-price" id="modalPrice"></p>
+        <div class="modal-actions">
+          <button class="btn-buy" id="buyBtn">🛒 Buy Now!</button>
+          <button class="btn-close" onclick="closeModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function getArtworks() {
+      return JSON.parse(localStorage.getItem('enzoArtworks') || '[]');
+    }
+
+    function renderGrid() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const artworks = getArtworks();
+      const grid = document.getElementById('grid');
+      const noResults = document.getElementById('noResults');
+      const emptyState = document.getElementById('emptyState');
+      const label = document.getElementById('sectionLabel');
+
+      grid.innerHTML = '';
+
+      if (artworks.length === 0) {
+        emptyState.style.display = 'block';
+        label.style.display = 'none';
+        noResults.style.display = 'none';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      const filtered = artworks.filter(a =>
+        !query || a.name.toLowerCase().includes(query)
+      );
+
+      if (filtered.length === 0) {
+        noResults.style.display = 'block';
+        label.style.display = 'none';
+      } else {
+        noResults.style.display = 'none';
+        label.style.display = 'block';
+        label.textContent = query
+          ? `${filtered.length} result${filtered.length !== 1 ? 's' : ''} for "${query}" ✨`
+          : `All Artworks ✨ (${filtered.length})`;
+      }
+
+      filtered.forEach(art => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img class="card-img" src="${art.image}" alt="${art.name}" />
+          <div class="card-body">
+            <p class="card-title">${art.name}</p>
+            <p class="card-price">$${art.price}</p>
+            <button class="card-btn" onclick="openModal('${art.id}')">👀 Preview & Buy</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function openModal(id) {
+      const art = getArtworks().find(a => a.id === id);
+      if (!art) return;
+      document.getElementById('modalImg').src = art.image;
+      document.getElementById('modalImg').alt = art.name;
+      document.getElementById('modalTitle').textContent = art.name;
+      document.getElementById('modalPrice').textContent = `$${art.price}`;
+      document.getElementById('buyBtn').onclick = () => {
+        alert(`🎉 Thanks for buying "${art.name}"! Enzo will be so happy!`);
+        closeModal();
+      };
+      document.getElementById('overlay').classList.add('open');
+    }
+
+    function closeModal(e) {
+      if (!e || e.target === document.getElementById('overlay')) {
+        document.getElementById('overlay').classList.remove('open');
+      }
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    renderGrid();
+  </script>
+</body>
+</html>
