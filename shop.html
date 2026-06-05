@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop – Enzo's Art Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { min-height: 100vh; background: #fff9f0; font-family: 'Nunito', sans-serif; }
+
+    header {
+      background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #a29bfe);
+      background-size: 300% 300%;
+      animation: gradientShift 8s ease infinite;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      flex-wrap: wrap;
+    }
+    @keyframes gradientShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .back-btn {
+      background: white; border: none; border-radius: 50px;
+      padding: 8px 18px; font-family: 'Fredoka One', cursive;
+      font-size: 1rem; cursor: pointer; color: #ff6b6b;
+      text-decoration: none; transition: transform 0.2s; white-space: nowrap;
+    }
+    .back-btn:hover { transform: scale(1.07); }
+    header h1 {
+      font-family: 'Fredoka One', cursive; font-size: 1.8rem;
+      color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.15); flex: 1;
+    }
+    .lang-switcher { display: flex; gap: 6px; flex-wrap: wrap; }
+    .lang-btn {
+      background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.6);
+      border-radius: 50px; padding: 6px 14px; color: white;
+      font-family: 'Fredoka One', cursive; font-size: 0.9rem;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .lang-btn:hover { background: rgba(255,255,255,0.4); }
+    .lang-btn.active { background: white; color: #ff6b6b; border-color: white; }
+
+    .search-wrap { max-width: 700px; margin: 36px auto 0; padding: 0 20px; }
+    .search-wrap input {
+      width: 100%; padding: 16px 24px; border-radius: 50px;
+      border: 3px solid #feca57; font-family: 'Nunito', sans-serif;
+      font-size: 1.1rem; outline: none;
+      box-shadow: 0 4px 15px rgba(254,202,87,0.3); transition: border-color 0.2s;
+    }
+    .search-wrap input:focus { border-color: #ff6b6b; }
+
+    .section-label {
+      max-width: 960px; margin: 30px auto 16px; padding: 0 20px;
+      font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: #444;
+    }
+    .grid {
+      max-width: 960px; margin: 0 auto 60px; padding: 0 20px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 28px;
+    }
+    .card {
+      background: white; border-radius: 24px; overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      transition: transform 0.25s, box-shadow 0.25s; border: 3px solid transparent;
+    }
+    .card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 14px 35px rgba(0,0,0,0.13); border-color: #feca57;
+    }
+    .card-img-wrap { width: 100%; background: #f8f8f8; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .card-img { width: 100%; height: auto; display: block; object-fit: contain; }
+    .card-body { padding: 16px 18px 20px; }
+    .card-title { font-family: 'Fredoka One', cursive; font-size: 1.15rem; color: #333; margin-bottom: 6px; }
+    .card-price { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: #ff6b6b; margin-bottom: 14px; }
+    .card-btn {
+      display: block; background: linear-gradient(135deg, #a29bfe, #ff9ff3);
+      border: none; border-radius: 50px; padding: 10px 0; width: 100%;
+      color: white; font-family: 'Fredoka One', cursive; font-size: 1rem;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .card-btn:hover { opacity: 0.85; }
+
+    .empty-state { max-width: 960px; margin: 80px auto; text-align: center; padding: 0 20px; }
+    .empty-state .icon { font-size: 5rem; margin-bottom: 16px; }
+    .empty-state h2 { font-family: 'Fredoka One', cursive; font-size: 1.8rem; color: #ccc; margin-bottom: 8px; }
+    .empty-state p { color: #aaa; font-size: 1rem; }
+    .no-results { max-width: 960px; margin: 40px auto; padding: 0 20px; text-align: center; font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: #bbb; }
+
+    /* ── Art preview overlay ── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6); z-index: 100;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .overlay.open { display: flex; }
+
+    .modal {
+      background: white; border-radius: 32px; width: 100%;
+      max-width: 92vw; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.6); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    .modal-img-wrap {
+      width: 100%; background: #f8f8f8; border-radius: 32px 32px 0 0;
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+    }
+    .modal-img { width: 100%; height: auto; display: block; object-fit: contain; }
+    .modal-body { padding: 24px 28px 32px; }
+    .modal-title { font-family: 'Fredoka One', cursive; font-size: 1.8rem; color: #333; margin-bottom: 8px; }
+    .modal-price { font-family: 'Fredoka One', cursive; font-size: 2rem; color: #ff6b6b; margin-bottom: 22px; }
+    .modal-actions { display: flex; gap: 12px; }
+    .btn-buy {
+      flex: 1; background: linear-gradient(135deg, #ff6b6b, #feca57);
+      border: none; border-radius: 50px; padding: 15px; color: white;
+      font-family: 'Fredoka One', cursive; font-size: 1.15rem;
+      cursor: pointer; transition: transform 0.2s;
+    }
+    .btn-buy:hover { transform: scale(1.04); }
+    .btn-close {
+      background: #f0f0f0; border: none; border-radius: 50px;
+      padding: 15px 22px; font-family: 'Fredoka One', cursive;
+      font-size: 1rem; cursor: pointer; color: #888;
+    }
+    .btn-close:hover { background: #e0e0e0; }
+
+    /* ── Buy form overlay ── */
+    .buy-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7); z-index: 200;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .buy-overlay.open { display: flex; }
+
+    .buy-modal {
+      background: white; border-radius: 28px; width: 100%; max-width: 480px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      padding: 32px;
+    }
+    .buy-modal h2 {
+      font-family: 'Fredoka One', cursive; font-size: 1.6rem;
+      color: #333; margin-bottom: 6px;
+    }
+    .buy-modal .art-name {
+      font-family: 'Fredoka One', cursive; color: #ff6b6b;
+      font-size: 1.1rem; margin-bottom: 24px;
+    }
+    .form-field { margin-bottom: 18px; }
+    .form-field label {
+      display: block; font-weight: 700; color: #555;
+      margin-bottom: 7px; font-size: 0.95rem;
+    }
+    .form-field input[type="text"],
+    .form-field input[type="email"] {
+      width: 100%; padding: 13px 16px;
+      border: 2.5px solid #e0e0e0; border-radius: 12px;
+      font-family: 'Nunito', sans-serif; font-size: 1rem;
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-field input:focus { border-color: #feca57; }
+
+    .radio-group { display: flex; flex-direction: column; gap: 10px; }
+    .radio-option {
+      display: flex; align-items: center; gap: 10px;
+      background: #f8f8f8; border-radius: 12px; padding: 12px 16px;
+      cursor: pointer; border: 2.5px solid #e0e0e0; transition: all 0.2s;
+    }
+    .radio-option:hover { border-color: #feca57; background: #fffbf0; }
+    .radio-option input[type="radio"] { accent-color: #ff6b6b; width: 18px; height: 18px; cursor: pointer; }
+    .radio-option span { font-weight: 700; color: #444; font-size: 0.95rem; }
+    .radio-option.selected { border-color: #ff6b6b; background: #fff5f5; }
+
+    .form-actions { display: flex; gap: 12px; margin-top: 24px; }
+    .submit-btn {
+      flex: 1; background: linear-gradient(135deg, #ff6b6b, #feca57);
+      border: none; border-radius: 50px; padding: 15px;
+      color: white; font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem; cursor: pointer; transition: transform 0.2s;
+    }
+    .submit-btn:hover { transform: scale(1.03); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .cancel-btn {
+      background: #f0f0f0; border: none; border-radius: 50px;
+      padding: 15px 22px; font-family: 'Fredoka One', cursive;
+      font-size: 1rem; cursor: pointer; color: #888;
+    }
+    .cancel-btn:hover { background: #e0e0e0; }
+
+    /* Success screen */
+    .success-screen {
+      display: none; text-align: center; padding: 20px 0;
+    }
+    .success-screen .icon { font-size: 4rem; margin-bottom: 14px; }
+    .success-screen h3 { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: #333; margin-bottom: 8px; }
+    .success-screen p { color: #777; font-size: 1rem; line-height: 1.5; margin-bottom: 20px; }
+    .done-btn {
+      background: linear-gradient(135deg, #a29bfe, #ff9ff3);
+      border: none; border-radius: 50px; padding: 14px 36px;
+      color: white; font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="back-btn" id="backBtn">← Back</a>
+    <h1>🎨 Enzo's Art Shop</h1>
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('en', this)">🇺🇸 EN</button>
+      <button class="lang-btn" onclick="setLang('fr', this)">🇫🇷 FR</button>
+      <button class="lang-btn" onclick="setLang('zh', this)">🇨🇳 中文</button>
+      <button class="lang-btn" onclick="setLang('es', this)">🇲🇽 ES</button>
+    </div>
+  </header>
+
+  <div class="search-wrap">
+    <input id="searchInput" type="text" oninput="renderGrid()" />
+  </div>
+
+  <p class="section-label" id="sectionLabel"></p>
+  <div class="grid" id="grid"></div>
+  <p class="no-results" id="noResults" style="display:none"></p>
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="icon">🖌️</div>
+    <h2 id="emptyTitle"></h2>
+    <p id="emptyMsg"></p>
+  </div>
+
+  <!-- Art preview modal -->
+  <div class="overlay" id="overlay" onclick="closePreview(event)">
+    <div class="modal">
+      <div class="modal-img-wrap">
+        <img class="modal-img" id="modalImg" src="" alt="" />
+      </div>
+      <div class="modal-body">
+        <h2 class="modal-title" id="modalTitle"></h2>
+        <p class="modal-price" id="modalPrice"></p>
+        <div class="modal-actions">
+          <button class="btn-buy" id="previewBuyBtn" onclick="openBuyForm()"></button>
+          <button class="btn-close" id="previewCloseBtn" onclick="closePreview()"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buy form modal -->
+  <div class="buy-overlay" id="buyOverlay">
+    <div class="buy-modal">
+
+      <!-- Form -->
+      <div id="buyForm">
+        <h2 id="buyFormTitle"></h2>
+        <p class="art-name" id="buyArtName"></p>
+
+        <div class="form-field">
+          <label id="labelName"></label>
+          <input type="text" id="buyerName" />
+        </div>
+
+        <div class="form-field">
+          <label id="labelEmail"></label>
+          <input type="email" id="buyerEmail" />
+        </div>
+
+        <div class="form-field">
+          <label id="labelPayment"></label>
+          <div class="radio-group" id="paymentGroup">
+            <label class="radio-option" id="payOpt">
+              <input type="radio" name="payment" value="pay_cash" checked />
+              <span id="payOptLabel"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label id="labelDelivery"></label>
+          <div class="radio-group" id="deliveryGroup">
+            <label class="radio-option selected" id="delivOpt">
+              <input type="radio" name="delivery" value="in_person" checked />
+              <span id="delivOptLabel"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="submit-btn" id="submitBtn" onclick="submitBuyForm()"></button>
+          <button class="cancel-btn" onclick="closeBuyForm()">✕</button>
+        </div>
+      </div>
+
+      <!-- Success screen -->
+      <div class="success-screen" id="successScreen">
+        <div class="icon">🎉</div>
+        <h3 id="successTitle"></h3>
+        <p id="successMsg"></p>
+        <button class="done-btn" onclick="closeBuyForm()" id="doneBtn"></button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const WEB3FORMS_KEY = 'd0c60520-e920-4f5d-90bc-d6b71aa29543';
+
+    const LANGS = {
+      en: {
+        search: 'Search for art... 🔍',
+        allArtworks: n => `All Artworks ✨ (${n})`,
+        results: (n, q) => `${n} result${n!==1?'s':''} for "${q}" ✨`,
+        noResults: 'No art found! Try a different search 🎭',
+        emptyTitle: 'No art yet!',
+        emptyMsg: 'Check back soon — Enzo is painting!',
+        previewBtn: '👀 Preview & Buy',
+        buyBtn: '🛒 I Want This!',
+        closeBtn: 'Close',
+        buyFormTitle: '🛒 Claim This Artwork',
+        labelName: 'Your Name',
+        labelEmail: 'Your Email',
+        labelPayment: 'Payment Method',
+        payOpt: '💵 Pay Enzo Cash',
+        labelDelivery: 'Delivery',
+        delivOpt: '🤝 Deliver in Person',
+        submitBtn: 'Send Request!',
+        successTitle: 'Request Sent!',
+        successMsg: name => `Thanks ${name}! We'll be in touch soon. 😊`,
+        doneBtn: 'Done',
+        namePlaceholder: 'e.g. Grandma Rosa',
+        emailPlaceholder: 'your@email.com',
+      },
+      fr: {
+        search: 'Rechercher de l\'art... 🔍',
+        allArtworks: n => `Toutes les œuvres ✨ (${n})`,
+        results: (n, q) => `${n} résultat${n!==1?'s':''} pour "${q}" ✨`,
+        noResults: 'Aucune œuvre trouvée ! Essayez autre chose 🎭',
+        emptyTitle: 'Pas encore d\'art !',
+        emptyMsg: 'Revenez bientôt — Enzo peint !',
+        previewBtn: '👀 Aperçu & Acheter',
+        buyBtn: '🛒 Je veux ça !',
+        closeBtn: 'Fermer',
+        buyFormTitle: '🛒 Réserver cette œuvre',
+        labelName: 'Votre nom',
+        labelEmail: 'Votre e-mail',
+        labelPayment: 'Mode de paiement',
+        payOpt: '💵 Payer Enzo en espèces',
+        labelDelivery: 'Livraison',
+        delivOpt: '🤝 Livraison en personne',
+        submitBtn: 'Envoyer la demande !',
+        successTitle: 'Demande envoyée !',
+        successMsg: name => `Merci ${name} ! Nous vous contacterons bientôt. 😊`,
+        doneBtn: 'Terminé',
+        namePlaceholder: 'ex. Grand-mère Rosa',
+        emailPlaceholder: 'votre@email.com',
+      },
+      zh: {
+        search: '搜索艺术品... 🔍',
+        allArtworks: n => `所有艺术品 ✨ (${n})`,
+        results: (n, q) => `"${q}" 的 ${n} 个结果 ✨`,
+        noResults: '没有找到艺术品！试试其他搜索 🎭',
+        emptyTitle: '还没有艺术品！',
+        emptyMsg: '请稍后再来 — 恩佐正在画画！',
+        previewBtn: '👀 预览 & 购买',
+        buyBtn: '🛒 我想要这个！',
+        closeBtn: '关闭',
+        buyFormTitle: '🛒 认购此作品',
+        labelName: '您的姓名',
+        labelEmail: '您的邮箱',
+        labelPayment: '付款方式',
+        payOpt: '💵 现金付给恩佐',
+        labelDelivery: '配送方式',
+        delivOpt: '🤝 当面交付',
+        submitBtn: '发送请求！',
+        successTitle: '请求已发送！',
+        successMsg: name => `谢谢 ${name}！我们很快会联系您。😊`,
+        doneBtn: '完成',
+        namePlaceholder: '例如：奶奶',
+        emailPlaceholder: '您的邮箱',
+      },
+      es: {
+        search: 'Buscar arte... 🔍',
+        allArtworks: n => `Todas las obras ✨ (${n})`,
+        results: (n, q) => `${n} resultado${n!==1?'s':''} para "${q}" ✨`,
+        noResults: '¡No se encontró arte! Intenta otra búsqueda 🎭',
+        emptyTitle: '¡Aún no hay arte!',
+        emptyMsg: 'Vuelve pronto — ¡Enzo está pintando!',
+        previewBtn: '👀 Ver y Comprar',
+        buyBtn: '🛒 ¡Lo quiero!',
+        closeBtn: 'Cerrar',
+        buyFormTitle: '🛒 Reservar esta obra',
+        labelName: 'Tu nombre',
+        labelEmail: 'Tu correo',
+        labelPayment: 'Método de pago',
+        payOpt: '💵 Pagar a Enzo en efectivo',
+        labelDelivery: 'Entrega',
+        delivOpt: '🤝 Entrega en persona',
+        submitBtn: '¡Enviar solicitud!',
+        successTitle: '¡Solicitud enviada!',
+        successMsg: name => `¡Gracias ${name}! Nos pondremos en contacto pronto. 😊`,
+        doneBtn: 'Listo',
+        namePlaceholder: 'ej. Abuela Rosa',
+        emailPlaceholder: 'tu@correo.com',
+      },
+    };
+
+    let currentLang = 'en';
+    let allArtworks = [];
+    let currentArtId = null;
+
+    function t() { return LANGS[currentLang]; }
+
+    function setLang(lang, btn) {
+      currentLang = lang;
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      applyText();
+      renderGrid();
+    }
+
+    function applyText() {
+      const tx = t();
+      document.getElementById('searchInput').placeholder = tx.search;
+      document.getElementById('noResults').textContent = tx.noResults;
+      document.getElementById('emptyTitle').textContent = tx.emptyTitle;
+      document.getElementById('emptyMsg').textContent = tx.emptyMsg;
+      document.getElementById('previewCloseBtn').textContent = tx.closeBtn;
+      document.getElementById('previewBuyBtn').textContent = tx.buyBtn;
+      document.getElementById('buyFormTitle').textContent = tx.buyFormTitle;
+      document.getElementById('labelName').textContent = tx.labelName;
+      document.getElementById('labelEmail').textContent = tx.labelEmail;
+      document.getElementById('labelPayment').textContent = tx.labelPayment;
+      document.getElementById('payOptLabel').textContent = tx.payOpt;
+      document.getElementById('labelDelivery').textContent = tx.labelDelivery;
+      document.getElementById('delivOptLabel').textContent = tx.delivOpt;
+      document.getElementById('submitBtn').textContent = tx.submitBtn;
+      document.getElementById('doneBtn').textContent = tx.doneBtn;
+      document.getElementById('buyerName').placeholder = tx.namePlaceholder;
+      document.getElementById('buyerEmail').placeholder = tx.emailPlaceholder;
+    }
+
+    async function loadArtworks() {
+      try {
+        const res = await fetch('data.json?nocache=' + Date.now());
+        allArtworks = await res.json();
+      } catch(e) { allArtworks = []; }
+      applyText();
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const tx = t();
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const grid = document.getElementById('grid');
+      const noResults = document.getElementById('noResults');
+      const emptyState = document.getElementById('emptyState');
+      const label = document.getElementById('sectionLabel');
+      grid.innerHTML = '';
+
+      if (allArtworks.length === 0) {
+        emptyState.style.display = 'block';
+        label.style.display = 'none';
+        noResults.style.display = 'none';
+        return;
+      }
+      emptyState.style.display = 'none';
+      const filtered = allArtworks.filter(a => !query || a.name.toLowerCase().includes(query));
+
+      if (filtered.length === 0) {
+        noResults.style.display = 'block';
+        label.style.display = 'none';
+      } else {
+        noResults.style.display = 'none';
+        label.style.display = 'block';
+        label.textContent = query ? tx.results(filtered.length, query) : tx.allArtworks(filtered.length);
+      }
+
+      filtered.forEach(art => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-img-wrap">
+            <img class="card-img" src="${art.image}" alt="${art.name}" loading="lazy" />
+          </div>
+          <div class="card-body">
+            <p class="card-title">${art.name}</p>
+            <p class="card-price">$${art.price}</p>
+            <button class="card-btn" onclick="openPreview('${art.id}')">${tx.previewBtn}</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function openPreview(id) {
+      currentArtId = id;
+      const art = allArtworks.find(a => a.id === id);
+      if (!art) return;
+      document.getElementById('modalImg').src = art.image;
+      document.getElementById('modalImg').alt = art.name;
+      document.getElementById('modalTitle').textContent = art.name;
+      document.getElementById('modalPrice').textContent = '$' + art.price;
+      document.getElementById('previewBuyBtn').textContent = t().buyBtn;
+      document.getElementById('previewCloseBtn').textContent = t().closeBtn;
+      document.getElementById('overlay').classList.add('open');
+    }
+
+    function closePreview(e) {
+      if (!e || e.target === document.getElementById('overlay'))
+        document.getElementById('overlay').classList.remove('open');
+    }
+
+    function openBuyForm() {
+      const art = allArtworks.find(a => a.id === currentArtId);
+      if (!art) return;
+      document.getElementById('buyArtName').textContent = '🎨 ' + art.name + ' — $' + art.price;
+      document.getElementById('buyForm').style.display = 'block';
+      document.getElementById('successScreen').style.display = 'none';
+      document.getElementById('buyerName').value = '';
+      document.getElementById('buyerEmail').value = '';
+      document.getElementById('buyOverlay').classList.add('open');
+    }
+
+    function closeBuyForm() {
+      document.getElementById('buyOverlay').classList.remove('open');
+    }
+
+    async function submitBuyForm() {
+      const art = allArtworks.find(a => a.id === currentArtId);
+      const name = document.getElementById('buyerName').value.trim();
+      const email = document.getElementById('buyerEmail').value.trim();
+
+      if (!name || !email) {
+        alert(currentLang === 'zh' ? '请填写姓名和邮箱。' :
+              currentLang === 'fr' ? 'Veuillez remplir votre nom et e-mail.' :
+              currentLang === 'es' ? 'Por favor ingresa tu nombre y correo.' :
+              'Please fill in your name and email.');
+        return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = '...';
+
+      const payment = document.querySelector('input[name="payment"]:checked')?.value || 'Pay Enzo Cash';
+      const delivery = document.querySelector('input[name="delivery"]:checked')?.value || 'Deliver in Person';
+
+      try {
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            access_key: WEB3FORMS_KEY,
+            subject: `🎨 New Art Request: ${art.name}`,
+            from_name: 'Enzo\'s Art Shop',
+            message:
+              `Someone wants to buy an artwork!\n\n` +
+              `Artwork: ${art.name}\n` +
+              `Price: $${art.price}\n\n` +
+              `Buyer Name: ${name}\n` +
+              `Buyer Email: ${email}\n` +
+              `Payment: ${payment}\n` +
+              `Delivery: ${delivery}`,
+          }),
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          btn.disabled = false;
+          btn.textContent = t().submitBtn;
+          document.getElementById('buyForm').style.display = 'none';
+          document.getElementById('successTitle').textContent = t().successTitle;
+          document.getElementById('successMsg').textContent = t().successMsg(name);
+          document.getElementById('doneBtn').textContent = t().doneBtn;
+          document.getElementById('successScreen').style.display = 'block';
+        } else {
+          throw new Error('Failed');
+        }
+      } catch(e) {
+        btn.disabled = false;
+        btn.textContent = t().submitBtn;
+        alert('Something went wrong. Please try again.');
+      }
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closePreview(); closeBuyForm(); } });
+
+    loadArtworks();
+  </script>
+</body>
+</html>
