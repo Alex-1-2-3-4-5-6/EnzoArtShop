@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – Enzo's Art Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { min-height: 100vh; background: #f7f7f7; font-family: 'Nunito', sans-serif; }
+
+    header {
+      background: #2d2d2d;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header h1 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: white; }
+    .back-btn {
+      background: #444;
+      border: none;
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.95rem;
+      cursor: pointer;
+      color: white;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: #666; }
+
+    .container { max-width: 820px; margin: 40px auto; padding: 0 20px 80px; }
+
+    /* Step cards */
+    .step-card {
+      background: white;
+      border-radius: 24px;
+      padding: 30px 32px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+      margin-bottom: 28px;
+    }
+    .step-card h2 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.35rem;
+      color: #333;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .step-num {
+      background: linear-gradient(135deg, #ff6b6b, #feca57);
+      color: white;
+      border-radius: 50%;
+      width: 32px; height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .step-card p { color: #777; font-size: 0.95rem; margin-bottom: 18px; line-height: 1.5; }
+
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-weight: 700; color: #555; margin-bottom: 6px; font-size: 0.95rem; }
+    .field input {
+      width: 100%;
+      padding: 13px 18px;
+      border: 2.5px solid #e0e0e0;
+      border-radius: 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus { border-color: #feca57; }
+    .field .hint { font-size: 0.8rem; color: #aaa; margin-top: 5px; }
+
+    /* Image preview */
+    .drop-zone {
+      border: 3px dashed #feca57;
+      border-radius: 16px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .drop-zone:hover { background: #fffbf0; }
+    .drop-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .drop-zone .dz-icon { font-size: 2.5rem; margin-bottom: 8px; }
+    .drop-zone p { font-family: 'Fredoka One', cursive; font-size: 1rem; color: #aaa; }
+    .drop-zone p span { color: #ff6b6b; }
+
+    #imgPreview {
+      display: none;
+      width: 100%;
+      max-height: 220px;
+      object-fit: contain;
+      border-radius: 12px;
+      border: 2px solid #eee;
+      margin-bottom: 14px;
+      background: #fafafa;
+    }
+
+    /* Buttons */
+    .primary-btn {
+      background: linear-gradient(135deg, #ff6b6b, #feca57);
+      border: none;
+      border-radius: 50px;
+      padding: 14px 32px;
+      color: white;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    .primary-btn:hover { transform: scale(1.03); }
+    .primary-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* Output JSON box */
+    .output-box {
+      display: none;
+      margin-top: 20px;
+    }
+    .output-box h3 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .output-box textarea {
+      width: 100%;
+      height: 180px;
+      padding: 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      resize: vertical;
+      outline: none;
+      background: #fafafa;
+    }
+    .copy-btn {
+      margin-top: 10px;
+      background: #333;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 24px;
+      color: white;
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { background: #555; }
+    .copy-confirm { display: none; color: #27ae60; font-weight: 700; margin-left: 12px; font-size: 0.9rem; }
+
+    /* Instructions */
+    .instruction-list { list-style: none; counter-reset: steps; }
+    .instruction-list li {
+      counter-increment: steps;
+      padding: 10px 0 10px 44px;
+      position: relative;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.95rem;
+      color: #555;
+      line-height: 1.5;
+    }
+    .instruction-list li:last-child { border-bottom: none; }
+    .instruction-list li::before {
+      content: counter(steps);
+      position: absolute;
+      left: 0; top: 10px;
+      background: #a29bfe;
+      color: white;
+      border-radius: 50%;
+      width: 26px; height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.85rem;
+    }
+    .instruction-list li strong { color: #333; }
+    code {
+      background: #f0f0f0;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    /* Current artworks list */
+    .art-item {
+      background: #fafafa;
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+      border: 2px solid #eee;
+    }
+    .art-item-info { flex: 1; }
+    .art-item-name { font-family: 'Fredoka One', cursive; font-size: 1rem; color: #333; }
+    .art-item-meta { font-size: 0.85rem; color: #aaa; }
+
+    .empty-list { text-align: center; padding: 30px 0; font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #ccc; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" class="back-btn">← Shop</a>
+    <h1>🔧 Admin – Add Artwork</h1>
+  </header>
+
+  <div class="container">
+
+    <!-- Step 1: Fill in details -->
+    <div class="step-card">
+      <h2><span class="step-num">1</span> Enter artwork details</h2>
+      <p>Fill in the name, price, and choose the photo. The filename will be used to match the image you upload to GitHub.</p>
+
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])" />
+        <div class="dz-icon">🖼️</div>
+        <p><span>Click or drag</span> to preview the photo</p>
+      </div>
+      <img id="imgPreview" src="" alt="preview" />
+
+      <div class="field">
+        <label>Art Name</label>
+        <input type="text" id="nameInput" placeholder="e.g. Fort Pigs" oninput="checkReady()" />
+      </div>
+      <div class="field">
+        <label>Price (USD)</label>
+        <input type="number" id="priceInput" placeholder="e.g. 3.50" min="0" step="0.01" oninput="checkReady()" />
+      </div>
+      <div class="field">
+        <label>Image Filename</label>
+        <input type="text" id="filenameInput" placeholder="e.g. fortpigs.jpg" oninput="checkReady()" />
+        <p class="hint">This must exactly match the filename you upload to the <code>images/</code> folder on GitHub (no spaces — use dashes or underscores).</p>
+      </div>
+
+      <button class="primary-btn" id="generateBtn" onclick="generateJSON()" disabled>Generate data.json ✨</button>
+
+      <div class="output-box" id="outputBox">
+        <h3>📋 Your new data.json — copy this whole thing:</h3>
+        <textarea id="jsonOutput" readonly></textarea>
+        <br/>
+        <button class="copy-btn" onclick="copyJSON()">Copy to Clipboard</button>
+        <span class="copy-confirm" id="copyConfirm">✅ Copied!</span>
+      </div>
+    </div>
+
+    <!-- Step 2: Instructions -->
+    <div class="step-card">
+      <h2><span class="step-num">2</span> Upload to GitHub</h2>
+      <p>After generating the JSON above, follow these steps to get it live:</p>
+      <ol class="instruction-list">
+        <li>Go to your <strong>EnzoArtShop</strong> GitHub repo</li>
+        <li>Click <strong>Add file → Upload files</strong> and upload your photo into the <code>images/</code> folder (create it if it doesn't exist by typing <code>images/</code> before the filename in the upload box)</li>
+        <li>Go back to the repo, click <strong>data.json</strong>, then click the <strong>pencil (edit) icon</strong></li>
+        <li>Select all the text in the file and paste in the new JSON you copied above</li>
+        <li>Click <strong>Commit changes</strong> — your artwork goes live in about 1 minute!</li>
+      </ol>
+    </div>
+
+    <!-- Current artworks -->
+    <div class="step-card">
+      <h2>🎨 Artworks currently in data.json</h2>
+      <p>This shows what's currently live on the shop (fetched from your published data.json).</p>
+      <div id="currentList"><p class="empty-list">Loading...</p></div>
+    </div>
+
+  </div>
+
+  <script>
+    let currentData = [];
+    let selectedFilename = '';
+
+    // Drag-and-drop
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.background = '#fffbf0'; });
+    dropZone.addEventListener('dragleave', () => dropZone.style.background = '');
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.style.background = '';
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) handleFile(file);
+    });
+
+    function handleFile(file) {
+      if (!file) return;
+      // Auto-fill filename (sanitized)
+      const sanitized = file.name.replace(/\s+/g, '-').toLowerCase();
+      document.getElementById('filenameInput').value = sanitized;
+      selectedFilename = sanitized;
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        const preview = document.getElementById('imgPreview');
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+      checkReady();
+    }
+
+    function checkReady() {
+      const name = document.getElementById('nameInput').value.trim();
+      const price = document.getElementById('priceInput').value.trim();
+      const filename = document.getElementById('filenameInput').value.trim();
+      document.getElementById('generateBtn').disabled = !(name && price && filename);
+    }
+
+    function generateJSON() {
+      const name = document.getElementById('nameInput').value.trim();
+      const price = parseFloat(document.getElementById('priceInput').value).toFixed(2);
+      const image = document.getElementById('filenameInput').value.trim();
+      const id = Date.now().toString();
+
+      const newItem = { id, name, price, image };
+      const updated = [newItem, ...currentData];
+
+      document.getElementById('jsonOutput').value = JSON.stringify(updated, null, 2);
+      document.getElementById('outputBox').style.display = 'block';
+      document.getElementById('outputBox').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function copyJSON() {
+      const ta = document.getElementById('jsonOutput');
+      ta.select();
+      document.execCommand('copy');
+      const confirm = document.getElementById('copyConfirm');
+      confirm.style.display = 'inline';
+      setTimeout(() => confirm.style.display = 'none', 2500);
+    }
+
+    async function loadCurrent() {
+      try {
+        const res = await fetch('data.json?nocache=' + Date.now());
+        currentData = await res.json();
+      } catch(e) {
+        currentData = [];
+      }
+      renderCurrentList();
+    }
+
+    function renderCurrentList() {
+      const list = document.getElementById('currentList');
+      if (currentData.length === 0) {
+        list.innerHTML = '<p class="empty-list">No artworks yet — add one above!</p>';
+        return;
+      }
+      list.innerHTML = currentData.map(a => `
+        <div class="art-item">
+          <div class="art-item-info">
+            <p class="art-item-name">${a.name}</p>
+            <p class="art-item-meta">$${a.price} &nbsp;·&nbsp; ${a.image}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    loadCurrent();
+  </script>
+</body>
+</html>
