@@ -1,5 +1,11 @@
 [
   {
+    "id": "1780631831114",
+    "name": "Art",
+    "price": "100.00",
+    "image": "image.jpg"
+  },
+  {
     "id": "1780630598149",
     "name": "Fort Pigs",
     "price": "3.50",
