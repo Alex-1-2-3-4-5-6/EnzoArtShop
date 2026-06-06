@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kids Art Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Nunito',sans-serif; background:#fff9f0; }
+
+    nav {
+      background:white; padding:16px 40px;
+      display:flex; align-items:center; justify-content:space-between;
+      box-shadow:0 2px 12px rgba(0,0,0,0.07);
+    }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.6rem; color:#ff6b6b; }
+    .logo span { color:#a29bfe; }
+    .nav-links { display:flex; gap:12px; }
+    .nav-btn {
+      padding:9px 22px; border-radius:50px; font-family:'Fredoka One',cursive;
+      font-size:1rem; cursor:pointer; text-decoration:none; transition:transform 0.2s;
+    }
+    .nav-btn:hover { transform:scale(1.05); }
+    .nav-btn.outline { border:2.5px solid #ff6b6b; color:#ff6b6b; background:transparent; }
+    .nav-btn.filled { background:linear-gradient(135deg,#ff6b6b,#feca57); color:white; border:none; }
+
+    .hero {
+      max-width:960px; margin:80px auto 0; padding:0 24px;
+      text-align:center;
+    }
+    .hero h1 {
+      font-family:'Fredoka One',cursive;
+      font-size:clamp(2.2rem,6vw,3.8rem);
+      line-height:1.15; color:#333; margin-bottom:20px;
+    }
+    .hero h1 span {
+      background:linear-gradient(90deg,#ff6b6b,#feca57,#48dbfb,#a29bfe);
+      background-size:200%; -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent; background-clip:text;
+      animation:shimmer 4s linear infinite;
+    }
+    @keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
+
+    .hero p {
+      font-size:1.15rem; color:#777; max-width:580px;
+      margin:0 auto 36px; line-height:1.7;
+    }
+    .hero-btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+    .hero-btn {
+      padding:16px 40px; border-radius:60px; font-family:'Fredoka One',cursive;
+      font-size:1.2rem; cursor:pointer; text-decoration:none;
+      transition:transform 0.2s, box-shadow 0.2s;
+    }
+    .hero-btn.primary {
+      background:linear-gradient(135deg,#ff6b6b,#feca57);
+      color:white; border:none;
+      box-shadow:0 8px 24px rgba(255,107,107,0.35);
+    }
+    .hero-btn.primary:hover { transform:scale(1.05) translateY(-2px); box-shadow:0 12px 30px rgba(255,107,107,0.45); }
+    .hero-btn.secondary {
+      background:white; color:#ff6b6b;
+      border:2.5px solid #ff6b6b;
+    }
+    .hero-btn.secondary:hover { transform:scale(1.05); }
+
+    .how-it-works {
+      max-width:960px; margin:80px auto; padding:0 24px;
+    }
+    .how-it-works h2 {
+      font-family:'Fredoka One',cursive; font-size:2rem;
+      color:#333; text-align:center; margin-bottom:40px;
+    }
+    .steps {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:24px;
+    }
+    .step {
+      background:white; border-radius:24px; padding:28px 24px;
+      text-align:center; box-shadow:0 4px 18px rgba(0,0,0,0.07);
+    }
+    .step .icon { font-size:3rem; margin-bottom:14px; }
+    .step h3 { font-family:'Fredoka One',cursive; font-size:1.15rem; color:#333; margin-bottom:8px; }
+    .step p { font-size:0.9rem; color:#888; line-height:1.5; }
+
+    .coppa-banner {
+      background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      max-width:960px; margin:0 auto 80px; border-radius:24px;
+      padding:32px 36px; display:flex; align-items:center; gap:20px;
+      box-shadow:0 8px 24px rgba(162,155,254,0.3);
+    }
+    .coppa-banner .icon { font-size:2.5rem; flex-shrink:0; }
+    .coppa-banner h3 { font-family:'Fredoka One',cursive; font-size:1.2rem; color:white; margin-bottom:6px; }
+    .coppa-banner p { color:rgba(255,255,255,0.85); font-size:0.9rem; line-height:1.5; }
+
+    footer {
+      background:#2d2d2d; padding:24px 40px;
+      display:flex; align-items:center; justify-content:space-between;
+      flex-wrap:wrap; gap:12px;
+    }
+    footer p { color:#888; font-size:0.85rem; }
+    footer a { color:#aaa; text-decoration:none; font-size:0.85rem; }
+    footer a:hover { color:white; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">Kids<span>Art</span></div>
+    <div class="nav-links">
+      <a href="platform-login.html" class="nav-btn outline">Log In</a>
+      <a href="platform-signup.html" class="nav-btn filled">Sign Up</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>Kids create art.<br><span>Communities come together.</span></h1>
+    <p>A safe, parent-supervised platform where children share their artwork to support the people they care about.</p>
+    <div class="hero-btns">
+      <a href="platform-signup.html" class="hero-btn primary">🎨 Create an Account</a>
+      <a href="platform-shop.html" class="hero-btn secondary">🛍️ Browse the Shop</a>
+    </div>
+  </div>
+
+  <div class="how-it-works">
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="icon">👨‍👩‍👧</div>
+        <h3>Parents sign up</h3>
+        <p>Create a free account and add your child's profile.</p>
+      </div>
+      <div class="step">
+        <div class="icon">🖌️</div>
+        <h3>Kids create art</h3>
+        <p>Your child makes artwork and submits it with a title and price.</p>
+      </div>
+      <div class="step">
+        <div class="icon">✅</div>
+        <h3>Parents approve</h3>
+        <p>You review and approve the title, price, and photo before it goes live.</p>
+      </div>
+      <div class="step">
+        <div class="icon">💛</div>
+        <h3>Community supports</h3>
+        <p>Friends and family browse the shop and claim artwork they love.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:960px;margin:0 auto 40px;padding:0 24px;">
+    <div class="coppa-banner">
+      <div class="icon">🔒</div>
+      <div>
+        <h3>Safe & COPPA Compliant</h3>
+        <p>We never collect personal information from children. All accounts are created and managed by parents or guardians. Children's data is never stored or shared.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 KidsArt Platform</p>
+    <div style="display:flex;gap:20px;">
+      <a href="platform-privacy.html">Privacy Policy</a>
+      <a href="platform-terms.html">Terms of Use</a>
+    </div>
+  </footer>
+
+</body>
+</html>
