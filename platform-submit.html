@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submit Artwork – KidsArt Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
+
+    header {
+      background:white; padding:16px 32px;
+      display:flex; align-items:center; gap:16px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.07);
+    }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.4rem; color:#ff6b6b; flex:1; }
+    .logo span { color:#a29bfe; }
+    .back-btn {
+      background:#f0f0f0; border:none; border-radius:50px;
+      padding:8px 18px; font-family:'Fredoka One',cursive;
+      font-size:0.9rem; cursor:pointer; color:#888; text-decoration:none;
+    }
+
+    .container { max-width:560px; margin:36px auto; padding:0 20px 80px; }
+
+    .panel {
+      background:white; border-radius:24px; padding:32px;
+      box-shadow:0 4px 18px rgba(0,0,0,0.06);
+    }
+    .panel h2 { font-family:'Fredoka One',cursive; font-size:1.6rem; color:#333; margin-bottom:6px; }
+    .panel p.sub { color:#aaa; font-size:0.9rem; margin-bottom:24px; }
+
+    .drop-zone {
+      border:3px dashed #feca57; border-radius:16px; padding:36px 20px;
+      text-align:center; cursor:pointer; transition:background 0.2s;
+      margin-bottom:16px; position:relative;
+    }
+    .drop-zone:hover { background:#fffbf0; }
+    .drop-zone input[type="file"] {
+      position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;
+    }
+    .drop-zone .dz-icon { font-size:2.5rem; margin-bottom:8px; }
+    .drop-zone p { font-family:'Fredoka One',cursive; font-size:1rem; color:#bbb; }
+    .drop-zone p span { color:#ff6b6b; }
+
+    #imgPreview {
+      display:none; width:100%; max-height:240px; object-fit:contain;
+      border-radius:12px; border:2px solid #eee; margin-bottom:16px; background:#fafafa;
+    }
+
+    .field { margin-bottom:16px; }
+    .field label { display:block; font-weight:700; color:#555; margin-bottom:6px; font-size:0.9rem; }
+    .field input, .field select {
+      width:100%; padding:13px 16px; border:2.5px solid #e0e0e0;
+      border-radius:12px; font-family:'Nunito',sans-serif; font-size:1rem;
+      outline:none; transition:border-color 0.2s; background:white;
+    }
+    .field input:focus, .field select:focus { border-color:#feca57; }
+
+    .submit-btn {
+      width:100%; background:linear-gradient(135deg,#ff6b6b,#feca57);
+      border:none; border-radius:50px; padding:15px;
+      color:white; font-family:'Fredoka One',cursive; font-size:1.15rem;
+      cursor:pointer; transition:transform 0.2s; margin-top:8px;
+    }
+    .submit-btn:hover { transform:scale(1.02); }
+    .submit-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+    .progress-bar { height:6px; background:#eee; border-radius:3px; margin-top:10px; display:none; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,#ff6b6b,#feca57); border-radius:3px; transition:width 0.3s; width:0%; }
+
+    .msg { margin-top:14px; padding:12px 16px; border-radius:12px; font-weight:700; font-size:0.9rem; display:none; }
+    .msg.error { background:#ffd6d6; color:#c0392b; }
+    .msg.success { background:#d4edda; color:#155724; }
+    .msg.loading { background:#fff3cd; color:#856404; }
+
+    .approval-note {
+      background:#f0f4ff; border-radius:12px; padding:14px 16px;
+      margin-bottom:20px; font-size:0.85rem; color:#667; line-height:1.5;
+    }
+    .approval-note strong { color:#a29bfe; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">Kids<span>Art</span></div>
+    <a href="platform-dashboard.html" class="back-btn">← Dashboard</a>
+  </header>
+
+  <div class="container">
+    <div class="panel">
+      <h2>🎨 Submit Artwork</h2>
+      <p class="sub">Fill in the details below — your parent will review before it goes live</p>
+
+      <div class="approval-note">
+        <strong>ℹ️ Heads up:</strong> After submitting, your parent or guardian will review the artwork name, price, and photo before it appears in the shop.
+      </div>
+
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])" />
+        <div class="dz-icon">🖼️</div>
+        <p><span>Click or drag</span> a photo here</p>
+      </div>
+      <img id="imgPreview" src="" alt="preview" />
+
+      <div class="field">
+        <label>Which kid is this for?</label>
+        <select id="kidSelect">
+          <option value="">Loading kids...</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Artwork Title</label>
+        <input type="text" id="artName" placeholder="e.g. Sunset Over the Lake" />
+      </div>
+
+      <div class="field">
+        <label>Suggested Price (USD)</label>
+        <input type="number" id="artPrice" placeholder="e.g. 5.00" min="0" step="0.01" />
+      </div>
+
+      <button class="submit-btn" id="submitBtn" onclick="submitArt()" disabled>Submit for Approval</button>
+      <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let currentUser = null;
+    let selectedFile = null;
+
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = 'platform-login.html'; return; }
+      currentUser = user;
+      loadKids();
+    }
+
+    async function loadKids() {
+      const { data } = await sb.from('kids').select('*').eq('parent_id', currentUser.id);
+      const sel = document.getElementById('kidSelect');
+      if (!data || data.length === 0) {
+        sel.innerHTML = '<option value="">No kids yet — add one in the dashboard</option>';
+        return;
+      }
+      sel.innerHTML = data.map(k => `<option value="${k.id}">${k.name} (age ${k.age})</option>`).join('');
+    }
+
+    // Drag and drop
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.background = '#fffbf0'; });
+    dropZone.addEventListener('dragleave', () => dropZone.style.background = '');
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.style.background = '';
+      const f = e.dataTransfer.files[0];
+      if (f && f.type.startsWith('image/')) handleFile(f);
+    });
+
+    function handleFile(file) {
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const p = document.getElementById('imgPreview');
+        p.src = e.target.result; p.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+      checkReady();
+    }
+
+    function checkReady() {
+      const name  = document.getElementById('artName').value.trim();
+      const price = document.getElementById('artPrice').value.trim();
+      document.getElementById('submitBtn').disabled = !(selectedFile && name && price);
+    }
+
+    document.getElementById('artName').addEventListener('input', checkReady);
+    document.getElementById('artPrice').addEventListener('input', checkReady);
+
+    function showMsg(type, text) {
+      const el = document.getElementById('msg');
+      el.className = 'msg ' + type; el.textContent = text; el.style.display = 'block';
+    }
+
+    async function submitArt() {
+      const name   = document.getElementById('artName').value.trim();
+      const price  = parseFloat(document.getElementById('artPrice').value).toFixed(2);
+      const kidId  = document.getElementById('kidSelect').value;
+      const btn    = document.getElementById('submitBtn');
+
+      if (!kidId) { showMsg('error', 'Please select a kid first.'); return; }
+
+      btn.disabled = true;
+      showMsg('loading', '⏳ Uploading image...');
+      document.getElementById('progressBar').style.display = 'block';
+      document.getElementById('progressFill').style.width = '30%';
+
+      try {
+        // Upload image to Supabase Storage
+        const ext = selectedFile.name.split('.').pop();
+        const filename = `${currentUser.id}-${Date.now()}.${ext}`;
+        const { error: uploadError } = await sb.storage
+          .from('artwork-images')
+          .upload(filename, selectedFile, { contentType: selectedFile.type });
+
+        if (uploadError) throw uploadError;
+
+        document.getElementById('progressFill').style.width = '65%';
+        showMsg('loading', '⏳ Saving artwork details...');
+
+        // Get public URL
+        const { data: urlData } = sb.storage.from('artwork-images').getPublicUrl(filename);
+        const imageUrl = urlData.publicUrl;
+
+        document.getElementById('progressFill').style.width = '85%';
+
+        // Insert into artworks table
+        const { error: insertError } = await sb.from('artworks').insert({
+          kid_id: kidId,
+          parent_id: currentUser.id,
+          name, price, image_url: imageUrl,
+          status: 'pending'
+        });
+
+        if (insertError) throw insertError;
+
+        document.getElementById('progressFill').style.width = '100%';
+        showMsg('success', '✅ Submitted! Your parent will review it shortly.');
+        btn.textContent = 'Submitted!';
+
+        setTimeout(() => window.location.href = 'platform-dashboard.html', 2000);
+
+      } catch(e) {
+        showMsg('error', '❌ Error: ' + e.message);
+        document.getElementById('progressBar').style.display = 'none';
+        btn.disabled = false;
+        btn.textContent = 'Submit for Approval';
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
