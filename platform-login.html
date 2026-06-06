@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log In – KidsArt Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      min-height:100vh; font-family:'Nunito',sans-serif;
+      background:linear-gradient(135deg,#48dbfb,#a29bfe,#ff9ff3);
+      background-size:300% 300%; animation:gradientShift 8s ease infinite;
+      display:flex; align-items:center; justify-content:center; padding:20px;
+    }
+    @keyframes gradientShift {
+      0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%}
+    }
+    .card {
+      background:white; border-radius:28px; padding:40px 36px;
+      max-width:420px; width:100%;
+      box-shadow:0 20px 60px rgba(0,0,0,0.2);
+    }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.5rem; color:#ff6b6b; margin-bottom:6px; }
+    .logo span { color:#a29bfe; }
+    h2 { font-family:'Fredoka One',cursive; font-size:1.8rem; color:#333; margin-bottom:6px; }
+    .sub { color:#aaa; font-size:0.9rem; margin-bottom:28px; }
+
+    .field { margin-bottom:16px; }
+    .field label { display:block; font-weight:700; color:#555; margin-bottom:6px; font-size:0.9rem; }
+    .field input {
+      width:100%; padding:13px 16px; border:2.5px solid #e0e0e0;
+      border-radius:12px; font-family:'Nunito',sans-serif; font-size:1rem;
+      outline:none; transition:border-color 0.2s;
+    }
+    .field input:focus { border-color:#a29bfe; }
+
+    .submit-btn {
+      width:100%; background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      border:none; border-radius:50px; padding:15px;
+      color:white; font-family:'Fredoka One',cursive; font-size:1.15rem;
+      cursor:pointer; transition:transform 0.2s; margin-top:8px;
+    }
+    .submit-btn:hover { transform:scale(1.02); }
+    .submit-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+    .msg { margin-top:14px; padding:12px 16px; border-radius:12px; font-weight:700; font-size:0.9rem; display:none; }
+    .msg.error { background:#ffd6d6; color:#c0392b; }
+
+    .signup-link { text-align:center; margin-top:20px; font-size:0.9rem; color:#aaa; }
+    .signup-link a { color:#a29bfe; font-weight:700; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">Kids<span>Art</span></div>
+    <h2>Welcome Back</h2>
+    <p class="sub">Log in to manage your child's artwork</p>
+
+    <div class="field">
+      <label>Email Address</label>
+      <input type="email" id="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter') login()" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Your password" onkeydown="if(event.key==='Enter') login()" />
+    </div>
+
+    <button class="submit-btn" id="loginBtn" onclick="login()">Log In</button>
+    <div class="msg" id="msg"></div>
+    <p class="signup-link">Don't have an account? <a href="platform-signup.html">Sign up</a></p>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function login() {
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const btn      = document.getElementById('loginBtn');
+      const msg      = document.getElementById('msg');
+
+      if (!email || !password) {
+        msg.className = 'msg error'; msg.textContent = 'Please fill in all fields.'; msg.style.display = 'block'; return;
+      }
+
+      btn.disabled = true; btn.textContent = 'Logging in...';
+
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        msg.className = 'msg error'; msg.textContent = error.message; msg.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Log In';
+      } else {
+        window.location.href = 'platform-shop.html';
+      }
+    }
+  </script>
+</body>
+</html>
