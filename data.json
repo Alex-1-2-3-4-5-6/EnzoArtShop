@@ -1,7 +1,13 @@
 [
   {
+    "id": "1781219215989",
+    "name": "Big yacht for pigs",
+    "price": "10.00",
+    "image": "image-1781219132950.jpg"
+  },
+  {
     "id": "1781052858939",
-    "name": "King pig’s castle",
+    "name": "King pigâs castle",
     "price": "2.50",
     "image": "image-1781052805713.jpg"
   },
