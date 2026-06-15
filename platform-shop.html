@@ -277,7 +277,7 @@
     }
 
     async function loadArtworks() {
-      const { data } = await sb.from('artworks').select('*').eq('status','approved').order('created_at',{ascending:false});
+      const { data } = await sb.from('artworks').select('*, kids(name)').eq('status','approved').order('created_at',{ascending:false});
       allArtworks = data || [];
       renderGrid();
     }
@@ -303,6 +303,7 @@
           <img class="card-img" src="${art.image_url}" alt="${art.name}" loading="lazy" />
           <div class="card-body">
             <p class="card-title">${art.name}</p>
+            ${art.kids?.name ? `<p style="font-size:0.8rem;color:#aaa;margin-bottom:4px;">🎨 by ${art.kids.name}</p>` : ''}
             <p class="card-price">$${art.price}</p>
             <button class="card-btn" onclick="openPreview('${art.id}')">👀 Preview & Buy</button>
           </div>

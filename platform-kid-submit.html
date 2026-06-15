@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submit Art – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
+    header {
+      background:white; padding:16px 32px;
+      display:flex; align-items:center; gap:16px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.07);
+    }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.4rem; color:#ff6b6b; flex:1; }
+    .logo span { color:#a29bfe; }
+    .home-btn {
+      background:#f0f0f0; border:none; border-radius:50px;
+      padding:8px 18px; font-family:'Fredoka One',cursive;
+      font-size:0.9rem; cursor:pointer; color:#888; text-decoration:none;
+    }
+    .switch-btn {
+      background:#ffd6d6; border:none; border-radius:50px;
+      padding:8px 18px; font-family:'Fredoka One',cursive;
+      font-size:0.9rem; cursor:pointer; color:#c0392b;
+    }
+
+    .container { max-width:520px; margin:36px auto; padding:0 20px 80px; }
+
+    .kid-banner {
+      background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      border-radius:20px; padding:18px 22px; margin-bottom:24px;
+      display:flex; align-items:center; gap:14px;
+      box-shadow:0 4px 18px rgba(162,155,254,0.3);
+    }
+    .kid-avatar {
+      width:52px; height:52px; border-radius:50%; border:3px solid white;
+      background:rgba(255,255,255,0.3); display:flex; align-items:center;
+      justify-content:center; font-size:1.6rem; flex-shrink:0;
+    }
+    .kid-info { color:white; }
+    .kid-info .name { font-family:'Fredoka One',cursive; font-size:1.1rem; }
+    .kid-info .sub { font-size:0.82rem; opacity:0.85; margin-top:2px; }
+
+    .panel {
+      background:white; border-radius:24px; padding:32px;
+      box-shadow:0 4px 18px rgba(0,0,0,0.06);
+    }
+    .panel h2 { font-family:'Fredoka One',cursive; font-size:1.6rem; color:#333; margin-bottom:6px; }
+    .panel p.sub { color:#aaa; font-size:0.9rem; margin-bottom:24px; }
+
+    .drop-zone {
+      border:3px dashed #feca57; border-radius:16px; padding:36px 20px;
+      text-align:center; cursor:pointer; transition:background 0.2s;
+      margin-bottom:16px; position:relative;
+    }
+    .drop-zone:hover { background:#fffbf0; }
+    .drop-zone input[type="file"] {
+      position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;
+    }
+    .drop-zone .dz-icon { font-size:2.5rem; margin-bottom:8px; }
+    .drop-zone p { font-family:'Fredoka One',cursive; font-size:1rem; color:#bbb; }
+    .drop-zone p span { color:#ff6b6b; }
+
+    #imgPreview {
+      display:none; width:100%; max-height:240px; object-fit:contain;
+      border-radius:12px; border:2px solid #eee; margin-bottom:16px; background:#fafafa;
+    }
+
+    .field { margin-bottom:16px; }
+    .field label { display:block; font-weight:700; color:#555; margin-bottom:6px; font-size:0.9rem; }
+    .field input {
+      width:100%; padding:13px 16px; border:2.5px solid #e0e0e0;
+      border-radius:12px; font-family:'Nunito',sans-serif; font-size:1rem;
+      outline:none; transition:border-color 0.2s;
+    }
+    .field input:focus { border-color:#feca57; }
+
+    .submit-btn {
+      width:100%; background:linear-gradient(135deg,#ff6b6b,#feca57);
+      border:none; border-radius:50px; padding:15px;
+      color:white; font-family:'Fredoka One',cursive; font-size:1.15rem;
+      cursor:pointer; transition:transform 0.2s; margin-top:8px;
+    }
+    .submit-btn:hover { transform:scale(1.02); }
+    .submit-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+    .progress-bar { height:6px; background:#eee; border-radius:3px; margin-top:10px; display:none; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,#ff6b6b,#feca57); border-radius:3px; transition:width 0.3s; width:0%; }
+
+    .msg { margin-top:14px; padding:12px 16px; border-radius:12px; font-weight:700; font-size:0.9rem; display:none; }
+    .msg.error { background:#ffd6d6; color:#c0392b; }
+    .msg.success { background:#d4edda; color:#155724; }
+    .msg.loading { background:#fff3cd; color:#856404; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">Little He<span>art</span>works</div>
+    <a href="platform-index.html" class="home-btn">← Home</a>
+    <button class="switch-btn" onclick="switchKid()">Switch Kid</button>
+  </header>
+
+  <div class="container">
+
+    <div class="kid-banner" id="kidBanner">
+      <div class="kid-avatar">🧒</div>
+      <div class="kid-info">
+        <p class="name" id="kidNameDisplay">Loading...</p>
+        <p class="sub">Your art will go to your parent for approval 🎨</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>🖼️ Submit Your Art</h2>
+      <p class="sub">Take a photo of your artwork and fill in the details!</p>
+
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])" />
+        <div class="dz-icon">📸</div>
+        <p><span>Click or tap</span> to add your photo</p>
+      </div>
+      <img id="imgPreview" src="" alt="preview" />
+
+      <div class="field">
+        <label>Artwork Title</label>
+        <input type="text" id="artName" placeholder="e.g. Rainbow Dragon" oninput="checkReady()" />
+      </div>
+      <div class="field">
+        <label>Price (USD)</label>
+        <input type="number" id="artPrice" placeholder="e.g. 5.00" min="0" step="0.01" oninput="checkReady()" />
+      </div>
+
+      <button class="submit-btn" id="submitBtn" onclick="submitArt()" disabled>Submit for Approval 🚀</button>
+      <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let kidSession = null;
+    let selectedFile = null;
+
+    function init() {
+      const raw = localStorage.getItem('kidSession');
+      if (!raw) { window.location.href = 'platform-index.html'; return; }
+      kidSession = JSON.parse(raw);
+      document.getElementById('kidNameDisplay').textContent = `Hey, ${kidSession.kid_name}! 👋`;
+    }
+
+    function switchKid() {
+      localStorage.removeItem('kidSession');
+      window.location.href = 'platform-index.html';
+    }
+
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.background = '#fffbf0'; });
+    dropZone.addEventListener('dragleave', () => dropZone.style.background = '');
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.style.background = '';
+      const f = e.dataTransfer.files[0];
+      if (f && f.type.startsWith('image/')) handleFile(f);
+    });
+
+    function handleFile(file) {
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const p = document.getElementById('imgPreview');
+        p.src = e.target.result; p.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+      checkReady();
+    }
+
+    function checkReady() {
+      const name  = document.getElementById('artName').value.trim();
+      const price = document.getElementById('artPrice').value.trim();
+      document.getElementById('submitBtn').disabled = !(selectedFile && name && price);
+    }
+
+    function showMsg(type, text) {
+      const el = document.getElementById('msg');
+      el.className = 'msg ' + type; el.textContent = text; el.style.display = 'block';
+    }
+
+    async function submitArt() {
+      const name  = document.getElementById('artName').value.trim();
+      const price = parseFloat(document.getElementById('artPrice').value).toFixed(2);
+      const btn   = document.getElementById('submitBtn');
+
+      btn.disabled = true;
+      document.getElementById('progressBar').style.display = 'block';
+      document.getElementById('progressFill').style.width = '20%';
+      showMsg('loading', '⏳ Uploading your artwork...');
+
+      try {
+        const ext = selectedFile.name.split('.').pop();
+        const filename = `kid-${kidSession.kid_id}-${Date.now()}.${ext}`;
+        const { error: upErr } = await sb.storage
+          .from('artwork-images')
+          .upload(filename, selectedFile, { contentType: selectedFile.type });
+        if (upErr) throw upErr;
+
+        document.getElementById('progressFill').style.width = '65%';
+        showMsg('loading', '⏳ Saving details...');
+
+        const { data: urlData } = sb.storage.from('artwork-images').getPublicUrl(filename);
+
+        document.getElementById('progressFill').style.width = '85%';
+
+        const { data, error: rpcErr } = await sb.rpc('submit_art_as_kid', {
+          p_code: kidSession.code,
+          p_name: name,
+          p_price: parseFloat(price),
+          p_image_url: urlData.publicUrl
+        });
+
+        if (rpcErr) throw rpcErr;
+        if (data?.error) throw new Error(data.error);
+
+        document.getElementById('progressFill').style.width = '100%';
+        showMsg('success', '🎉 Submitted! Your parent will review it soon.');
+        btn.textContent = 'Submitted!';
+
+        document.getElementById('artName').value = '';
+        document.getElementById('artPrice').value = '';
+        document.getElementById('imgPreview').style.display = 'none';
+        selectedFile = null;
+        setTimeout(() => {
+          btn.textContent = 'Submit for Approval 🚀';
+          btn.disabled = true;
+          document.getElementById('progressBar').style.display = 'none';
+          document.getElementById('progressFill').style.width = '0%';
+          document.getElementById('msg').style.display = 'none';
+        }, 3000);
+
+      } catch(e) {
+        showMsg('error', '❌ ' + e.message);
+        document.getElementById('progressBar').style.display = 'none';
+        btn.disabled = false;
+        btn.textContent = 'Submit for Approval 🚀';
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

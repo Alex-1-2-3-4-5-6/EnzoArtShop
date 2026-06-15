@@ -248,10 +248,10 @@
     <!-- Kids panel -->
     <div class="panel">
       <p class="panel-title">👧 Your Kids</p>
+      <p style="font-size:0.85rem;color:#aaa;margin-bottom:14px;">Each kid gets a 10-digit code — share it with your child so they can submit artwork from the home page.</p>
       <div class="kid-list" id="kidList"></div>
       <div class="add-kid-form">
         <input type="text" id="kidName" placeholder="Child's first name" />
-        <input type="number" id="kidAge" placeholder="Age" min="1" max="17" style="max-width:90px;" />
         <button class="add-kid-btn" onclick="addKid()">+ Add Kid</button>
       </div>
       <div class="status-msg" id="kidStatus"></div>
@@ -372,36 +372,42 @@
     }
 
     // ── Kids ──
+    function genKidCode() {
+      return String(Math.floor(Math.random() * 9000000000) + 1000000000);
+    }
+
     async function loadKids() {
       const { data } = await sb.from('kids').select('*').eq('parent_id', currentUser.id);
       const list = document.getElementById('kidList');
       if (!data || data.length === 0) { list.innerHTML = '<p style="color:#ccc;font-size:0.9rem;">No kids added yet.</p>'; return; }
       list.innerHTML = data.map(k => `
-        <div class="kid-chip">
-          🧒 ${k.name} (${k.age})
-          <button onclick="deleteKid('${k.id}')">✕</button>
+        <div class="kid-chip" style="flex-direction:column;align-items:flex-start;border-radius:16px;padding:12px 16px;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;width:100%;">
+            <span>🧒 ${k.name}</span>
+            <button onclick="deleteKid('${k.id}')" style="margin-left:auto;">✕</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-family:monospace;font-size:1rem;letter-spacing:2px;background:rgba(255,255,255,0.3);padding:4px 10px;border-radius:8px;">${k.code || '—'}</span>
+            <button onclick="navigator.clipboard.writeText('${k.code}').then(()=>alert('Code copied!'))" style="background:rgba(255,255,255,0.3);border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:0.8rem;color:white;">📋 Copy</button>
+          </div>
         </div>
       `).join('');
     }
 
     async function addKid() {
       const name = document.getElementById('kidName').value.trim();
-      const age  = parseInt(document.getElementById('kidAge').value);
       const st   = document.getElementById('kidStatus');
-
-      if (!name || !age) { showStatus(st,'error','Please enter name and age.'); return; }
-
-      const { error } = await sb.from('kids').insert({ parent_id: currentUser.id, name, age });
+      if (!name) { showStatus(st,'error','Please enter a name.'); return; }
+      const code = genKidCode();
+      const { error } = await sb.from('kids').insert({ parent_id: currentUser.id, name, code });
       if (error) { showStatus(st,'error',error.message); return; }
-
       document.getElementById('kidName').value = '';
-      document.getElementById('kidAge').value = '';
-      showStatus(st,'success',`✅ ${name} added!`);
+      showStatus(st,'success',`✅ ${name} added! Share their code with them.`);
       loadKids();
     }
 
     async function deleteKid(id) {
-      if (!confirm('Remove this kid?')) return;
+      if (!confirm('Remove this kid? Their code will stop working.')) return;
       await sb.from('kids').delete().eq('id', id);
       loadKids();
     }
