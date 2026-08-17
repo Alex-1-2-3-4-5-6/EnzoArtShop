@@ -239,7 +239,7 @@
           parent_id: currentUser.id,
           name, price, image_url: imageUrl,
           description: desc || null,
-          status: 'pending'
+          status: kidId ? 'pending' : 'approved'
         });
 
         if (insertError) throw insertError;
