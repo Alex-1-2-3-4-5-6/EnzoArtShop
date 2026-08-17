@@ -341,6 +341,10 @@
       const btn  = document.getElementById('saveProfileBtn');
       const st   = document.getElementById('profileStatus');
       if (!name) { showStatus(st, 'error', 'Please enter your name.'); return; }
+      if (dob) {
+        const age = Math.floor((new Date() - new Date(dob)) / (365.25 * 24 * 60 * 60 * 1000));
+        if (age < 18) { showStatus(st, 'error', 'You must be 18 or older to have a parent account.'); return; }
+      }
       btn.disabled = true;
       const { error } = await sb.auth.updateUser({ data: { ...currentUser.user_metadata, full_name: name, date_of_birth: dob } });
       if (error) { showStatus(st, 'error', error.message); }

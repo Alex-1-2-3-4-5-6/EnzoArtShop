@@ -115,6 +115,8 @@
       const btn      = document.getElementById('signupBtn');
 
       if (!name || !dob || !email || !password) return showMsg('error', 'Please fill in all fields.');
+      const age = Math.floor((new Date() - new Date(dob)) / (365.25 * 24 * 60 * 60 * 1000));
+      if (age < 18) return showMsg('error', 'You must be 18 or older to create a parent account.');
       if (password.length < 6) return showMsg('error', 'Password must be at least 6 characters.');
       if (password !== confirm) return showMsg('error', 'Passwords do not match.');
       if (!document.getElementById('agreeCheck').checked) return showMsg('error', 'You must agree to the Terms of Use and Privacy Policy to continue.');
