@@ -161,6 +161,7 @@
   <header>
     <div class="logo">🎨 Little He<span style="color:#fff176;">art</span>works</div>
     <a href="platform-index.html" class="home-btn">← Home</a>
+    <a href="#" class="home-btn" id="postArtBtn" onclick="handlePostArt(event)" style="background:white;color:#a29bfe;">🎨 Post Art</a>
     <a href="#" class="account-btn" id="accountBtn" onclick="handleAccountClick(event)">
       <div class="account-pfp" id="accountPfp">
         <span id="accountEmoji">👤</span>
@@ -172,6 +173,11 @@
 
   <div class="search-wrap">
     <input id="searchInput" type="text" placeholder="Search for art... 🔍" oninput="renderGrid()" />
+    <div style="display:flex;gap:8px;margin-top:10px;justify-content:center;">
+      <button id="filterArt" onclick="setFilter('art')" style="background:#ff6b6b;color:white;border:none;border-radius:50px;padding:7px 18px;font-family:'Fredoka One',cursive;font-size:0.9rem;cursor:pointer;">🖼️ Art</button>
+      <button id="filterCreator" onclick="setFilter('creator')" style="background:#f0f0f0;color:#888;border:none;border-radius:50px;padding:7px 18px;font-family:'Fredoka One',cursive;font-size:0.9rem;cursor:pointer;">🧒 Kid</button>
+      <button id="filterParent" onclick="setFilter('parent')" style="background:#f0f0f0;color:#888;border:none;border-radius:50px;padding:7px 18px;font-family:'Fredoka One',cursive;font-size:0.9rem;cursor:pointer;">👨‍👩‍👧 Parent</button>
+    </div>
   </div>
 
   <p class="section-label" id="recLabel" style="display:none">✨ Recommended for You</p>
@@ -259,6 +265,20 @@
     let allArtworks = [];
     let currentArtId = null;
     let currentUser = null;
+    let searchFilter = 'art';
+
+    function setFilter(mode) {
+      searchFilter = mode;
+      const btns = { art: '#filterArt', creator: '#filterCreator', parent: '#filterParent' };
+      Object.entries(btns).forEach(([k, sel]) => {
+        const el = document.querySelector(sel);
+        el.style.background = k === mode ? '#ff6b6b' : '#f0f0f0';
+        el.style.color = k === mode ? 'white' : '#888';
+      });
+      const placeholders = { art: 'Search for art... 🔍', creator: 'Search by kid name... 🧒', parent: 'Search by parent name... 👨‍👩‍👧' };
+      document.getElementById('searchInput').placeholder = placeholders[mode];
+      renderGrid();
+    }
 
     async function init() {
       const { data: { user } } = await sb.auth.getUser();
@@ -280,6 +300,10 @@
       e.preventDefault();
       window.location.href = currentUser ? 'platform-dashboard.html' : 'platform-login.html';
     }
+    function handlePostArt(e) {
+      e.preventDefault();
+      window.location.href = currentUser ? 'platform-submit.html' : 'platform-signup.html';
+    }
 
     async function loadArtworks() {
       const { data } = await sb.from('artworks').select('*, kids(name)').eq('status','approved').order('created_at',{ascending:false});
@@ -298,9 +322,12 @@
       if (allArtworks.length === 0) { empty.style.display='block'; label.style.display='none'; return; }
       empty.style.display = 'none';
 
-      const filtered = allArtworks.filter(a => !query ||
-        a.name.toLowerCase().includes(query) ||
-        (a.description || '').toLowerCase().includes(query));
+      const filtered = allArtworks.filter(a => {
+        if (!query) return true;
+        if (searchFilter === 'creator') return (a.kids?.name || '').toLowerCase().includes(query);
+        if (searchFilter === 'parent') return (a.parent_name || '').toLowerCase().includes(query);
+        return a.name.toLowerCase().includes(query) || (a.description || '').toLowerCase().includes(query);
+      });
       label.style.display = 'block';
       label.textContent = query ? `${filtered.length} result${filtered.length!==1?'s':''} for "${query}" ✨` : `All Artworks ✨ (${filtered.length})`;
 
@@ -369,7 +396,11 @@
       document.getElementById('modalTitle').textContent = art.name;
       document.getElementById('modalPrice').textContent = '$' + art.price;
       const artistEl = document.getElementById('modalArtist');
-      artistEl.textContent = art.kids?.name ? `🎨 by ${art.kids.name}` : '';
+      let artistText = '';
+      if (art.kids?.name && art.parent_name) artistText = `🧒 by ${art.kids.name} · posted by ${art.parent_name}`;
+      else if (art.kids?.name) artistText = `🧒 by ${art.kids.name}`;
+      else if (art.parent_name) artistText = `🎨 posted by ${art.parent_name}`;
+      artistEl.textContent = artistText;
       const descEl = document.getElementById('modalDesc');
       if (art.description) { descEl.textContent = art.description; descEl.style.display = 'block'; }
       else { descEl.style.display = 'none'; }

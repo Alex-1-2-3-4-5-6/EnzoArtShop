@@ -95,8 +95,8 @@
       <h2>🎨 Submit Artwork</h2>
       <p class="sub">Fill in the details below — your parent will review before it goes live</p>
 
-      <div class="approval-note">
-        <strong>ℹ️ Heads up:</strong> After submitting, your parent or guardian will review the artwork name, price, and photo before it appears in the shop.
+      <div class="approval-note" id="approvalNote">
+        <strong>ℹ️ Heads up:</strong> After submitting, you'll need to approve this artwork from your dashboard before it appears in the shop.
       </div>
 
       <div class="drop-zone" id="dropZone">
@@ -108,7 +108,7 @@
 
       <div class="field">
         <label>Who is this for?</label>
-        <select id="kidSelect">
+        <select id="kidSelect" onchange="updateSubmitMode()">
           <option value="">Loading kids...</option>
         </select>
       </div>
@@ -155,6 +155,7 @@
       const { data } = await sb.from('kids').select('*').eq('parent_id', currentUser.id);
       const sel = document.getElementById('kidSelect');
       sel.innerHTML = `<option value="parent">Me (parent)</option>` + (data || []).map(k => `<option value="${k.id}">${k.name}</option>`).join('');
+      updateSubmitMode();
     }
 
     // Drag and drop
@@ -186,6 +187,12 @@
 
     document.getElementById('artName').addEventListener('input', checkReady);
     document.getElementById('artPrice').addEventListener('input', checkReady);
+
+    function updateSubmitMode() {
+      const isParent = document.getElementById('kidSelect').value === 'parent';
+      document.getElementById('approvalNote').style.display = isParent ? 'none' : 'block';
+      document.getElementById('submitBtn').textContent = isParent ? 'Post to Shop' : 'Submit for Approval';
+    }
 
     const BAD_WORDS = ['fuck','shit','ass','bitch','cunt','dick','cock','pussy','bastard','damn','hell','crap','piss','slut','whore','nigger','nigga','faggot','retard','rape','kill yourself','kys','sex','porn','nude','naked'];
     function contentFilter(text) {
@@ -234,11 +241,13 @@
         document.getElementById('progressFill').style.width = '85%';
 
         // Insert into artworks table
+        const meta = currentUser.user_metadata || {};
         const { error: insertError } = await sb.from('artworks').insert({
           kid_id: kidId,
           parent_id: currentUser.id,
           name, price, image_url: imageUrl,
           description: desc || null,
+          parent_name: meta.full_name || currentUser.email,
           status: kidId ? 'pending' : 'approved'
         });
 
