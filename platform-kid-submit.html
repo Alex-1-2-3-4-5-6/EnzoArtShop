@@ -130,6 +130,12 @@
         <input type="text" id="artName" placeholder="e.g. Rainbow Dragon" oninput="checkReady()" />
       </div>
       <div class="field">
+        <label>Description <span style="color:#bbb;font-weight:400;">(optional)</span></label>
+        <textarea id="artDesc" placeholder="Tell us about your artwork! What inspired it?" rows="3"
+          style="width:100%;padding:13px 16px;border:2.5px solid #e0e0e0;border-radius:12px;font-family:'Nunito',sans-serif;font-size:1rem;outline:none;resize:vertical;"
+          onfocus="this.style.borderColor='#feca57'" onblur="this.style.borderColor='#e0e0e0'"></textarea>
+      </div>
+      <div class="field">
         <label>Price (USD)</label>
         <input type="number" id="artPrice" placeholder="e.g. 5.00" min="0" step="0.01" oninput="checkReady()" />
       </div>
@@ -186,6 +192,12 @@
       document.getElementById('submitBtn').disabled = !(selectedFile && name && price);
     }
 
+    const BAD_WORDS = ['fuck','shit','ass','bitch','cunt','dick','cock','pussy','bastard','damn','hell','crap','piss','slut','whore','nigger','nigga','faggot','retard','rape','kill yourself','kys','sex','porn','nude','naked'];
+    function contentFilter(text) {
+      const lower = text.toLowerCase().replace(/[^a-z0-9\s]/g,'');
+      return BAD_WORDS.find(w => lower.includes(w)) || null;
+    }
+
     function showMsg(type, text) {
       const el = document.getElementById('msg');
       el.className = 'msg ' + type; el.textContent = text; el.style.display = 'block';
@@ -193,8 +205,12 @@
 
     async function submitArt() {
       const name  = document.getElementById('artName').value.trim();
+      const desc  = document.getElementById('artDesc').value.trim();
       const price = parseFloat(document.getElementById('artPrice').value).toFixed(2);
       const btn   = document.getElementById('submitBtn');
+
+      const flagged = contentFilter(name) || contentFilter(desc);
+      if (flagged) { showMsg('error', '⚠️ Please remove inappropriate language before submitting.'); return; }
 
       btn.disabled = true;
       document.getElementById('progressBar').style.display = 'block';
@@ -220,7 +236,8 @@
           p_code: kidSession.code,
           p_name: name,
           p_price: parseFloat(price),
-          p_image_url: urlData.publicUrl
+          p_image_url: urlData.publicUrl,
+          p_description: desc || ''
         });
 
         if (rpcErr) throw rpcErr;
@@ -231,6 +248,7 @@
         btn.textContent = 'Submitted!';
 
         document.getElementById('artName').value = '';
+        document.getElementById('artDesc').value = '';
         document.getElementById('artPrice').value = '';
         document.getElementById('imgPreview').style.display = 'none';
         selectedFile = null;

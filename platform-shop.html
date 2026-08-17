@@ -189,7 +189,9 @@
       <img class="modal-img" id="modalImg" src="" alt="" />
       <div class="modal-body">
         <h2 class="modal-title" id="modalTitle"></h2>
+        <p id="modalArtist" style="font-size:0.85rem;color:#aaa;margin-bottom:4px;"></p>
         <p class="modal-price" id="modalPrice"></p>
+        <p id="modalDesc" style="color:#666;font-size:0.95rem;margin-bottom:20px;line-height:1.6;display:none;"></p>
         <div class="modal-actions">
           <button class="btn-buy" onclick="openBuyForm()">🛒 I Want This!</button>
           <button class="btn-close" onclick="closePreview()">Close</button>
@@ -318,6 +320,11 @@
       document.getElementById('modalImg').src = art.image_url;
       document.getElementById('modalTitle').textContent = art.name;
       document.getElementById('modalPrice').textContent = '$' + art.price;
+      const artistEl = document.getElementById('modalArtist');
+      artistEl.textContent = art.kids?.name ? `🎨 by ${art.kids.name}` : '';
+      const descEl = document.getElementById('modalDesc');
+      if (art.description) { descEl.textContent = art.description; descEl.style.display = 'block'; }
+      else { descEl.style.display = 'none'; }
       document.getElementById('overlay').classList.add('open');
     }
     function closePreview(e) {
