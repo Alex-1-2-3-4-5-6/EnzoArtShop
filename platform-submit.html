@@ -107,7 +107,7 @@
       <img id="imgPreview" src="" alt="preview" />
 
       <div class="field">
-        <label>Which kid is this for?</label>
+        <label>Who is this for?</label>
         <select id="kidSelect">
           <option value="">Loading kids...</option>
         </select>
@@ -154,11 +154,7 @@
     async function loadKids() {
       const { data } = await sb.from('kids').select('*').eq('parent_id', currentUser.id);
       const sel = document.getElementById('kidSelect');
-      if (!data || data.length === 0) {
-        sel.innerHTML = '<option value="">No kids yet — add one in the dashboard</option>';
-        return;
-      }
-      sel.innerHTML = data.map(k => `<option value="${k.id}">${k.name} (age ${k.age})</option>`).join('');
+      sel.innerHTML = `<option value="parent">Me (parent)</option>` + (data || []).map(k => `<option value="${k.id}">${k.name}</option>`).join('');
     }
 
     // Drag and drop
@@ -206,10 +202,9 @@
       const name   = document.getElementById('artName').value.trim();
       const desc   = document.getElementById('artDesc').value.trim();
       const price  = parseFloat(document.getElementById('artPrice').value).toFixed(2);
-      const kidId  = document.getElementById('kidSelect').value;
+      const kidVal = document.getElementById('kidSelect').value;
+      const kidId  = kidVal === 'parent' ? null : kidVal;
       const btn    = document.getElementById('submitBtn');
-
-      if (!kidId) { showMsg('error', 'Please select a kid first.'); return; }
 
       const flagged = contentFilter(name) || contentFilter(desc);
       if (flagged) { showMsg('error', `⚠️ Please remove inappropriate language before submitting.`); return; }
