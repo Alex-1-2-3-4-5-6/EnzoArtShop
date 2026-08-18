@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
+    header {
+      background:white; padding:16px 32px;
+      display:flex; align-items:center; gap:16px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.07);
+    }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.4rem; color:#ff6b6b; flex:1; }
+    .logo span { color:#a29bfe; }
+    .back-btn {
+      background:#f0f0f0; border:none; border-radius:50px;
+      padding:8px 18px; font-family:'Fredoka One',cursive;
+      font-size:0.9rem; cursor:pointer; color:#888; text-decoration:none;
+    }
+    .admin-badge {
+      background:#ff6b6b; color:white; border-radius:50px;
+      padding:5px 14px; font-family:'Fredoka One',cursive; font-size:0.85rem;
+    }
+    .container { max-width:960px; margin:36px auto; padding:0 20px 80px; }
+    .page-title { font-family:'Fredoka One',cursive; font-size:1.8rem; color:#333; margin-bottom:8px; }
+    .page-sub { color:#aaa; font-size:0.9rem; margin-bottom:28px; }
+
+    .filter-bar {
+      display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; align-items:center;
+    }
+    .filter-bar input {
+      flex:1; min-width:200px; padding:11px 16px; border:2.5px solid #e0e0e0;
+      border-radius:12px; font-family:'Nunito',sans-serif; font-size:0.95rem; outline:none;
+    }
+    .filter-bar input:focus { border-color:#ff6b6b; }
+    .filter-btn {
+      border:none; border-radius:50px; padding:10px 18px;
+      font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer;
+      transition:all 0.2s;
+    }
+    .filter-btn.active { background:#ff6b6b; color:white; }
+    .filter-btn:not(.active) { background:#f0f0f0; color:#888; }
+
+    .stats-row {
+      display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;
+    }
+    .stat-chip {
+      background:white; border-radius:16px; padding:14px 20px;
+      box-shadow:0 2px 10px rgba(0,0,0,0.06); text-align:center; flex:1; min-width:100px;
+    }
+    .stat-chip .num { font-family:'Fredoka One',cursive; font-size:1.8rem; color:#ff6b6b; }
+    .stat-chip .lbl { font-size:0.8rem; color:#aaa; margin-top:2px; }
+
+    .art-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px;
+    }
+    .art-card {
+      background:white; border-radius:20px; overflow:hidden;
+      box-shadow:0 4px 16px rgba(0,0,0,0.07); border:2px solid transparent;
+    }
+    .art-card.pending { border-color:#feca57; }
+    .art-card.approved { border-color:#55efc4; }
+    .art-card.rejected { border-color:#ff6b6b; opacity:0.6; }
+    .art-card img { width:100%; height:180px; object-fit:cover; background:#f8f8f8; display:block; }
+    .art-card-body { padding:14px 16px 16px; }
+    .art-name { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; margin-bottom:2px; }
+    .art-meta { font-size:0.78rem; color:#aaa; margin-bottom:10px; line-height:1.5; }
+    .status-pill {
+      display:inline-block; border-radius:50px; padding:3px 12px;
+      font-family:'Fredoka One',cursive; font-size:0.75rem; margin-bottom:10px;
+    }
+    .status-pill.pending { background:#fff3cd; color:#856404; }
+    .status-pill.approved { background:#d4edda; color:#155724; }
+    .status-pill.rejected { background:#ffd6d6; color:#c0392b; }
+    .card-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .btn-approve {
+      background:#d4edda; border:none; border-radius:50px; padding:6px 14px;
+      color:#155724; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer;
+    }
+    .btn-reject {
+      background:#ffd6d6; border:none; border-radius:50px; padding:6px 14px;
+      color:#c0392b; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer;
+    }
+    .btn-delete {
+      background:#2d2d2d; border:none; border-radius:50px; padding:6px 14px;
+      color:white; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer;
+      margin-left:auto;
+    }
+    .empty { text-align:center; padding:60px 20px; font-family:'Fredoka One',cursive; font-size:1.2rem; color:#ccc; }
+    .toast {
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+      background:#2d2d2d; color:white; padding:12px 24px; border-radius:50px;
+      font-family:'Fredoka One',cursive; font-size:0.95rem;
+      opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:999;
+    }
+    .toast.show { opacity:1; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">Little He<span>art</span>works</div>
+    <span class="admin-badge">🔐 Admin</span>
+    <a href="platform-shop.html" class="back-btn">← Shop</a>
+  </header>
+
+  <div class="container">
+    <p class="page-title">🛠️ Admin Panel</p>
+    <p class="page-sub">Manage all artwork submissions across the platform.</p>
+
+    <div class="stats-row">
+      <div class="stat-chip"><div class="num" id="statTotal">—</div><div class="lbl">Total</div></div>
+      <div class="stat-chip"><div class="num" id="statPending">—</div><div class="lbl">Pending</div></div>
+      <div class="stat-chip"><div class="num" id="statApproved">—</div><div class="lbl">Approved</div></div>
+      <div class="stat-chip"><div class="num" id="statRejected">—</div><div class="lbl">Rejected</div></div>
+    </div>
+
+    <div class="filter-bar">
+      <input type="text" id="searchInput" placeholder="Search by title, kid, or parent..." oninput="renderGrid()" />
+      <button class="filter-btn active" id="btnAll" onclick="setStatus('all')">All</button>
+      <button class="filter-btn" id="btnPending" onclick="setStatus('pending')">⏳ Pending</button>
+      <button class="filter-btn" id="btnApproved" onclick="setStatus('approved')">✅ Approved</button>
+      <button class="filter-btn" id="btnRejected" onclick="setStatus('rejected')">❌ Rejected</button>
+    </div>
+
+    <div class="art-grid" id="artGrid"></div>
+    <div class="empty" id="emptyState" style="display:none">No artworks found.</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const ADMIN_EMAIL = 'pilotal2020@gmail.com';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let allArtworks = [];
+    let statusFilter = 'all';
+
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user || user.email !== ADMIN_EMAIL) {
+        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Fredoka One,cursive;font-size:1.5rem;color:#ccc;">🔐 Access denied.</div>';
+        return;
+      }
+      loadArtworks();
+    }
+
+    async function loadArtworks() {
+      const { data } = await sb.from('artworks').select('*, kids(name)').order('created_at', { ascending: false });
+      allArtworks = data || [];
+      updateStats();
+      renderGrid();
+    }
+
+    function updateStats() {
+      document.getElementById('statTotal').textContent    = allArtworks.length;
+      document.getElementById('statPending').textContent  = allArtworks.filter(a => a.status === 'pending').length;
+      document.getElementById('statApproved').textContent = allArtworks.filter(a => a.status === 'approved').length;
+      document.getElementById('statRejected').textContent = allArtworks.filter(a => a.status === 'rejected').length;
+    }
+
+    function setStatus(s) {
+      statusFilter = s;
+      ['all','pending','approved','rejected'].forEach(k => {
+        document.getElementById('btn' + k.charAt(0).toUpperCase() + k.slice(1)).classList.toggle('active', k === s);
+      });
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const grid  = document.getElementById('artGrid');
+      const empty = document.getElementById('emptyState');
+
+      const filtered = allArtworks.filter(a => {
+        if (statusFilter !== 'all' && a.status !== statusFilter) return false;
+        if (!query) return true;
+        return (a.name || '').toLowerCase().includes(query) ||
+               (a.kids?.name || '').toLowerCase().includes(query) ||
+               (a.parent_name || '').toLowerCase().includes(query);
+      });
+
+      if (filtered.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+
+      grid.innerHTML = filtered.map(a => `
+        <div class="art-card ${a.status}" id="card-${a.id}">
+          <img src="${a.image_url}" alt="${a.name}" loading="lazy" />
+          <div class="art-card-body">
+            <span class="status-pill ${a.status}">${a.status}</span>
+            <p class="art-name">${a.name}</p>
+            <p class="art-meta">
+              $${a.price}
+              ${a.kids?.name ? `· 🧒 ${a.kids.name}` : ''}
+              ${a.parent_name ? `· 👨‍👩‍👧 ${a.parent_name}` : ''}
+              <br/>${new Date(a.created_at).toLocaleDateString()}
+              ${a.description ? `<br/><em>${a.description.slice(0,80)}${a.description.length>80?'…':''}</em>` : ''}
+            </p>
+            <div class="card-actions">
+              ${a.status !== 'approved' ? `<button class="btn-approve" onclick="setArtStatus('${a.id}','approved')">✅ Approve</button>` : ''}
+              ${a.status !== 'rejected' ? `<button class="btn-reject" onclick="setArtStatus('${a.id}','rejected')">❌ Reject</button>` : ''}
+              <button class="btn-delete" onclick="deleteArt('${a.id}','${a.image_url}')">🗑️</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function setArtStatus(id, status) {
+      const { error } = await sb.from('artworks').update({ status }).eq('id', id);
+      if (error) { showToast('❌ ' + error.message); return; }
+      allArtworks = allArtworks.map(a => a.id === id ? { ...a, status } : a);
+      updateStats();
+      renderGrid();
+      showToast(status === 'approved' ? '✅ Approved!' : '❌ Rejected');
+    }
+
+    async function deleteArt(id, imageUrl) {
+      if (!confirm('Permanently delete this artwork? This cannot be undone.')) return;
+      const { error } = await sb.from('artworks').delete().eq('id', id);
+      if (error) { showToast('❌ ' + error.message); return; }
+      allArtworks = allArtworks.filter(a => a.id !== id);
+      updateStats();
+      renderGrid();
+      showToast('🗑️ Deleted');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    init();
+  </script>
+</body>
+</html>
