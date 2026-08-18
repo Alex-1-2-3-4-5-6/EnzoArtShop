@@ -252,6 +252,7 @@
       <div class="kid-list" id="kidList"></div>
       <div class="add-kid-form">
         <input type="text" id="kidName" placeholder="Child's first name" />
+        <input type="text" id="kidPassword" placeholder="Password (optional)" />
         <button class="add-kid-btn" onclick="addKid()">+ Add Kid</button>
       </div>
       <div class="status-msg" id="kidStatus"></div>
@@ -390,23 +391,44 @@
             <span>🧒 ${k.name}</span>
             <button onclick="deleteKid('${k.id}')" style="margin-left:auto;">✕</button>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <span style="font-family:monospace;font-size:1rem;letter-spacing:2px;background:rgba(255,255,255,0.3);padding:4px 10px;border-radius:8px;">${k.code || '—'}</span>
             <button onclick="navigator.clipboard.writeText('${k.code}').then(()=>alert('Code copied!'))" style="background:rgba(255,255,255,0.3);border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:0.8rem;color:white;">📋 Copy</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px;">
+            <span style="font-size:0.78rem;color:rgba(255,255,255,0.7);">🔑 Password: ${k.kid_password ? '••••••' : 'none'}</span>
+            <button onclick="promptSetPassword('${k.id}')" style="background:rgba(255,255,255,0.3);border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:0.78rem;color:white;">${k.kid_password ? 'Change' : 'Set password'}</button>
+            ${k.kid_password ? `<button onclick="removePassword('${k.id}')" style="background:rgba(255,100,100,0.4);border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:0.78rem;color:white;">Remove</button>` : ''}
           </div>
         </div>
       `).join('');
     }
 
     async function addKid() {
-      const name = document.getElementById('kidName').value.trim();
-      const st   = document.getElementById('kidStatus');
+      const name     = document.getElementById('kidName').value.trim();
+      const password = document.getElementById('kidPassword').value.trim();
+      const st       = document.getElementById('kidStatus');
       if (!name) { showStatus(st,'error','Please enter a name.'); return; }
       const code = genKidCode();
-      const { error } = await sb.from('kids').insert({ parent_id: currentUser.id, name, code });
+      const { error } = await sb.from('kids').insert({ parent_id: currentUser.id, name, code, kid_password: password || null });
       if (error) { showStatus(st,'error',error.message); return; }
       document.getElementById('kidName').value = '';
+      document.getElementById('kidPassword').value = '';
       showStatus(st,'success',`✅ ${name} added! Share their code with them.`);
+      loadKids();
+    }
+
+    async function promptSetPassword(kidId) {
+      const pw = prompt('Set a password for this kid (leave blank to remove):');
+      if (pw === null) return;
+      const { error } = await sb.from('kids').update({ kid_password: pw.trim() || null }).eq('id', kidId);
+      if (error) { alert('Error: ' + error.message); return; }
+      loadKids();
+    }
+
+    async function removePassword(kidId) {
+      if (!confirm('Remove this kid\'s password?')) return;
+      await sb.from('kids').update({ kid_password: null }).eq('id', kidId);
       loadKids();
     }
 

@@ -173,10 +173,11 @@
 
   <div class="search-wrap">
     <input id="searchInput" type="text" placeholder="Search for art... 🔍" oninput="renderGrid()" />
-    <div style="display:flex;gap:8px;margin-top:10px;justify-content:center;">
+    <div style="display:flex;gap:8px;margin-top:10px;justify-content:center;flex-wrap:wrap;align-items:center;">
       <button id="filterArt" onclick="setFilter('art')" style="background:#ff6b6b;color:white;border:none;border-radius:50px;padding:7px 18px;font-family:'Fredoka One',cursive;font-size:0.9rem;cursor:pointer;">🖼️ Art</button>
       <button id="filterCreator" onclick="setFilter('creator')" style="background:#f0f0f0;color:#888;border:none;border-radius:50px;padding:7px 18px;font-family:'Fredoka One',cursive;font-size:0.9rem;cursor:pointer;">🧒 Kid</button>
       <button id="filterParent" onclick="setFilter('parent')" style="background:#f0f0f0;color:#888;border:none;border-radius:50px;padding:7px 18px;font-family:'Fredoka One',cursive;font-size:0.9rem;cursor:pointer;">👨‍👩‍👧 Parent</button>
+      <span id="aiStatus" style="font-size:0.78rem;color:#aaa;font-family:'Nunito',sans-serif;">🤖 Loading smart search...</span>
     </div>
   </div>
 
@@ -267,6 +268,42 @@
     let currentUser = null;
     let searchFilter = 'art';
 
+    // ── AI / Transformers.js ──
+    let embeddingPipeline = null;
+    let artEmbeddings = {}; // artwork id → Float32Array
+
+    async function loadAI() {
+      try {
+        const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2');
+        embeddingPipeline = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+        document.getElementById('aiStatus').textContent = '✨ Smart search ready';
+        await buildEmbeddings();
+        renderRecommendations();
+      } catch(e) {
+        document.getElementById('aiStatus').textContent = '';
+      }
+    }
+
+    async function embed(text) {
+      const out = await embeddingPipeline(text, { pooling: 'mean', normalize: true });
+      return Array.from(out.data);
+    }
+
+    function cosineSim(a, b) {
+      let dot = 0;
+      for (let i = 0; i < a.length; i++) dot += a[i] * b[i];
+      return dot;
+    }
+
+    async function buildEmbeddings() {
+      for (const art of allArtworks) {
+        if (!artEmbeddings[art.id]) {
+          const text = [art.name, art.description || '', art.kids?.name || ''].join(' ');
+          artEmbeddings[art.id] = await embed(text);
+        }
+      }
+    }
+
     function setFilter(mode) {
       searchFilter = mode;
       const btns = { art: '#filterArt', creator: '#filterCreator', parent: '#filterParent' };
@@ -310,6 +347,7 @@
       allArtworks = data || [];
       renderGrid();
       renderRecommendations();
+      loadAI();
     }
 
     function renderGrid() {
@@ -328,23 +366,52 @@
         if (searchFilter === 'parent') return (a.parent_name || '').toLowerCase().includes(query);
         return a.name.toLowerCase().includes(query) || (a.description || '').toLowerCase().includes(query);
       });
+
+      // AI semantic re-ranking: if model ready and searching art, sort by similarity
+      if (query && searchFilter === 'art' && embeddingPipeline) {
+        renderGridAI(query, filtered, label);
+        return;
+      }
       label.style.display = 'block';
       label.textContent = query ? `${filtered.length} result${filtered.length!==1?'s':''} for "${query}" ✨` : `All Artworks ✨ (${filtered.length})`;
 
-      filtered.forEach(art => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <img class="card-img" src="${art.image_url}" alt="${art.name}" loading="lazy" />
-          <div class="card-body">
-            <p class="card-title">${art.name}</p>
-            ${art.kids?.name ? `<p style="font-size:0.8rem;color:#aaa;margin-bottom:4px;">🎨 by ${art.kids.name}</p>` : ''}
-            <p class="card-price">$${art.price}</p>
-            <button class="card-btn" onclick="openPreview('${art.id}')">👀 Preview & Buy</button>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
+      filtered.forEach(art => grid.appendChild(makeCard(art)));
+    }
+
+    async function renderGridAI(query, fallback, label) {
+      const grid = document.getElementById('grid');
+      const empty = document.getElementById('emptyState');
+      label.style.display = 'block';
+      label.textContent = `Searching... 🤖`;
+      try {
+        const qEmb = await embed(query);
+        const scored = allArtworks
+          .map(a => ({ art: a, score: artEmbeddings[a.id] ? cosineSim(qEmb, artEmbeddings[a.id]) : 0 }))
+          .filter(x => x.score > 0.15)
+          .sort((a, b) => b.score - a.score);
+        const results = scored.length ? scored.map(x => x.art) : fallback;
+        label.textContent = `${results.length} result${results.length!==1?'s':''} for "${query}" ✨`;
+        if (results.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+        empty.style.display = 'none';
+        grid.innerHTML = '';
+        results.forEach(art => grid.appendChild(makeCard(art)));
+      } catch(e) {
+        // fallback to keyword results already in DOM
+      }
+    }
+
+    function makeCard(art) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <img class="card-img" src="${art.image_url}" alt="${art.name}" loading="lazy" />
+        <div class="card-body">
+          <p class="card-title">${art.name}</p>
+          ${art.kids?.name ? `<p style="font-size:0.8rem;color:#aaa;margin-bottom:4px;">🎨 by ${art.kids.name}</p>` : ''}
+          <p class="card-price">$${art.price}</p>
+          <button class="card-btn" onclick="openPreview('${art.id}')">👀 Preview & Buy</button>
+        </div>`;
+      return card;
     }
 
     function getWords(art) {
@@ -363,15 +430,30 @@
       const recLabel = document.getElementById('recLabel');
       if (history.length === 0) { recGrid.style.display='none'; recLabel.style.display='none'; return; }
 
-      const viewedWords = new Set(
-        history.flatMap(id => { const a = allArtworks.find(x => x.id === id); return a ? getWords(a) : []; })
-      );
-      const scores = allArtworks
-        .filter(a => !history.includes(a.id))
-        .map(a => ({ art: a, score: getWords(a).filter(w => viewedWords.has(w)).length }))
-        .filter(x => x.score > 0)
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 4);
+      let scores;
+
+      if (embeddingPipeline && Object.keys(artEmbeddings).length > 0) {
+        // AI: average embedding of viewed artworks, find closest unseen
+        const viewedEmbs = history.map(id => artEmbeddings[id]).filter(Boolean);
+        if (viewedEmbs.length === 0) { recGrid.style.display='none'; recLabel.style.display='none'; return; }
+        const avgEmb = viewedEmbs[0].map((_, i) => viewedEmbs.reduce((s, e) => s + e[i], 0) / viewedEmbs.length);
+        scores = allArtworks
+          .filter(a => !history.includes(a.id) && artEmbeddings[a.id])
+          .map(a => ({ art: a, score: cosineSim(avgEmb, artEmbeddings[a.id]) }))
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 4);
+      } else {
+        // Fallback: word overlap
+        const viewedWords = new Set(
+          history.flatMap(id => { const a = allArtworks.find(x => x.id === id); return a ? getWords(a) : []; })
+        );
+        scores = allArtworks
+          .filter(a => !history.includes(a.id))
+          .map(a => ({ art: a, score: getWords(a).filter(w => viewedWords.has(w)).length }))
+          .filter(x => x.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 4);
+      }
 
       if (scores.length === 0) { recGrid.style.display='none'; recLabel.style.display='none'; return; }
       recLabel.style.display = 'block';

@@ -96,8 +96,10 @@
       <h2 style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#333;margin-bottom:8px;">Enter Your Code</h2>
       <p style="color:#aaa;font-size:0.9rem;margin-bottom:22px;">Ask your parent for your 10-digit kid code</p>
       <input id="kidCodeInput" type="text" inputmode="numeric" maxlength="10" placeholder="0000000000"
-        style="width:100%;padding:14px;border:2.5px solid #e0e0e0;border-radius:12px;font-size:1.3rem;text-align:center;letter-spacing:4px;font-family:'Fredoka One',cursive;outline:none;margin-bottom:14px;"
+        style="width:100%;padding:14px;border:2.5px solid #e0e0e0;border-radius:12px;font-size:1.3rem;text-align:center;letter-spacing:4px;font-family:'Fredoka One',cursive;outline:none;margin-bottom:10px;"
         oninput="this.value=this.value.replace(/\D/g,'')" />
+      <input id="kidPasswordInput" type="password" placeholder="Password (if you have one)"
+        style="width:100%;padding:13px;border:2.5px solid #e0e0e0;border-radius:12px;font-size:1rem;font-family:'Nunito',sans-serif;outline:none;margin-bottom:14px;" />
       <div id="kidCodeMsg" style="display:none;margin-bottom:14px;padding:10px;border-radius:10px;font-weight:700;font-size:0.88rem;"></div>
       <button onclick="enterKidCode()" style="width:100%;background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.1rem;cursor:pointer;margin-bottom:10px;">Let's Go! 🎨</button>
       <button onclick="closeKidModal()" style="background:none;border:none;color:#aaa;font-family:'Nunito',sans-serif;font-size:0.9rem;cursor:pointer;">Cancel</button>
@@ -137,21 +139,24 @@
     function closeKidModal() {
       document.getElementById('kidModalBg').style.display = 'none';
       document.getElementById('kidCodeInput').value = '';
+      document.getElementById('kidPasswordInput').value = '';
       document.getElementById('kidCodeMsg').style.display = 'none';
     }
     async function enterKidCode() {
-      const code = document.getElementById('kidCodeInput').value.trim();
-      const msg  = document.getElementById('kidCodeMsg');
+      const code     = document.getElementById('kidCodeInput').value.trim();
+      const password = document.getElementById('kidPasswordInput').value;
+      const msg      = document.getElementById('kidCodeMsg');
       if (code.length !== 10) {
         msg.style.cssText = 'display:block;background:#ffd6d6;color:#c0392b;padding:10px;border-radius:10px;font-weight:700;font-size:0.88rem;margin-bottom:14px;';
         msg.textContent = 'Please enter a 10-digit code.'; return;
       }
       msg.style.cssText = 'display:block;background:#fff3cd;color:#856404;padding:10px;border-radius:10px;font-weight:700;font-size:0.88rem;margin-bottom:14px;';
       msg.textContent = '⏳ Checking code...';
-      const { data, error } = await sb.rpc('validate_kid_code', { p_code: code });
+      const { data, error } = await sb.rpc('validate_kid_code', { p_code: code, p_password: password });
       if (error || data?.error) {
         msg.style.cssText = 'display:block;background:#ffd6d6;color:#c0392b;padding:10px;border-radius:10px;font-weight:700;font-size:0.88rem;margin-bottom:14px;';
-        msg.textContent = '❌ Invalid code. Ask your parent to check their dashboard.'; return;
+        const errMsg = data?.error === 'Wrong password' ? '❌ Wrong password.' : '❌ Invalid code. Ask your parent to check their dashboard.';
+        msg.textContent = errMsg; return;
       }
       localStorage.setItem('kidSession', JSON.stringify({ kid_id: data.kid_id, kid_name: data.kid_name, parent_id: data.parent_id, code }));
       window.location.href = 'platform-kid-submit.html';
