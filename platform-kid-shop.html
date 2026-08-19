@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browse Art – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#fff9f0; font-family:'Nunito',sans-serif; }
+
+    header {
+      background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      padding:16px 24px; display:flex; align-items:center; gap:12px;
+      box-shadow:0 4px 20px rgba(162,155,254,0.3);
+    }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:white; flex:1; }
+    .kid-badge {
+      display:flex; align-items:center; gap:8px;
+      background:rgba(255,255,255,0.2); border-radius:50px; padding:7px 16px;
+      font-family:'Fredoka One',cursive; font-size:0.9rem; color:white;
+    }
+    .nav-btn {
+      background:white; border:none; border-radius:50px; padding:8px 18px;
+      font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer;
+      color:#a29bfe; text-decoration:none; transition:transform 0.2s;
+    }
+    .nav-btn:hover { transform:scale(1.05); }
+    .switch-btn {
+      background:rgba(255,255,255,0.2); border:2px solid rgba(255,255,255,0.5);
+      border-radius:50px; padding:7px 14px; font-family:'Fredoka One',cursive;
+      font-size:0.82rem; color:white; cursor:pointer;
+    }
+
+    .limit-bar {
+      max-width:960px; margin:20px auto 0; padding:0 20px;
+      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    }
+    .limit-pill {
+      background:white; border-radius:50px; padding:8px 20px;
+      box-shadow:0 2px 10px rgba(0,0,0,0.07);
+      font-family:'Fredoka One',cursive; font-size:0.9rem; color:#a29bfe;
+    }
+
+    .search-wrap { max-width:700px; margin:20px auto 0; padding:0 20px; }
+    .search-wrap input {
+      width:100%; padding:14px 22px; border-radius:50px;
+      border:3px solid #a29bfe; font-family:'Nunito',sans-serif;
+      font-size:1rem; outline:none; box-shadow:0 4px 15px rgba(162,155,254,0.2);
+    }
+    .search-wrap input:focus { border-color:#ff9ff3; }
+
+    .section-label {
+      max-width:960px; margin:20px auto 12px; padding:0 20px;
+      font-family:'Fredoka One',cursive; font-size:1.3rem; color:#444;
+    }
+    .grid {
+      max-width:960px; margin:0 auto 60px; padding:0 20px;
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:22px;
+    }
+    .card {
+      background:white; border-radius:22px; overflow:hidden;
+      box-shadow:0 4px 16px rgba(0,0,0,0.07); transition:transform 0.25s,box-shadow 0.25s;
+      border:3px solid transparent;
+    }
+    .card:hover { transform:translateY(-5px); box-shadow:0 12px 30px rgba(0,0,0,0.12); border-color:#a29bfe; }
+    .card img { width:100%; height:180px; object-fit:cover; background:#f8f8f8; display:block; }
+    .card-body { padding:14px 16px 18px; }
+    .card-title { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; margin-bottom:3px; }
+    .card-artist { font-size:0.78rem; color:#aaa; margin-bottom:6px; }
+    .card-price { font-family:'Fredoka One',cursive; font-size:1.1rem; color:#ff6b6b; margin-bottom:12px; }
+    .card-btn {
+      display:block; border:none; border-radius:50px; padding:9px 0; width:100%;
+      font-family:'Fredoka One',cursive; font-size:0.95rem; cursor:pointer; transition:opacity 0.2s;
+      color:white;
+    }
+    .card-btn.request { background:linear-gradient(135deg,#a29bfe,#ff9ff3); }
+    .card-btn.requested { background:#eee; color:#aaa; cursor:not-allowed; }
+    .card-btn.own { background:#feca57; color:white; cursor:not-allowed; }
+
+    /* Modal */
+    .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:100; align-items:center; justify-content:center; padding:20px; }
+    .overlay.open { display:flex; }
+    .modal {
+      background:white; border-radius:28px; width:100%; max-width:480px;
+      max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3);
+      animation:popIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    @keyframes popIn { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
+    .modal img { width:100%; height:auto; display:block; border-radius:28px 28px 0 0; background:#f8f8f8; }
+    .modal-body { padding:20px 24px 28px; }
+    .modal-title { font-family:'Fredoka One',cursive; font-size:1.6rem; color:#333; margin-bottom:4px; }
+    .modal-artist { font-size:0.85rem; color:#aaa; margin-bottom:6px; }
+    .modal-price { font-family:'Fredoka One',cursive; font-size:1.8rem; color:#ff6b6b; margin-bottom:10px; }
+    .modal-desc { color:#666; font-size:0.92rem; line-height:1.6; margin-bottom:18px; }
+    .modal-actions { display:flex; gap:10px; }
+    .btn-request {
+      flex:1; background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      border:none; border-radius:50px; padding:14px; color:white;
+      font-family:'Fredoka One',cursive; font-size:1.05rem; cursor:pointer; transition:transform 0.2s;
+    }
+    .btn-request:hover { transform:scale(1.03); }
+    .btn-request:disabled { background:#eee; color:#aaa; cursor:not-allowed; transform:none; }
+    .btn-close {
+      background:#f0f0f0; border:none; border-radius:50px; padding:14px 20px;
+      font-family:'Fredoka One',cursive; font-size:0.95rem; cursor:pointer; color:#888;
+    }
+    .toast {
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+      background:#333; color:white; padding:12px 24px; border-radius:50px;
+      font-family:'Fredoka One',cursive; font-size:0.95rem;
+      opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:999;
+    }
+    .toast.show { opacity:1; }
+    .empty { text-align:center; padding:80px 20px; font-family:'Fredoka One',cursive; font-size:1.2rem; color:#ccc; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">🎨 Little He<span style="color:#fff176;">art</span>works</div>
+    <div class="kid-badge" id="kidBadge">🧒 ...</div>
+    <a href="platform-kid-submit.html" class="nav-btn">✏️ Submit Art</a>
+    <button class="switch-btn" onclick="switchKid()">Switch</button>
+  </header>
+
+  <div class="limit-bar">
+    <div class="limit-pill" id="limitPill">🛒 Loading...</div>
+  </div>
+
+  <div class="search-wrap">
+    <input id="searchInput" type="text" placeholder="Search for art... 🔍" oninput="renderGrid()" />
+  </div>
+
+  <p class="section-label" id="sectionLabel"></p>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="emptyState" style="display:none">No art yet — check back soon! 🖌️</div>
+
+  <!-- Preview modal -->
+  <div class="overlay" id="overlay" onclick="closeModal(event)">
+    <div class="modal">
+      <img id="modalImg" src="" alt="" />
+      <div class="modal-body">
+        <h2 class="modal-title" id="modalTitle"></h2>
+        <p class="modal-artist" id="modalArtist"></p>
+        <p class="modal-price" id="modalPrice"></p>
+        <p class="modal-desc" id="modalDesc" style="display:none"></p>
+        <div class="modal-actions">
+          <button class="btn-request" id="modalRequestBtn" onclick="requestArt()">🛒 Request This!</button>
+          <button class="btn-close" onclick="closeModal()">Close</button>
+        </div>
+        <div id="modalMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:12px;font-weight:700;font-size:0.88rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let kidSession = null;
+    let allArtworks = [];
+    let requestedIds = new Set();
+    let todayCount = 0;
+    let dailyLimit = null;
+    let currentArtId = null;
+
+    async function init() {
+      const raw = localStorage.getItem('kidSession');
+      if (!raw) { window.location.href = 'platform-index.html'; return; }
+      kidSession = JSON.parse(raw);
+      document.getElementById('kidBadge').textContent = '🧒 ' + kidSession.kid_name;
+      await Promise.all([loadArtworks(), loadKidInfo()]);
+    }
+
+    async function loadKidInfo() {
+      // Load daily limit and today's request count via parent auth won't work for anon
+      // Instead fetch kid info via RPC or direct query (kids are readable via anon if policy allows)
+      // We'll track requests made this session in localStorage
+      const sessionRequests = JSON.parse(localStorage.getItem('kidRequests_' + kidSession.kid_id) || '{"date":"","ids":[]}');
+      const today = new Date().toDateString();
+      if (sessionRequests.date !== today) {
+        sessionRequests.date = today;
+        sessionRequests.ids = [];
+        localStorage.setItem('kidRequests_' + kidSession.kid_id, JSON.stringify(sessionRequests));
+      }
+      requestedIds = new Set(sessionRequests.ids);
+      todayCount = sessionRequests.ids.length;
+
+      // Fetch daily limit from kids table (need anon read policy on kids, or use RPC)
+      // We'll store it when we validate the code — update validate_kid_code to return it
+      dailyLimit = kidSession.daily_limit ?? null;
+      updateLimitPill();
+    }
+
+    function updateLimitPill() {
+      const pill = document.getElementById('limitPill');
+      if (dailyLimit === null || dailyLimit === 0) {
+        pill.textContent = `🛒 ${todayCount} request${todayCount !== 1 ? 's' : ''} made today`;
+      } else {
+        pill.textContent = `🛒 ${todayCount} / ${dailyLimit} requests used today`;
+        pill.style.color = todayCount >= dailyLimit ? '#ff6b6b' : '#a29bfe';
+      }
+    }
+
+    async function loadArtworks() {
+      const { data } = await sb.from('artworks').select('*, kids(name)').eq('status','approved').order('created_at',{ascending:false});
+      allArtworks = data || [];
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const grid  = document.getElementById('grid');
+      const label = document.getElementById('sectionLabel');
+      const empty = document.getElementById('emptyState');
+      grid.innerHTML = '';
+
+      const filtered = allArtworks.filter(a =>
+        !query || a.name.toLowerCase().includes(query) || (a.description||'').toLowerCase().includes(query)
+      );
+
+      label.style.display = 'block';
+      label.textContent = query ? `${filtered.length} result${filtered.length!==1?'s':''} for "${query}" ✨` : `All Artworks ✨ (${filtered.length})`;
+
+      if (filtered.length === 0) { empty.style.display='block'; grid.innerHTML=''; return; }
+      empty.style.display = 'none';
+
+      const atLimit = dailyLimit !== null && dailyLimit > 0 && todayCount >= dailyLimit;
+
+      filtered.forEach(art => {
+        const isOwn = art.kid_id === kidSession.kid_id;
+        const isRequested = requestedIds.has(art.id);
+        let btnClass = 'request', btnText = '🛒 Request This', btnDisabled = '';
+        if (isOwn) { btnClass = 'own'; btnText = '🎨 Your Art'; btnDisabled = 'disabled'; }
+        else if (isRequested) { btnClass = 'requested'; btnText = '✅ Requested'; btnDisabled = 'disabled'; }
+        else if (atLimit) { btnClass = 'requested'; btnText = '🚫 Limit Reached'; btnDisabled = 'disabled'; }
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${art.image_url}" alt="${art.name}" loading="lazy" onclick="openModal('${art.id}')" style="cursor:pointer;" />
+          <div class="card-body">
+            <p class="card-title">${art.name}</p>
+            ${art.kids?.name ? `<p class="card-artist">🎨 by ${art.kids.name}</p>` : ''}
+            <p class="card-price">$${art.price}</p>
+            <button class="card-btn ${btnClass}" ${btnDisabled} onclick="openModal('${art.id}')">${btnText}</button>
+          </div>`;
+        grid.appendChild(card);
+      });
+    }
+
+    function openModal(id) {
+      currentArtId = id;
+      const art = allArtworks.find(a => a.id === id);
+      document.getElementById('modalImg').src = art.image_url;
+      document.getElementById('modalTitle').textContent = art.name;
+      document.getElementById('modalPrice').textContent = '$' + art.price;
+      const artist = [art.kids?.name ? `🧒 by ${art.kids.name}` : '', art.parent_name ? `👨‍👩‍👧 ${art.parent_name}` : ''].filter(Boolean).join(' · ');
+      document.getElementById('modalArtist').textContent = artist;
+      const descEl = document.getElementById('modalDesc');
+      if (art.description) { descEl.textContent = art.description; descEl.style.display = 'block'; }
+      else { descEl.style.display = 'none'; }
+
+      const btn = document.getElementById('modalRequestBtn');
+      const atLimit = dailyLimit !== null && dailyLimit > 0 && todayCount >= dailyLimit;
+      const isOwn = art.kid_id === kidSession.kid_id;
+      const isRequested = requestedIds.has(id);
+
+      if (isOwn) { btn.textContent = '🎨 This is your art!'; btn.disabled = true; }
+      else if (isRequested) { btn.textContent = '✅ Already requested'; btn.disabled = true; }
+      else if (atLimit) { btn.textContent = '🚫 Daily limit reached'; btn.disabled = true; }
+      else { btn.textContent = '🛒 Request This!'; btn.disabled = false; }
+
+      document.getElementById('modalMsg').style.display = 'none';
+      document.getElementById('overlay').classList.add('open');
+    }
+
+    function closeModal(e) {
+      if (!e || e.target === document.getElementById('overlay'))
+        document.getElementById('overlay').classList.remove('open');
+    }
+
+    async function requestArt() {
+      const btn = document.getElementById('modalRequestBtn');
+      btn.disabled = true; btn.textContent = '⏳ Sending...';
+
+      const { data, error } = await sb.rpc('request_art_as_kid', {
+        p_code: kidSession.code,
+        p_artwork_id: currentArtId
+      });
+
+      const msgEl = document.getElementById('modalMsg');
+      if (error || data?.error) {
+        const errMap = { limit: '🚫 You\'ve reached your daily request limit!', already: '✅ You already requested this.' };
+        const msg = errMap[data?.error] || '❌ Something went wrong.';
+        msgEl.style.cssText = 'display:block;background:#ffd6d6;color:#c0392b;margin-top:12px;padding:10px 14px;border-radius:12px;font-weight:700;font-size:0.88rem;';
+        msgEl.textContent = msg;
+        btn.disabled = false; btn.textContent = '🛒 Request This!';
+        return;
+      }
+
+      // Track locally
+      const sessionRequests = JSON.parse(localStorage.getItem('kidRequests_' + kidSession.kid_id) || '{"date":"","ids":[]}');
+      sessionRequests.ids.push(currentArtId);
+      localStorage.setItem('kidRequests_' + kidSession.kid_id, JSON.stringify(sessionRequests));
+      requestedIds.add(currentArtId);
+      todayCount++;
+      updateLimitPill();
+
+      btn.textContent = '✅ Requested!';
+      msgEl.style.cssText = 'display:block;background:#d4edda;color:#155724;margin-top:12px;padding:10px 14px;border-radius:12px;font-weight:700;font-size:0.88rem;';
+      msgEl.textContent = '🎉 Request sent to your parent!';
+      renderGrid();
+    }
+
+    function switchKid() {
+      localStorage.removeItem('kidSession');
+      window.location.href = 'platform-index.html';
+    }
+
+    document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+    init();
+  </script>
+</body>
+</html>

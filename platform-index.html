@@ -159,7 +159,7 @@
         msg.textContent = errMsg; return;
       }
       localStorage.setItem('kidSession', JSON.stringify({ kid_id: data.kid_id, kid_name: data.kid_name, parent_id: data.parent_id, code }));
-      window.location.href = 'platform-kid-submit.html';
+      window.location.href = 'platform-kid-shop.html';
     }
     document.getElementById('kidCodeInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') enterKidCode(); });
 

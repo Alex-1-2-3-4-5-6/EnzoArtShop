@@ -258,6 +258,13 @@
       <div class="status-msg" id="kidStatus"></div>
     </div>
 
+    <!-- Kid art requests -->
+    <div class="panel">
+      <p class="panel-title">🛒 Art Requests from Kids</p>
+      <div id="requestsList"><p class="empty">Loading...</p></div>
+      <div class="status-msg" id="requestsStatus"></div>
+    </div>
+
     <!-- Pending approval -->
     <div class="panel">
       <p class="panel-title">⏳ Pending Your Approval</p>
@@ -301,6 +308,7 @@
       loadProfile();
       loadKids();
       loadArtworks();
+      loadRequests();
     }
 
     function loadProfile() {
@@ -393,6 +401,19 @@
             <button onclick="deleteKid('${k.id}')" style="background:#ffd6d6;border:none;border-radius:50px;padding:5px 12px;cursor:pointer;color:#c0392b;font-size:0.8rem;font-family:'Fredoka One',cursive;">Remove</button>
           </div>
 
+          <p style="font-size:0.75rem;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Daily Request Limit</p>
+          <div style="display:flex;align-items:center;gap:10px;background:#f0fff4;border-radius:14px;padding:12px 16px;margin-bottom:14px;">
+            <span style="font-size:0.9rem;color:#27ae60;flex:1;">🛒 ${k.daily_request_limit ?? 3} requests per day</span>
+            <button onclick="toggleLimitEdit('${k.id}')" style="background:#55efc4;border:none;border-radius:50px;padding:8px 16px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:white;">Change</button>
+          </div>
+          <div id="limit-edit-${k.id}" style="display:none;gap:8px;align-items:center;margin-bottom:14px;">
+            <input type="number" id="limit-input-${k.id}" value="${k.daily_request_limit ?? 3}" min="0" max="99"
+              style="width:80px;padding:10px 14px;border:2px solid #55efc4;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.95rem;outline:none;" />
+            <span style="font-size:0.85rem;color:#aaa;">requests/day (0 = unlimited)</span>
+            <button onclick="saveDailyLimit('${k.id}')" style="background:#55efc4;border:none;border-radius:50px;padding:10px 18px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:white;white-space:nowrap;">Save</button>
+            <button onclick="toggleLimitEdit('${k.id}')" style="background:#f0f0f0;border:none;border-radius:50px;padding:10px 14px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:#aaa;">Cancel</button>
+          </div>
+
           <p style="font-size:0.75rem;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">10-Digit Code</p>
           <div style="display:flex;align-items:center;gap:10px;background:#f4f0ff;border-radius:14px;padding:12px 16px;margin-bottom:14px;">
             <span style="font-family:monospace;font-size:1.2rem;letter-spacing:4px;color:#a29bfe;font-weight:700;flex:1;">${k.code || '—'}</span>
@@ -449,6 +470,51 @@
     async function removePassword(kidId) {
       await sb.from('kids').update({ kid_password: null }).eq('id', kidId);
       loadKids();
+    }
+
+    function toggleLimitEdit(kidId) {
+      const el = document.getElementById('limit-edit-' + kidId);
+      el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    async function saveDailyLimit(kidId) {
+      const val = parseInt(document.getElementById('limit-input-' + kidId).value);
+      const limit = isNaN(val) || val < 0 ? 3 : val;
+      const { error } = await sb.from('kids').update({ daily_request_limit: limit }).eq('id', kidId);
+      if (error) { alert('Error: ' + error.message); return; }
+      document.getElementById('limit-edit-' + kidId).style.display = 'none';
+      loadKids();
+    }
+
+    async function loadRequests() {
+      const { data } = await sb.from('art_requests')
+        .select('*, artworks(name, image_url, price), kids(name)')
+        .eq('parent_id', currentUser.id)
+        .eq('status', 'pending')
+        .order('requested_at', { ascending: false });
+
+      const el = document.getElementById('requestsList');
+      if (!data || data.length === 0) { el.innerHTML = '<p class="empty">No pending requests 🎉</p>'; return; }
+
+      el.innerHTML = data.map(r => `
+        <div class="pending-item">
+          <img src="${r.artworks?.image_url}" alt="${r.artworks?.name}" />
+          <div class="pending-info">
+            <p class="pending-name">${r.artworks?.name || 'Unknown'}</p>
+            <p class="pending-meta">$${r.artworks?.price} &nbsp;·&nbsp; Requested by ${r.kids?.name} &nbsp;·&nbsp; ${new Date(r.requested_at).toLocaleDateString()}</p>
+            <div class="pending-actions">
+              <button class="approve-btn" onclick="resolveRequest('${r.id}','approved')">✅ Approve</button>
+              <button class="reject-btn" onclick="resolveRequest('${r.id}','rejected')">❌ Decline</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function resolveRequest(id, status) {
+      const { error } = await sb.from('art_requests').update({ status }).eq('id', id);
+      if (error) { alert('Error: ' + error.message); return; }
+      loadRequests();
     }
 
     async function deleteKid(id) {
