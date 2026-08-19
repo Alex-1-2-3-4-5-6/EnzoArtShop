@@ -376,6 +376,8 @@
       renderGrid();
       renderRecommendations();
       loadAI();
+      const preview = new URLSearchParams(window.location.search).get('preview');
+      if (preview && allArtworks.find(a => a.id === preview)) openPreview(preview);
     }
 
     function renderGrid() {

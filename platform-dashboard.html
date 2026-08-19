@@ -521,7 +521,7 @@
             <p class="pending-name">${r.artworks?.name || 'Unknown'}</p>
             <p class="pending-meta">$${r.artworks?.price} &nbsp;·&nbsp; Requested by ${r.kids?.name} &nbsp;·&nbsp; ${new Date(r.requested_at).toLocaleDateString()}</p>
             <div class="pending-actions">
-              <button class="approve-btn" onclick="resolveRequest('${r.id}','approved')">✅ Approve</button>
+              <button class="approve-btn" onclick="resolveRequest('${r.id}','approved','${r.artwork_id}')">✅ Approve</button>
               <button class="reject-btn" onclick="resolveRequest('${r.id}','rejected')">❌ Decline</button>
             </div>
           </div>
@@ -529,10 +529,14 @@
       `).join('');
     }
 
-    async function resolveRequest(id, status) {
+    async function resolveRequest(id, status, artworkId) {
       const { error } = await sb.from('art_requests').update({ status }).eq('id', id);
       if (error) { alert('Error: ' + error.message); return; }
-      loadRequests();
+      if (status === 'approved' && artworkId) {
+        window.location.href = `platform-shop.html?preview=${artworkId}`;
+      } else {
+        loadRequests();
+      }
     }
 
     async function linkKid() {
