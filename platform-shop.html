@@ -377,7 +377,7 @@
       renderRecommendations();
       loadAI();
       const preview = new URLSearchParams(window.location.search).get('preview');
-      if (preview && allArtworks.find(a => a.id === preview)) openPreview(preview);
+      if (preview && allArtworks.find(a => a.id === preview)) location.href = `platform-art.html?id=${preview}`;
     }
 
     function renderGrid() {
@@ -442,7 +442,7 @@
           <p class="card-title">${art.name}</p>
           ${art.kids?.name ? `<p style="font-size:0.8rem;color:#aaa;margin-bottom:4px;">🎨 by ${art.kids.name}</p>` : ''}
           <p class="card-price">$${art.price}</p>
-          <button class="card-btn" onclick="openPreview('${art.id}')">👀 Preview & Buy</button>
+          <button class="card-btn" onclick="location.href='platform-art.html?id=${art.id}'">👀 Preview & Buy</button>
         </div>`;
       return card;
     }
@@ -451,14 +451,26 @@
       return ((art.name || '') + ' ' + (art.description || '')).toLowerCase().split(/\W+/).filter(w => w.length > 2);
     }
 
-    function trackClick(id) {
-      const history = JSON.parse(localStorage.getItem('viewedArt') || '[]');
-      if (!history.includes(id)) history.unshift(id);
-      localStorage.setItem('viewedArt', JSON.stringify(history.slice(0, 20)));
+    async function trackClick(id) {
+      if (currentUser) {
+        await sb.from('artwork_views').upsert({ user_id: currentUser.id, artwork_id: id, viewed_at: new Date().toISOString() }, { onConflict: 'user_id,artwork_id' });
+      } else {
+        const history = JSON.parse(localStorage.getItem('viewedArt') || '[]');
+        if (!history.includes(id)) history.unshift(id);
+        localStorage.setItem('viewedArt', JSON.stringify(history.slice(0, 20)));
+      }
     }
 
-    function renderRecommendations() {
-      const history = JSON.parse(localStorage.getItem('viewedArt') || '[]');
+    async function getViewHistory() {
+      if (currentUser) {
+        const { data } = await sb.from('artwork_views').select('artwork_id').eq('user_id', currentUser.id).order('viewed_at', { ascending: false }).limit(20);
+        return (data || []).map(r => r.artwork_id);
+      }
+      return JSON.parse(localStorage.getItem('viewedArt') || '[]');
+    }
+
+    async function renderRecommendations() {
+      const history = await getViewHistory();
       const recGrid = document.getElementById('recGrid');
       const recLabel = document.getElementById('recLabel');
       if (history.length === 0) { recGrid.style.display='none'; recLabel.style.display='none'; return; }
@@ -498,7 +510,7 @@
             <p class="card-title">${art.name}</p>
             ${art.kids?.name ? `<p style="font-size:0.8rem;color:#aaa;margin-bottom:4px;">🎨 by ${art.kids.name}</p>` : ''}
             <p class="card-price">$${art.price}</p>
-            <button class="card-btn" onclick="openPreview('${art.id}')">👀 Preview & Buy</button>
+            <button class="card-btn" onclick="location.href='platform-art.html?id=${art.id}'">👀 Preview & Buy</button>
           </div>
         </div>`).join('');
     }
