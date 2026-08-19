@@ -219,6 +219,7 @@
 
   <header>
     <div class="logo">Little He<span style="color:#ff9ff3;">art</span>works</div>
+    <button onclick="openInfo()" style="background:#f0f0f0;border:none;border-radius:50%;width:32px;height:32px;font-size:0.95rem;cursor:pointer;color:#aaa;flex-shrink:0;font-weight:700;">?</button>
     <a href="platform-shop.html" class="shop-btn">🛍️ Shop</a>
     <span class="user-info" id="userInfo"></span>
     <button class="logout-btn" onclick="logout()">Log out</button>
@@ -581,7 +582,34 @@
       setTimeout(() => el.style.display = 'none', 3000);
     }
 
+    function openInfo() { document.getElementById('infoOverlay').style.display='flex'; }
+    function closeInfo(e) { if(!e||e.target===document.getElementById('infoOverlay')) document.getElementById('infoOverlay').style.display='none'; }
     init();
   </script>
+  <div id="infoOverlay" onclick="closeInfo(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:white;border-radius:28px;max-width:480px;width:100%;padding:36px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;" onclick="event.stopPropagation()">
+      <h2 style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#333;margin-bottom:6px;">How It Works 🎨</h2>
+      <p style="color:#aaa;font-size:0.88rem;margin-bottom:24px;">Little Heartworks — a kids art marketplace</p>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="background:#f4f0ff;border-radius:16px;padding:16px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#a29bfe;margin-bottom:4px;">👨‍👩‍👧 Parents</p>
+          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Create a free account, add your kids by name, and each kid gets a unique 10-digit code. You can submit artwork on their behalf, set daily request limits, and approve or reject anything before it goes live in the shop.</p>
+        </div>
+        <div style="background:#fff8ee;border-radius:16px;padding:16px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#feca57;margin-bottom:4px;">🧒 Kids</p>
+          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Ask your parent for your 10-digit code, then click "I'm a Kid" on the home page. You can browse all the art in the shop and request pieces you like — your parent will see the requests. You can also submit your own artwork for your parent to approve!</p>
+        </div>
+        <div style="background:#fff0f9;border-radius:16px;padding:16px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#ff9ff3;margin-bottom:4px;">🛍️ Buying Art</p>
+          <p style="font-size:0.88rem;color:#555;line-height:1.6;">See something you love? Click "Preview & Buy", sign in with your parent account, and send a purchase request. Payment and delivery are arranged in person — we'll send an email to the seller to get things sorted.</p>
+        </div>
+        <div style="background:#f0fff4;border-radius:16px;padding:16px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#55efc4;margin-bottom:4px;">🔍 Finding Art</p>
+          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Use the search bar to find art by title, description, kid name, or parent. Smart search learns what you like and shows recommendations based on art you've viewed before.</p>
+        </div>
+      </div>
+      <button onclick="closeInfo()" style="width:100%;margin-top:24px;background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;">Got it! 🎉</button>
+    </div>
+  </div>
 </body>
 </html>
