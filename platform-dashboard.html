@@ -256,6 +256,16 @@
         <input type="text" id="kidPassword" placeholder="Password (optional)" />
         <button class="add-kid-btn" onclick="addKid()">+ Add Kid</button>
       </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:12px;margin-bottom:4px;">
+        <div style="flex:1;height:1px;background:#eee;"></div>
+        <span style="font-size:0.8rem;color:#ccc;font-weight:700;">or link an existing kid</span>
+        <div style="flex:1;height:1px;background:#eee;"></div>
+      </div>
+      <div class="add-kid-form">
+        <input type="text" id="linkCode" placeholder="10-digit code" maxlength="10" style="font-family:monospace;letter-spacing:2px;" oninput="this.value=this.value.replace(/\D/g,'')" />
+        <input type="text" id="linkPassword" placeholder="Password (if set)" />
+        <button class="add-kid-btn" style="background:linear-gradient(135deg,#48dbfb,#a29bfe);" onclick="linkKid()">🔗 Link Kid</button>
+      </div>
       <div class="status-msg" id="kidStatus"></div>
     </div>
 
@@ -391,15 +401,22 @@
     }
 
     async function loadKids() {
-      const { data } = await sb.from('kids').select('*').eq('parent_id', currentUser.id);
+      const [{ data: ownKids }, { data: linkedLinks }] = await Promise.all([
+        sb.from('kids').select('*').eq('parent_id', currentUser.id),
+        sb.from('kid_parent_links').select('kid_id, kids(*)').eq('parent_id', currentUser.id)
+      ]);
+      const linked = (linkedLinks || []).map(l => ({ ...l.kids, _linked: true }));
+      const data = [...(ownKids || []), ...linked];
       const list = document.getElementById('kidList');
       if (!data || data.length === 0) { list.innerHTML = '<p style="color:#ccc;font-size:0.9rem;">No kids added yet.</p>'; return; }
       list.innerHTML = data.map(k => `
         <div style="background:white;border-radius:20px;padding:20px;border:2px solid #ede9ff;box-shadow:0 2px 12px rgba(162,155,254,0.1);margin-bottom:14px;width:100%;">
 
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-            <span style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#333;">🧒 ${k.name}</span>
-            <button onclick="deleteKid('${k.id}')" style="background:#ffd6d6;border:none;border-radius:50px;padding:5px 12px;cursor:pointer;color:#c0392b;font-size:0.8rem;font-family:'Fredoka One',cursive;">Remove</button>
+            <span style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#333;">🧒 ${k.name} ${k._linked ? '<span style="background:#e0f7ff;color:#48dbfb;font-size:0.7rem;border-radius:50px;padding:3px 10px;margin-left:6px;">🔗 Linked</span>' : ''}</span>
+            ${k._linked
+              ? `<button onclick="unlinkKid('${k.id}')" style="background:#e0f7ff;border:none;border-radius:50px;padding:5px 12px;cursor:pointer;color:#48dbfb;font-size:0.8rem;font-family:'Fredoka One',cursive;">Unlink</button>`
+              : `<button onclick="deleteKid('${k.id}')" style="background:#ffd6d6;border:none;border-radius:50px;padding:5px 12px;cursor:pointer;color:#c0392b;font-size:0.8rem;font-family:'Fredoka One',cursive;">Remove</button>`}
           </div>
 
           <p style="font-size:0.75rem;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Daily Request Limit</p>
@@ -516,6 +533,28 @@
       const { error } = await sb.from('art_requests').update({ status }).eq('id', id);
       if (error) { alert('Error: ' + error.message); return; }
       loadRequests();
+    }
+
+    async function linkKid() {
+      const code = document.getElementById('linkCode').value.trim();
+      const pw   = document.getElementById('linkPassword').value.trim();
+      const st   = document.getElementById('kidStatus');
+      if (code.length !== 10) { showStatus(st, 'error', 'Please enter a 10-digit code.'); return; }
+      const { data, error } = await sb.rpc('link_kid_by_code', { p_code: code, p_password: pw });
+      if (error || data?.error) {
+        const msgs = { 'Invalid code': 'Invalid code.', 'Wrong password': 'Wrong password.', 'This is already your kid': 'That kid is already on your account.' };
+        showStatus(st, 'error', '❌ ' + (msgs[data?.error] || 'Something went wrong.')); return;
+      }
+      document.getElementById('linkCode').value = '';
+      document.getElementById('linkPassword').value = '';
+      showStatus(st, 'success', `✅ Linked to ${data.kid_name}!`);
+      loadKids();
+    }
+
+    async function unlinkKid(kidId) {
+      if (!confirm('Unlink this kid from your account?')) return;
+      await sb.from('kid_parent_links').delete().eq('kid_id', kidId).eq('parent_id', currentUser.id);
+      loadKids();
     }
 
     async function deleteKid(id) {
