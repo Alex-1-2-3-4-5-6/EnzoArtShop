@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Artwork – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#fff9f0; font-family:'Nunito',sans-serif; }
+
+    header {
+      background:linear-gradient(135deg,#ff6b6b,#feca57,#48dbfb,#a29bfe);
+      background-size:300% 300%; animation:gradientShift 8s ease infinite;
+      padding:16px 28px; display:flex; align-items:center; gap:14px;
+      box-shadow:0 4px 20px rgba(0,0,0,0.12);
+    }
+    @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:white; flex:1; }
+    .back-btn {
+      background:white; border:none; border-radius:50px; padding:8px 18px;
+      font-family:'Fredoka One',cursive; font-size:0.9rem; color:#ff6b6b;
+      cursor:pointer; text-decoration:none; transition:transform 0.2s;
+    }
+    .back-btn:hover { transform:scale(1.05); }
+
+    .page {
+      max-width:1040px; margin:40px auto; padding:0 24px 80px;
+      display:grid; grid-template-columns:1fr 420px; gap:40px; align-items:start;
+    }
+    @media(max-width:760px) { .page { grid-template-columns:1fr; } }
+
+    /* Left: image */
+    .art-image-wrap {
+      position:sticky; top:24px;
+    }
+    .art-image-wrap img {
+      width:100%; border-radius:24px;
+      box-shadow:0 12px 40px rgba(0,0,0,0.14);
+      display:block; background:#f0f0f0;
+    }
+    .art-badges {
+      display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;
+    }
+    .badge {
+      background:white; border-radius:50px; padding:7px 16px;
+      font-size:0.82rem; color:#777; font-weight:700;
+      box-shadow:0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    /* Right: info + buy */
+    .art-info { display:flex; flex-direction:column; gap:20px; }
+
+    .info-card {
+      background:white; border-radius:24px; padding:28px;
+      box-shadow:0 4px 18px rgba(0,0,0,0.06);
+    }
+    .art-title { font-family:'Fredoka One',cursive; font-size:2rem; color:#333; margin-bottom:8px; }
+    .art-price { font-family:'Fredoka One',cursive; font-size:2.2rem; color:#ff6b6b; margin-bottom:14px; }
+    .art-desc { color:#666; font-size:0.98rem; line-height:1.7; margin-bottom:16px; }
+    .creator-row {
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .creator-chip {
+      background:#f4f0ff; border-radius:50px; padding:7px 16px;
+      font-size:0.85rem; color:#a29bfe; font-weight:700;
+    }
+
+    /* Buy form */
+    .buy-card {
+      background:white; border-radius:24px; padding:28px;
+      box-shadow:0 4px 18px rgba(0,0,0,0.06);
+    }
+    .buy-card h3 { font-family:'Fredoka One',cursive; font-size:1.3rem; color:#333; margin-bottom:18px; }
+    .form-field { margin-bottom:14px; }
+    .form-field label { display:block; font-weight:700; color:#555; margin-bottom:6px; font-size:0.88rem; }
+    .form-field input {
+      width:100%; padding:12px 16px; border:2.5px solid #e0e0e0;
+      border-radius:12px; font-family:'Nunito',sans-serif; font-size:0.98rem;
+      outline:none; transition:border-color 0.2s;
+    }
+    .form-field input:focus { border-color:#feca57; }
+
+    .donate-row {
+      background:#fff8ee; border-radius:16px; padding:16px 18px; margin-bottom:16px;
+    }
+    .donate-row label { font-family:'Fredoka One',cursive; font-size:0.95rem; color:#f0932b; display:block; margin-bottom:6px; }
+    .donate-row .hint { font-size:0.78rem; color:#bbb; margin-top:4px; }
+    .donate-row input {
+      width:100%; padding:11px 16px; border:2.5px solid #feca57;
+      border-radius:12px; font-family:'Nunito',sans-serif; font-size:0.98rem;
+      outline:none;
+    }
+
+    .total-row {
+      display:flex; justify-content:space-between; align-items:center;
+      background:#f8f8f8; border-radius:12px; padding:12px 16px; margin-bottom:18px;
+    }
+    .total-row span { font-weight:700; color:#555; font-size:0.9rem; }
+    .total-row strong { font-family:'Fredoka One',cursive; font-size:1.3rem; color:#ff6b6b; }
+
+    .buy-btn {
+      width:100%; background:linear-gradient(135deg,#ff6b6b,#feca57);
+      border:none; border-radius:50px; padding:16px;
+      color:white; font-family:'Fredoka One',cursive; font-size:1.1rem;
+      cursor:pointer; transition:transform 0.2s;
+    }
+    .buy-btn:hover { transform:scale(1.02); }
+    .buy-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+    .msg { margin-top:14px; padding:12px 16px; border-radius:12px; font-weight:700; font-size:0.88rem; display:none; }
+    .msg.error { background:#ffd6d6; color:#c0392b; }
+    .msg.success { background:#d4edda; color:#155724; }
+
+    .success-screen {
+      display:none; text-align:center; padding:20px 0;
+    }
+    .success-screen .icon { font-size:3.5rem; margin-bottom:12px; }
+    .success-screen h3 { font-family:'Fredoka One',cursive; font-size:1.5rem; color:#333; margin-bottom:8px; }
+    .success-screen p { color:#777; margin-bottom:20px; font-size:0.92rem; line-height:1.6; }
+    .done-btn {
+      background:linear-gradient(135deg,#a29bfe,#ff9ff3); border:none;
+      border-radius:50px; padding:12px 32px; color:white;
+      font-family:'Fredoka One',cursive; font-size:1rem; cursor:pointer;
+    }
+
+    .login-prompt {
+      background:#f4f0ff; border-radius:16px; padding:20px; text-align:center;
+    }
+    .login-prompt p { color:#a29bfe; font-weight:700; margin-bottom:14px; font-size:0.95rem; }
+    .login-prompt a {
+      display:inline-block; background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      color:white; border-radius:50px; padding:11px 28px;
+      font-family:'Fredoka One',cursive; font-size:0.95rem; text-decoration:none;
+    }
+
+    .not-found { text-align:center; padding:80px 20px; font-family:'Fredoka One',cursive; font-size:1.4rem; color:#ccc; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">🎨 Little He<span style="color:#fff176;">art</span>works</div>
+    <a href="platform-shop.html" class="back-btn">← Back to Shop</a>
+  </header>
+
+  <div id="notFound" class="not-found" style="display:none">🖼️ Artwork not found.</div>
+
+  <div class="page" id="pageContent" style="display:none">
+    <!-- Left: image -->
+    <div class="art-image-wrap">
+      <img id="artImg" src="" alt="" />
+      <div class="art-badges" id="artBadges"></div>
+    </div>
+
+    <!-- Right: info + buy -->
+    <div class="art-info">
+      <div class="info-card">
+        <h1 class="art-title" id="artTitle"></h1>
+        <p class="art-price" id="artPrice"></p>
+        <p class="art-desc" id="artDesc" style="display:none"></p>
+        <div class="creator-row" id="creatorRow"></div>
+      </div>
+
+      <div class="buy-card" id="buyCard">
+        <h3>🛒 Claim This Artwork</h3>
+        <div id="buyForm">
+          <div class="form-field">
+            <label>Your Name</label>
+            <input type="text" id="buyerName" placeholder="e.g. Grandma Rosa" />
+          </div>
+          <div class="form-field">
+            <label>Your Email</label>
+            <input type="email" id="buyerEmail" placeholder="your@email.com" />
+          </div>
+
+          <div class="donate-row">
+            <label>💛 Donate Extra (optional)</label>
+            <input type="number" id="donateAmt" placeholder="0.00" min="0" step="0.01" oninput="updateTotal()" />
+            <p class="hint">Add a little extra to support the artist!</p>
+          </div>
+
+          <div class="total-row">
+            <span>Total</span>
+            <strong id="totalAmt">$0.00</strong>
+          </div>
+
+          <button class="buy-btn" id="buyBtn" onclick="submitClaim()">Send Purchase Request 🎨</button>
+          <div class="msg" id="buyMsg"></div>
+        </div>
+
+        <div class="success-screen" id="successScreen">
+          <div class="icon">🎉</div>
+          <h3>Request Sent!</h3>
+          <p id="successMsg"></p>
+          <a href="platform-shop.html" class="done-btn">Back to Shop</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const WEB3FORMS_KEY = 'd0c60520-e920-4f5d-90bc-d6b71aa29543';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let art = null;
+    let currentUser = null;
+
+    async function init() {
+      const id = new URLSearchParams(window.location.search).get('id');
+      if (!id) { document.getElementById('notFound').style.display = 'block'; return; }
+
+      const [{ data: { user } }, { data }] = await Promise.all([
+        sb.auth.getUser(),
+        sb.from('artworks').select('*, kids(name)').eq('id', id).eq('status','approved').single()
+      ]);
+
+      currentUser = user;
+
+      if (!data) { document.getElementById('notFound').style.display = 'block'; return; }
+      art = data;
+
+      document.title = art.name + ' – Little Heartworks';
+      document.getElementById('artImg').src = art.image_url;
+      document.getElementById('artImg').alt = art.name;
+      document.getElementById('artTitle').textContent = art.name;
+      document.getElementById('artPrice').textContent = '$' + art.price;
+
+      if (art.description) {
+        const d = document.getElementById('artDesc');
+        d.textContent = art.description; d.style.display = 'block';
+      }
+
+      const badges = document.getElementById('artBadges');
+      if (art.kids?.name) badges.innerHTML += `<span class="badge">🧒 by ${art.kids.name}</span>`;
+      if (art.parent_name) badges.innerHTML += `<span class="badge">👨‍👩‍👧 ${art.parent_name}</span>`;
+
+      const creators = document.getElementById('creatorRow');
+      if (art.kids?.name) creators.innerHTML += `<span class="creator-chip">🧒 ${art.kids.name}</span>`;
+      if (art.parent_name) creators.innerHTML += `<span class="creator-chip">👨‍👩‍👧 ${art.parent_name}</span>`;
+
+      updateTotal();
+
+      if (!user) {
+        document.getElementById('buyForm').style.display = 'none';
+        document.getElementById('buyCard').innerHTML = `
+          <h3>🛒 Claim This Artwork</h3>
+          <div class="login-prompt">
+            <p>Sign in to purchase this artwork</p>
+            <a href="platform-login.html">Sign In →</a>
+          </div>`;
+      } else {
+        const meta = user.user_metadata || {};
+        document.getElementById('buyerName').value = meta.full_name || '';
+        document.getElementById('buyerEmail').value = user.email || '';
+      }
+
+      document.getElementById('pageContent').style.display = 'grid';
+    }
+
+    function updateTotal() {
+      const base = parseFloat(art?.price || 0);
+      const extra = parseFloat(document.getElementById('donateAmt')?.value || 0) || 0;
+      document.getElementById('totalAmt').textContent = '$' + (base + extra).toFixed(2);
+    }
+
+    async function submitClaim() {
+      const name   = document.getElementById('buyerName').value.trim();
+      const email  = document.getElementById('buyerEmail').value.trim();
+      const donate = parseFloat(document.getElementById('donateAmt').value || 0) || 0;
+      const btn    = document.getElementById('buyBtn');
+      const msg    = document.getElementById('buyMsg');
+
+      if (!name || !email) {
+        msg.className = 'msg error'; msg.textContent = 'Please fill in your name and email.'; msg.style.display = 'block'; return;
+      }
+
+      btn.disabled = true; btn.textContent = 'Sending...';
+
+      const total = (parseFloat(art.price) + donate).toFixed(2);
+      const donateNote = donate > 0 ? `\nDonation: +$${donate.toFixed(2)} extra` : '';
+
+      try {
+        await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            access_key: WEB3FORMS_KEY,
+            subject: `🎨 New Art Purchase Request: ${art.name}`,
+            from_name: 'Little Heartworks',
+            message:
+              `Someone wants to buy artwork!\n\n` +
+              `Artwork: ${art.name}\n` +
+              `Base Price: $${art.price}${donateNote}\n` +
+              `Total: $${total}\n\n` +
+              `Buyer: ${name}\nEmail: ${email}\n\n` +
+              `Payment and delivery to be arranged in person.`
+          })
+        });
+
+        document.getElementById('buyForm').style.display = 'none';
+        document.getElementById('successScreen').style.display = 'block';
+        document.getElementById('successMsg').textContent =
+          `Thanks ${name}! We'll be in touch at ${email} to arrange payment and delivery. Total: $${total} 🎨`;
+
+      } catch(e) {
+        msg.className = 'msg error'; msg.textContent = '❌ Something went wrong. Please try again.'; msg.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Send Purchase Request 🎨';
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
