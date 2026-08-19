@@ -209,13 +209,20 @@
     let art = null;
     let currentUser = null;
 
+    function avatarChip(avatarUrl, name, fallbackEmoji, cls) {
+      const img = avatarUrl
+        ? `<img src="${avatarUrl}" alt="${name}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1.5px solid rgba(0,0,0,0.1);" onerror="this.style.display='none'" />`
+        : `<span style="font-size:1rem;">${fallbackEmoji}</span>`;
+      return `<span class="${cls}" style="display:inline-flex;align-items:center;gap:6px;">${img}${name}</span>`;
+    }
+
     async function init() {
       const id = new URLSearchParams(window.location.search).get('id');
       if (!id) { document.getElementById('notFound').style.display = 'block'; return; }
 
       const [{ data: { user } }, { data }] = await Promise.all([
         sb.auth.getUser(),
-        sb.from('artworks').select('*, kids(name)').eq('id', id).eq('status','approved').single()
+        sb.from('artworks').select('*, kids(name, avatar_url)').eq('id', id).eq('status','approved').single()
       ]);
 
       currentUser = user;
@@ -235,12 +242,12 @@
       }
 
       const badges = document.getElementById('artBadges');
-      if (art.kids?.name) badges.innerHTML += `<span class="badge">🧒 by ${art.kids.name}</span>`;
-      if (art.parent_name) badges.innerHTML += `<span class="badge">👨‍👩‍👧 ${art.parent_name}</span>`;
+      if (art.kids?.name) badges.innerHTML += avatarChip(art.kids.avatar_url, art.kids.name, '🧒', 'badge');
+      if (art.parent_name) badges.innerHTML += avatarChip(art.parent_avatar_url, art.parent_name, '👨‍👩‍👧', 'badge');
 
       const creators = document.getElementById('creatorRow');
-      if (art.kids?.name) creators.innerHTML += `<span class="creator-chip">🧒 ${art.kids.name}</span>`;
-      if (art.parent_name) creators.innerHTML += `<span class="creator-chip">👨‍👩‍👧 ${art.parent_name}</span>`;
+      if (art.kids?.name) creators.innerHTML += avatarChip(art.kids.avatar_url, art.kids.name, '🧒', 'creator-chip');
+      if (art.parent_name) creators.innerHTML += avatarChip(art.parent_avatar_url, art.parent_name, '👨‍👩‍👧', 'creator-chip');
 
       updateTotal();
 

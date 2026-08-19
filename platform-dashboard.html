@@ -413,7 +413,19 @@
         <div style="background:white;border-radius:20px;padding:20px;border:2px solid #ede9ff;box-shadow:0 2px 12px rgba(162,155,254,0.1);margin-bottom:14px;width:100%;">
 
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-            <span style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#333;">🧒 ${k.name} ${k._linked ? '<span style="background:#e0f7ff;color:#48dbfb;font-size:0.7rem;border-radius:50px;padding:3px 10px;margin-left:6px;">🔗 Linked</span>' : ''}</span>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="position:relative;flex-shrink:0;">
+                <img src="${k.avatar_url || ''}" alt="${k.name}"
+                  style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:3px solid #a29bfe;background:#f4f0ff;font-size:1.6rem;"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+                  ${k.avatar_url ? '' : 'style="display:none"'} />
+                <div style="width:52px;height:52px;border-radius:50%;background:#f4f0ff;border:3px solid #a29bfe;display:${k.avatar_url ? 'none' : 'flex'};align-items:center;justify-content:center;font-size:1.6rem;">🧒</div>
+                <label title="Change photo" style="position:absolute;bottom:0;right:0;background:#feca57;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.65rem;box-shadow:0 2px 6px rgba(0,0,0,0.15);">
+                  ✏️<input type="file" accept="image/*" style="display:none" onchange="uploadKidAvatar('${k.id}',this.files[0])" />
+                </label>
+              </div>
+              <span style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#333;">${k.name} ${k._linked ? '<span style="background:#e0f7ff;color:#48dbfb;font-size:0.7rem;border-radius:50px;padding:3px 10px;margin-left:6px;">🔗 Linked</span>' : ''}</span>
+            </div>
             ${k._linked
               ? `<button onclick="unlinkKid('${k.id}')" style="background:#e0f7ff;border:none;border-radius:50px;padding:5px 12px;cursor:pointer;color:#48dbfb;font-size:0.8rem;font-family:'Fredoka One',cursive;">Unlink</button>`
               : `<button onclick="deleteKid('${k.id}')" style="background:#ffd6d6;border:none;border-radius:50px;padding:5px 12px;cursor:pointer;color:#c0392b;font-size:0.8rem;font-family:'Fredoka One',cursive;">Remove</button>`}
@@ -482,6 +494,18 @@
       const pw = document.getElementById('pw-input-' + kidId).value.trim();
       const { error } = await sb.from('kids').update({ kid_password: pw || null }).eq('id', kidId);
       if (error) { alert('Error: ' + error.message); return; }
+      loadKids();
+    }
+
+    async function uploadKidAvatar(kidId, file) {
+      if (!file) return;
+      const ext = file.name.split('.').pop();
+      const filename = `kid-avatar-${kidId}-${Date.now()}.${ext}`;
+      const { error: upErr } = await sb.storage.from('avatars').upload(filename, file, { upsert: true, contentType: file.type });
+      if (upErr) { alert('Upload error: ' + upErr.message); return; }
+      const { data: urlData } = sb.storage.from('avatars').getPublicUrl(filename);
+      const { error } = await sb.from('kids').update({ avatar_url: urlData.publicUrl }).eq('id', kidId);
+      if (error) { alert('Save error: ' + error.message); return; }
       loadKids();
     }
 
