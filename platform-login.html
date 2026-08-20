@@ -64,7 +64,10 @@
     </div>
     <div class="field">
       <label>Password</label>
-      <input type="password" id="password" placeholder="Your password" onkeydown="if(event.key==='Enter') login()" />
+      <div style="position:relative;">
+        <input type="password" id="password" placeholder="Your password" onkeydown="if(event.key==='Enter') login()" style="padding-right:46px;" />
+        <button type="button" onclick="const i=document.getElementById('password');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈';" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;color:#bbb;">👁</button>
+      </div>
     </div>
 
     <button class="submit-btn" id="loginBtn" onclick="login()">Log In</button>

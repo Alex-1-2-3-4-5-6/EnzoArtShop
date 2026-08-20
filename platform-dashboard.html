@@ -239,7 +239,17 @@
         </div>
         <div class="profile-fields">
           <input type="text" id="profileName" placeholder="Your full name" />
-          <input type="date" id="profileDob" title="Date of birth" />
+          <div style="display:flex;gap:8px;">
+            <select id="dobMonth" style="flex:2;padding:10px 8px;border:2.5px solid #e0e0e0;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.9rem;outline:none;background:white;">
+              <option value="">Month</option>
+              <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+              <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+              <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+              <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+            </select>
+            <select id="dobDay" style="flex:1;padding:10px 8px;border:2.5px solid #e0e0e0;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.9rem;outline:none;background:white;"><option value="">Day</option></select>
+            <select id="dobYear" style="flex:1.4;padding:10px 8px;border:2.5px solid #e0e0e0;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.9rem;outline:none;background:white;"><option value="">Year</option></select>
+          </div>
           <button class="save-profile-btn" id="saveProfileBtn" onclick="saveProfile()">Save Profile</button>
         </div>
       </div>
@@ -316,6 +326,12 @@
       const name = user.user_metadata?.full_name || user.email;
       document.getElementById('userInfo').textContent = user.email;
       document.getElementById('welcome').textContent = `👋 Welcome back, ${name.split(' ')[0]}!`;
+      // Populate day/year dropdowns
+      const daySelect = document.getElementById('dobDay');
+      const yearSelect = document.getElementById('dobYear');
+      for (let d = 1; d <= 31; d++) { const o = document.createElement('option'); o.value = d; o.textContent = d; daySelect.appendChild(o); }
+      const cur = new Date().getFullYear();
+      for (let y = cur - 18; y >= cur - 100; y--) { const o = document.createElement('option'); o.value = y; o.textContent = y; yearSelect.appendChild(o); }
       loadProfile();
       loadKids();
       loadArtworks();
@@ -325,7 +341,13 @@
     function loadProfile() {
       const meta = currentUser.user_metadata || {};
       document.getElementById('profileName').value = meta.full_name || '';
-      document.getElementById('profileDob').value  = meta.date_of_birth || '';
+      const dob = meta.date_of_birth || '';
+      if (dob) {
+        const [y, m, d] = dob.split('-');
+        document.getElementById('dobMonth').value = parseInt(m);
+        document.getElementById('dobDay').value   = parseInt(d);
+        document.getElementById('dobYear').value  = parseInt(y);
+      }
       const avatar = meta.avatar_url || '';
       const img = document.getElementById('avatarImg');
       if (avatar) {
@@ -356,10 +378,13 @@
     }
 
     async function saveProfile() {
-      const name = document.getElementById('profileName').value.trim();
-      const dob  = document.getElementById('profileDob').value;
-      const btn  = document.getElementById('saveProfileBtn');
-      const st   = document.getElementById('profileStatus');
+      const name  = document.getElementById('profileName').value.trim();
+      const month = document.getElementById('dobMonth').value;
+      const day   = document.getElementById('dobDay').value;
+      const year  = document.getElementById('dobYear').value;
+      const dob   = (month && day && year) ? `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}` : '';
+      const btn   = document.getElementById('saveProfileBtn');
+      const st    = document.getElementById('profileStatus');
       if (!name) { showStatus(st, 'error', 'Please enter your name.'); return; }
       if (dob) {
         const age = Math.floor((new Date() - new Date(dob)) / (365.25 * 24 * 60 * 60 * 1000));

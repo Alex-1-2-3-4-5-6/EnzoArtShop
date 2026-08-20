@@ -74,6 +74,12 @@
 </head>
 <body>
 
+  <div style="position:fixed;top:14px;right:18px;display:flex;gap:12px;z-index:50;">
+    <a href="platform-privacy.html" style="color:rgba(255,255,255,0.8);font-size:0.8rem;font-weight:700;text-decoration:none;background:rgba(255,255,255,0.18);border-radius:50px;padding:6px 14px;backdrop-filter:blur(8px);">Privacy Policy</a>
+    <a href="platform-terms.html" style="color:rgba(255,255,255,0.8);font-size:0.8rem;font-weight:700;text-decoration:none;background:rgba(255,255,255,0.18);border-radius:50px;padding:6px 14px;backdrop-filter:blur(8px);">Terms of Use</a>
+    <button onclick="openInfo()" style="color:rgba(255,255,255,0.9);font-size:0.85rem;font-weight:900;background:rgba(255,255,255,0.18);border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;backdrop-filter:blur(8px);">?</button>
+  </div>
+
   <div class="logo">Little He<span style="color:#fff176;">art</span>works 🎨</div>
 
   <a href="platform-shop.html" class="shop-btn">🛍️ Enter the Shop</a>
@@ -98,8 +104,11 @@
       <input id="kidCodeInput" type="text" inputmode="numeric" maxlength="10" placeholder="0000000000"
         style="width:100%;padding:14px;border:2.5px solid #e0e0e0;border-radius:12px;font-size:1.3rem;text-align:center;letter-spacing:4px;font-family:'Fredoka One',cursive;outline:none;margin-bottom:10px;"
         oninput="this.value=this.value.replace(/\D/g,'')" />
-      <input id="kidPasswordInput" type="password" placeholder="Password (if you have one)"
-        style="width:100%;padding:13px;border:2.5px solid #e0e0e0;border-radius:12px;font-size:1rem;font-family:'Nunito',sans-serif;outline:none;margin-bottom:14px;" />
+      <div style="position:relative;margin-bottom:14px;">
+        <input id="kidPasswordInput" type="password" placeholder="Password (if you have one)"
+          style="width:100%;padding:13px 46px 13px 13px;border:2.5px solid #e0e0e0;border-radius:12px;font-size:1rem;font-family:'Nunito',sans-serif;outline:none;" />
+        <button type="button" onclick="togglePw('kidPasswordInput',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;color:#bbb;">👁</button>
+      </div>
       <div id="kidCodeMsg" style="display:none;margin-bottom:14px;padding:10px;border-radius:10px;font-weight:700;font-size:0.88rem;"></div>
       <button onclick="enterKidCode()" style="width:100%;background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.1rem;cursor:pointer;margin-bottom:10px;">Let's Go! 🎨</button>
       <button onclick="closeKidModal()" style="background:none;border:none;color:#aaa;font-family:'Nunito',sans-serif;font-size:0.9rem;cursor:pointer;">Cancel</button>
@@ -181,7 +190,47 @@
     }
 
     async function logout() { await sb.auth.signOut(); location.reload(); }
+
+    function togglePw(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+      else { input.type = 'password'; btn.textContent = '👁'; }
+    }
+
+    function openInfo() { document.getElementById('infoModal').style.display = 'flex'; }
+    function closeInfo(e) { if (!e || e.target === document.getElementById('infoModal')) document.getElementById('infoModal').style.display = 'none'; }
     init();
   </script>
+
+  <!-- Info modal -->
+  <div id="infoModal" onclick="closeInfo(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:white;border-radius:28px;max-width:500px;width:100%;padding:36px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;" onclick="event.stopPropagation()">
+      <h2 style="font-family:'Fredoka One',cursive;font-size:1.7rem;color:#333;margin-bottom:4px;">How Little Heartworks Works 🎨</h2>
+      <p style="color:#aaa;font-size:0.85rem;margin-bottom:24px;">A safe art marketplace made for kids and their families</p>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="background:#fff8ee;border-radius:16px;padding:16px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#f0932b;margin-bottom:6px;">👨‍👩‍👧 Parents — Create an Account</p>
+          <p style="font-size:0.87rem;color:#555;line-height:1.65;">Sign up with your email address (you must be 18+). Once logged in, go to your Dashboard to add your child by name. Each child gets a unique <strong>10-digit code</strong> — this is how they log in from the home page. You can also set a password for extra security so only your child can use their code.</p>
+        </div>
+        <div style="background:#f4f0ff;border-radius:16px;padding:16px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#a29bfe;margin-bottom:6px;">🧒 Kids — Browse &amp; Submit Art</p>
+          <p style="font-size:0.87rem;color:#555;line-height:1.65;">Kids tap <strong>"I'm a Kid"</strong> on the home page and enter their 10-digit code (and password if one is set). They can then browse all the artwork in the shop, search by name or description, and <strong>request pieces</strong> they want — their parent sees the request and can approve or decline it. Kids can also submit their own artwork from the shop page, and it goes to their parent for approval before appearing in the shop.</p>
+        </div>
+        <div style="background:#f0fff4;border-radius:16px;padding:16px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#27ae60;margin-bottom:6px;">✏️ Submitting Artwork</p>
+          <p style="font-size:0.87rem;color:#555;line-height:1.65;">Parents can submit art from their Dashboard — either on behalf of a child (it waits for parent approval) or as themselves (goes straight to the shop). Kids can submit their own art using the button in their shop view. Every submission goes through a content filter and parent approval before it's visible to the public.</p>
+        </div>
+        <div style="background:#fff0f9;border-radius:16px;padding:16px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#ff9ff3;margin-bottom:6px;">🛍️ Buying Art</p>
+          <p style="font-size:0.87rem;color:#555;line-height:1.65;">Click any artwork to open its full page. Sign in with your parent account, fill in your name and email, and optionally add a donation on top of the price. Hit <strong>"Send Purchase Request"</strong> — the seller will be notified by email to arrange payment and delivery in person. No money is collected through the website.</p>
+        </div>
+        <div style="background:#f0f8ff;border-radius:16px;padding:16px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#48dbfb;margin-bottom:6px;">🔍 Search &amp; Recommendations</p>
+          <p style="font-size:0.87rem;color:#555;line-height:1.65;">Use the search bar in the shop to find art by title, description, kid name, or parent name. The shop uses AI-powered search to understand what you mean even if you don't use exact words. The <strong>Recommended for You</strong> section learns from artworks you've clicked on and suggests similar ones — recommendations are saved to your account so they stay consistent across devices.</p>
+        </div>
+      </div>
+      <button onclick="closeInfo()" style="width:100%;margin-top:22px;background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;">Got it! 🎉</button>
+    </div>
+  </div>
 </body>
 </html>
