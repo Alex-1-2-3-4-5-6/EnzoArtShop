@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Shop – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
+
+    header {
+      background:white; padding:16px 28px;
+      display:flex; align-items:center; gap:12px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.07);
+    }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:#ff6b6b; flex:1; }
+    .logo span { color:#a29bfe; }
+    .hdr-btn {
+      background:#f0f0f0; border:none; border-radius:50px;
+      padding:8px 18px; font-family:'Fredoka One',cursive;
+      font-size:0.88rem; cursor:pointer; color:#888; text-decoration:none;
+    }
+    .hdr-btn:hover { background:#e0e0e0; }
+
+    .container { max-width:860px; margin:36px auto; padding:0 20px 80px; }
+
+    .page-title {
+      font-family:'Fredoka One',cursive; font-size:2rem; color:#333; margin-bottom:6px;
+    }
+    .page-sub { color:#aaa; font-size:0.92rem; margin-bottom:28px; }
+
+    .panel {
+      background:white; border-radius:24px; padding:28px;
+      box-shadow:0 4px 18px rgba(0,0,0,0.06); margin-bottom:24px;
+    }
+    .panel-title {
+      font-family:'Fredoka One',cursive; font-size:1.2rem; color:#333;
+      margin-bottom:18px; display:flex; align-items:center; gap:8px;
+    }
+
+    /* Art grid */
+    .art-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:16px;
+    }
+    .art-card {
+      border-radius:16px; overflow:hidden; border:2px solid #eee;
+      transition:transform 0.2s; cursor:pointer; background:white;
+    }
+    .art-card:hover { transform:scale(1.03); }
+    .art-card img {
+      width:100%; aspect-ratio:1; object-fit:cover; background:#f0f0f0; display:block;
+    }
+    .art-card-info { padding:10px 12px; }
+    .art-card-name { font-family:'Fredoka One',cursive; font-size:0.95rem; color:#333; }
+    .art-card-price { font-size:0.85rem; color:#ff6b6b; font-weight:700; margin-top:2px; }
+    .status-badge {
+      display:inline-block; border-radius:50px; padding:3px 10px;
+      font-size:0.72rem; font-weight:700; margin-top:4px;
+    }
+    .status-approved { background:#d4edda; color:#155724; }
+    .status-pending  { background:#fff3cd; color:#856404; }
+    .status-rejected { background:#ffd6d6; color:#c0392b; }
+
+    /* Purchase list */
+    .purchase-item {
+      display:flex; align-items:center; gap:14px;
+      padding:14px 0; border-bottom:1px solid #f0f0f0;
+    }
+    .purchase-item:last-child { border-bottom:none; }
+    .purchase-item img {
+      width:56px; height:56px; border-radius:12px; object-fit:cover;
+      background:#f0f0f0; flex-shrink:0;
+    }
+    .purchase-info { flex:1; }
+    .purchase-name { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; }
+    .purchase-meta { font-size:0.82rem; color:#aaa; margin-top:3px; }
+    .purchase-amount {
+      font-family:'Fredoka One',cursive; font-size:1.1rem; color:#27ae60; white-space:nowrap;
+    }
+
+    .empty { text-align:center; padding:28px; color:#ccc; font-family:'Fredoka One',cursive; font-size:1rem; }
+
+    /* Kid banner */
+    .kid-banner {
+      background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      border-radius:20px; padding:18px 22px; margin-bottom:24px;
+      display:flex; align-items:center; gap:14px;
+    }
+    .kid-avatar {
+      width:52px; height:52px; border-radius:50%; border:3px solid white;
+      background:rgba(255,255,255,0.3); display:flex; align-items:center;
+      justify-content:center; font-size:1.6rem; flex-shrink:0; overflow:hidden;
+    }
+    .kid-avatar img { width:100%; height:100%; object-fit:cover; }
+    .kid-info { color:white; }
+    .kid-info .name { font-family:'Fredoka One',cursive; font-size:1.1rem; }
+    .kid-info .sub { font-size:0.82rem; opacity:0.85; margin-top:2px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">Little He<span>art</span>works</div>
+    <a href="platform-shop.html" class="hdr-btn">🛍️ Shop</a>
+    <a href="#" id="backBtn" class="hdr-btn">← Back</a>
+  </header>
+
+  <div class="container">
+    <div id="kidBanner" style="display:none;" class="kid-banner">
+      <div class="kid-avatar" id="kidAvatarWrap">🧒</div>
+      <div class="kid-info">
+        <p class="name" id="kidBannerName"></p>
+        <p class="sub">Your art profile</p>
+      </div>
+    </div>
+
+    <p class="page-title" id="pageTitle">🎨 My Shop</p>
+    <p class="page-sub" id="pageSub">Your posted artworks and sale history</p>
+
+    <!-- Posted art -->
+    <div class="panel">
+      <p class="panel-title">🖼️ Posted Artworks</p>
+      <div id="artGrid" class="art-grid"><p class="empty">Loading...</p></div>
+    </div>
+
+    <!-- Purchases (parents only) -->
+    <div class="panel" id="purchasesPanel" style="display:none;">
+      <p class="panel-title">💰 Sale History</p>
+      <div id="purchasesList"><p class="empty">Loading...</p></div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function init() {
+      const kidRaw = localStorage.getItem('kidSession');
+      const { data: { user } } = await sb.auth.getUser();
+
+      if (kidRaw) {
+        // Kid view
+        const kid = JSON.parse(kidRaw);
+        document.getElementById('kidBanner').style.display = 'flex';
+        document.getElementById('kidBannerName').textContent = `Hey, ${kid.kid_name}! 👋`;
+        document.getElementById('pageTitle').textContent = `🎨 ${kid.kid_name}'s Shop`;
+        document.getElementById('pageSub').textContent = 'Art you\'ve submitted';
+        document.getElementById('backBtn').href = 'platform-kid-shop.html';
+
+        // Load kid avatar
+        const { data: kidData } = await sb.from('kids').select('avatar_url').eq('id', kid.kid_id).single();
+        if (kidData?.avatar_url) {
+          document.getElementById('kidAvatarWrap').innerHTML = `<img src="${kidData.avatar_url}" alt="${kid.kid_name}" />`;
+        }
+
+        const { data: artworks } = await sb.from('artworks').select('*').eq('kid_id', kid.kid_id).order('created_at', { ascending: false });
+        renderArtGrid(artworks || []);
+
+      } else if (user) {
+        // Parent view
+        document.getElementById('backBtn').href = 'platform-dashboard.html';
+        const meta = user.user_metadata || {};
+        document.getElementById('pageTitle').textContent = `🎨 ${(meta.full_name || 'My').split(' ')[0]}'s Shop`;
+
+        const [{ data: artworks }, { data: purchases }] = await Promise.all([
+          sb.from('artworks').select('*, kids(name)').eq('parent_id', user.id).order('created_at', { ascending: false }),
+          sb.from('purchases').select('*').order('purchased_at', { ascending: false })
+        ]);
+
+        renderArtGrid(artworks || []);
+        renderPurchases(purchases || []);
+        document.getElementById('purchasesPanel').style.display = 'block';
+
+      } else {
+        window.location.href = 'platform-index.html';
+      }
+    }
+
+    function renderArtGrid(artworks) {
+      const el = document.getElementById('artGrid');
+      if (!artworks.length) { el.innerHTML = '<p class="empty">No artworks posted yet 🎨</p>'; return; }
+      el.innerHTML = artworks.map(a => `
+        <div class="art-card" onclick="location.href='platform-art.html?id=${a.id}'">
+          <img src="${a.image_url}" alt="${a.name}" />
+          <div class="art-card-info">
+            <p class="art-card-name">${a.name}</p>
+            ${a.kids?.name ? `<p style="font-size:0.75rem;color:#a29bfe;margin-top:2px;">🧒 ${a.kids.name}</p>` : ''}
+            <p class="art-card-price">$${a.price}</p>
+            <span class="status-badge status-${a.status}">${a.status === 'approved' ? '✅ Live' : a.status === 'pending' ? '⏳ Pending' : '❌ Rejected'}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderPurchases(purchases) {
+      const el = document.getElementById('purchasesList');
+      if (!purchases.length) { el.innerHTML = '<p class="empty">No sales yet — share your art! 🎉</p>'; return; }
+      el.innerHTML = purchases.map(p => {
+        const total = (parseFloat(p.artwork_price || 0) + parseFloat(p.donation || 0)).toFixed(2);
+        const date = new Date(p.purchased_at).toLocaleDateString();
+        return `
+          <div class="purchase-item">
+            <img src="${p.artwork_image_url || ''}" alt="${p.artwork_name}" onerror="this.style.display='none'" />
+            <div class="purchase-info">
+              <p class="purchase-name">${p.artwork_name}</p>
+              <p class="purchase-meta">Buyer: ${p.buyer_name} · ${p.buyer_email}</p>
+              <p class="purchase-meta">${date}${p.donation > 0 ? ` · +$${parseFloat(p.donation).toFixed(2)} donation` : ''}</p>
+            </div>
+            <p class="purchase-amount">$${total}</p>
+          </div>
+        `;
+      }).join('');
+    }
+
+    init();
+  </script>
+</body>
+</html>

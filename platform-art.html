@@ -291,6 +291,16 @@
       const donateNote = donate > 0 ? `\nDonation: +$${donate.toFixed(2)} extra` : '';
 
       try {
+        await sb.from('purchases').insert({
+          artwork_id: art.id,
+          artwork_name: art.name,
+          artwork_image_url: art.image_url,
+          artwork_price: parseFloat(art.price),
+          donation: donate,
+          buyer_name: name,
+          buyer_email: email
+        });
+
         await fetch('https://api.web3forms.com/submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
