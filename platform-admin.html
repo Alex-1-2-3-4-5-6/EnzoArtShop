@@ -308,7 +308,7 @@
     }
 
     async function recycleArt(id) {
-      const { error } = await sb.from('artworks').update({ status: 'recycled' }).eq('id', id);
+      const { error } = await sb.rpc('admin_set_artwork_status', { p_artwork_id: id, p_status: 'recycled' });
       if (error) { showToast('❌ ' + error.message); return; }
       allArtworks = allArtworks.map(a => a.id === id ? { ...a, status: 'recycled' } : a);
       updateStats(); renderGrid(); renderBin();
@@ -316,7 +316,7 @@
     }
 
     async function restoreArt(id) {
-      const { error } = await sb.from('artworks').update({ status: 'pending' }).eq('id', id);
+      const { error } = await sb.rpc('admin_set_artwork_status', { p_artwork_id: id, p_status: 'pending' });
       if (error) { showToast('❌ ' + error.message); return; }
       allArtworks = allArtworks.map(a => a.id === id ? { ...a, status: 'pending' } : a);
       updateStats(); renderGrid(); renderBin();
@@ -325,7 +325,7 @@
 
     async function deleteArt(id) {
       if (!confirm('Permanently delete this artwork? This cannot be undone.')) return;
-      const { error } = await sb.from('artworks').delete().eq('id', id);
+      const { error } = await sb.rpc('admin_delete_artwork', { p_artwork_id: id });
       if (error) { showToast('❌ ' + error.message); return; }
       allArtworks = allArtworks.filter(a => a.id !== id);
       updateStats(); renderGrid(); renderBin();
@@ -336,14 +336,14 @@
       const recycled = allArtworks.filter(a => a.status === 'recycled');
       if (!recycled.length) return;
       if (!confirm(`Permanently delete all ${recycled.length} recycled artwork(s)? This cannot be undone.`)) return;
-      for (const a of recycled) await sb.from('artworks').delete().eq('id', a.id);
+      for (const a of recycled) await sb.rpc('admin_delete_artwork', { p_artwork_id: a.id });
       allArtworks = allArtworks.filter(a => a.status !== 'recycled');
       updateStats(); renderGrid(); renderBin();
       showToast('🗑️ Bin emptied');
     }
 
     async function setArtStatus(id, status) {
-      const { error } = await sb.from('artworks').update({ status }).eq('id', id);
+      const { error } = await sb.rpc('admin_set_artwork_status', { p_artwork_id: id, p_status: status });
       if (error) { showToast('❌ ' + error.message); return; }
       allArtworks = allArtworks.map(a => a.id === id ? { ...a, status } : a);
       updateStats(); renderGrid(); renderBin();
