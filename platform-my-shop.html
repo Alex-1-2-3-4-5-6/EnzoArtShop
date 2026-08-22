@@ -40,6 +40,20 @@
       margin-bottom:18px; display:flex; align-items:center; gap:8px;
     }
 
+    /* Tabs */
+    .tab-btn {
+      flex-shrink:0; border:none; border-radius:12px; padding:10px 20px;
+      font-family:'Fredoka One',cursive; font-size:0.95rem; cursor:pointer;
+      background:transparent; color:#aaa; transition:all 0.15s; white-space:nowrap;
+      display:flex; align-items:center; gap:8px;
+    }
+    .tab-btn:hover { background:#f4f0ff; color:#a29bfe; }
+    .tab-btn.active { background:linear-gradient(135deg,#a29bfe,#ff9ff3); color:white; }
+    .tab-avatar {
+      width:24px; height:24px; border-radius:50%; object-fit:cover;
+      border:2px solid rgba(255,255,255,0.5); background:#e0e0e0;
+    }
+
     /* Art grid */
     .art-grid {
       display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:16px;
@@ -119,9 +133,13 @@
     <p class="page-title" id="pageTitle">🎨 My Shop</p>
     <p class="page-sub" id="pageSub">Your posted artworks and sale history</p>
 
+    <!-- Tab bar -->
+    <div id="tabBar" style="display:none;margin-bottom:20px;background:white;border-radius:18px;padding:8px;box-shadow:0 4px 18px rgba(0,0,0,0.06);display:flex;gap:6px;overflow-x:auto;flex-wrap:nowrap;">
+    </div>
+
     <!-- Posted art -->
     <div class="panel">
-      <p class="panel-title">🖼️ Posted Artworks</p>
+      <p class="panel-title" id="artPanelTitle">🖼️ Posted Artworks</p>
       <div id="artGrid" class="art-grid"><p class="empty">Loading...</p></div>
     </div>
 
@@ -137,20 +155,22 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    let allArtworks = [];
+    let purchases = [];
+
     async function init() {
       const kidRaw = localStorage.getItem('kidSession');
       const { data: { user } } = await sb.auth.getUser();
 
       if (kidRaw) {
-        // Kid view
+        // Kid view — no tabs needed
         const kid = JSON.parse(kidRaw);
         document.getElementById('kidBanner').style.display = 'flex';
         document.getElementById('kidBannerName').textContent = `Hey, ${kid.kid_name}! 👋`;
         document.getElementById('pageTitle').textContent = `🎨 ${kid.kid_name}'s Shop`;
-        document.getElementById('pageSub').textContent = 'Art you\'ve submitted';
+        document.getElementById('pageSub').textContent = "Art you've submitted";
         document.getElementById('backBtn').href = 'platform-kid-shop.html';
 
-        // Load kid avatar
         const { data: kidData } = await sb.from('kids').select('avatar_url').eq('id', kid.kid_id).single();
         if (kidData?.avatar_url) {
           document.getElementById('kidAvatarWrap').innerHTML = `<img src="${kidData.avatar_url}" alt="${kid.kid_name}" />`;
@@ -160,18 +180,22 @@
         renderArtGrid(artworks || []);
 
       } else if (user) {
-        // Parent view
+        // Parent view — build tabs
         document.getElementById('backBtn').href = 'platform-dashboard.html';
         const meta = user.user_metadata || {};
         document.getElementById('pageTitle').textContent = `🎨 ${(meta.full_name || 'My').split(' ')[0]}'s Shop`;
 
-        const [{ data: artworks }, { data: purchases }] = await Promise.all([
-          sb.from('artworks').select('*, kids(name)').eq('parent_id', user.id).order('created_at', { ascending: false }),
+        const [{ data: artworks }, { data: kids }, { data: purch }] = await Promise.all([
+          sb.from('artworks').select('*, kids(id, name, avatar_url)').eq('parent_id', user.id).order('created_at', { ascending: false }),
+          sb.from('kids').select('*').eq('parent_id', user.id),
           sb.from('purchases').select('*').order('purchased_at', { ascending: false })
         ]);
 
-        renderArtGrid(artworks || []);
-        renderPurchases(purchases || []);
+        allArtworks = artworks || [];
+        purchases = purch || [];
+
+        buildTabs(user, meta, kids || []);
+        renderPurchases(purchases);
         document.getElementById('purchasesPanel').style.display = 'block';
 
       } else {
@@ -179,9 +203,57 @@
       }
     }
 
+    function buildTabs(user, meta, kids) {
+      const tabBar = document.getElementById('tabBar');
+      tabBar.style.display = 'flex';
+
+      // "My Art" tab (parent's own art — no kid_id)
+      const myArt = allArtworks.filter(a => !a.kid_id);
+      const myAvatar = meta.avatar_url
+        ? `<img class="tab-avatar" src="${meta.avatar_url}" />`
+        : '👨‍👩‍👧';
+      addTab(tabBar, `${myAvatar} My Art`, () => {
+        document.getElementById('artPanelTitle').textContent = '🖼️ My Art';
+        renderArtGrid(myArt);
+      }, true);
+
+      // One tab per kid
+      kids.forEach(k => {
+        const kidArt = allArtworks.filter(a => a.kid_id === k.id);
+        const avatar = k.avatar_url
+          ? `<img class="tab-avatar" src="${k.avatar_url}" />`
+          : '🧒';
+        addTab(tabBar, `${avatar} ${k.name}`, () => {
+          document.getElementById('artPanelTitle').textContent = `🖼️ ${k.name}'s Art`;
+          renderArtGrid(kidArt);
+        });
+      });
+
+      // "All" tab
+      addTab(tabBar, '✨ All', () => {
+        document.getElementById('artPanelTitle').textContent = '🖼️ All Posted Artworks';
+        renderArtGrid(allArtworks);
+      });
+
+      // Trigger first tab
+      renderArtGrid(myArt);
+    }
+
+    function addTab(bar, label, onClick, active = false) {
+      const btn = document.createElement('button');
+      btn.className = 'tab-btn' + (active ? ' active' : '');
+      btn.innerHTML = label;
+      btn.onclick = () => {
+        bar.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        onClick();
+      };
+      bar.appendChild(btn);
+    }
+
     function renderArtGrid(artworks) {
       const el = document.getElementById('artGrid');
-      if (!artworks.length) { el.innerHTML = '<p class="empty">No artworks posted yet 🎨</p>'; return; }
+      if (!artworks.length) { el.innerHTML = '<p class="empty">No artworks here yet 🎨</p>'; return; }
       el.innerHTML = artworks.map(a => `
         <div class="art-card" onclick="location.href='platform-art.html?id=${a.id}'">
           <img src="${a.image_url}" alt="${a.name}" />
