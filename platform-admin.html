@@ -9,10 +9,11 @@
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
+
     header {
       background:white; padding:16px 32px;
       display:flex; align-items:center; gap:16px;
-      box-shadow:0 2px 12px rgba(0,0,0,0.07);
+      box-shadow:0 2px 12px rgba(0,0,0,0.07); position:sticky; top:0; z-index:100;
     }
     .logo { font-family:'Fredoka One',cursive; font-size:1.4rem; color:#ff6b6b; flex:1; }
     .logo span { color:#a29bfe; }
@@ -25,71 +26,31 @@
       background:#ff6b6b; color:white; border-radius:50px;
       padding:5px 14px; font-family:'Fredoka One',cursive; font-size:0.85rem;
     }
-    .container { max-width:960px; margin:36px auto; padding:0 20px 80px; }
+
+    /* Recycle bin — fixed bottom right */
+    #recycleBin {
+      position:fixed; bottom:28px; right:28px; z-index:200;
+      width:80px; height:80px; border-radius:50%;
+      background:white; box-shadow:0 6px 28px rgba(0,0,0,0.18);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      cursor:pointer; border:3px solid #eee; transition:all 0.2s;
+      user-select:none;
+    }
+    #recycleBin:hover { transform:scale(1.08); box-shadow:0 10px 36px rgba(0,0,0,0.22); }
+    #recycleBin.drag-over {
+      background:#ffd6d6; border-color:#ff6b6b; transform:scale(1.15);
+      box-shadow:0 10px 40px rgba(255,107,107,0.4);
+    }
+    #recycleBin .bin-icon { font-size:2rem; line-height:1; }
+    #recycleBin .bin-count {
+      font-family:'Fredoka One',cursive; font-size:0.75rem; color:#ff6b6b;
+      margin-top:2px;
+    }
+
+    .container { max-width:960px; margin:36px auto; padding:0 20px 120px; }
     .page-title { font-family:'Fredoka One',cursive; font-size:1.8rem; color:#333; margin-bottom:8px; }
     .page-sub { color:#aaa; font-size:0.9rem; margin-bottom:28px; }
 
-    .filter-bar {
-      display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; align-items:center;
-    }
-    .filter-bar input {
-      flex:1; min-width:200px; padding:11px 16px; border:2.5px solid #e0e0e0;
-      border-radius:12px; font-family:'Nunito',sans-serif; font-size:0.95rem; outline:none;
-    }
-    .filter-bar input:focus { border-color:#ff6b6b; }
-    .filter-btn {
-      border:none; border-radius:50px; padding:10px 18px;
-      font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer;
-      transition:all 0.2s;
-    }
-    .filter-btn.active { background:#ff6b6b; color:white; }
-    .filter-btn:not(.active) { background:#f0f0f0; color:#888; }
-
-    .stats-row {
-      display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;
-    }
-    .stat-chip {
-      background:white; border-radius:16px; padding:14px 20px;
-      box-shadow:0 2px 10px rgba(0,0,0,0.06); text-align:center; flex:1; min-width:100px;
-    }
-    .stat-chip .num { font-family:'Fredoka One',cursive; font-size:1.8rem; color:#ff6b6b; }
-    .stat-chip .lbl { font-size:0.8rem; color:#aaa; margin-top:2px; }
-
-    .art-grid {
-      display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px;
-    }
-    .art-card {
-      background:white; border-radius:20px; overflow:hidden;
-      box-shadow:0 4px 16px rgba(0,0,0,0.07); border:2px solid transparent;
-    }
-    .art-card.pending { border-color:#feca57; }
-    .art-card.approved { border-color:#55efc4; }
-    .art-card.rejected { border-color:#ff6b6b; opacity:0.6; }
-    .art-card img { width:100%; height:180px; object-fit:cover; background:#f8f8f8; display:block; }
-    .art-card-body { padding:14px 16px 16px; }
-    .art-name { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; margin-bottom:2px; }
-    .art-meta { font-size:0.78rem; color:#aaa; margin-bottom:10px; line-height:1.5; }
-    .status-pill {
-      display:inline-block; border-radius:50px; padding:3px 12px;
-      font-family:'Fredoka One',cursive; font-size:0.75rem; margin-bottom:10px;
-    }
-    .status-pill.pending { background:#fff3cd; color:#856404; }
-    .status-pill.approved { background:#d4edda; color:#155724; }
-    .status-pill.rejected { background:#ffd6d6; color:#c0392b; }
-    .card-actions { display:flex; gap:8px; flex-wrap:wrap; }
-    .btn-approve {
-      background:#d4edda; border:none; border-radius:50px; padding:6px 14px;
-      color:#155724; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer;
-    }
-    .btn-reject {
-      background:#ffd6d6; border:none; border-radius:50px; padding:6px 14px;
-      color:#c0392b; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer;
-    }
-    .btn-delete {
-      background:#2d2d2d; border:none; border-radius:50px; padding:6px 14px;
-      color:white; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer;
-      margin-left:auto;
-    }
     /* Page tabs */
     .page-tabs {
       display:flex; gap:6px; margin-bottom:24px;
@@ -104,17 +65,84 @@
     .page-tab.active { background:linear-gradient(135deg,#ff6b6b,#feca57); color:white; }
     .page-tab:hover:not(.active) { background:#f0f0f0; color:#555; }
 
+    .filter-bar {
+      display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; align-items:center;
+    }
+    .filter-bar input {
+      flex:1; min-width:200px; padding:11px 16px; border:2.5px solid #e0e0e0;
+      border-radius:12px; font-family:'Nunito',sans-serif; font-size:0.95rem; outline:none;
+    }
+    .filter-bar input:focus { border-color:#ff6b6b; }
+    .filter-btn {
+      border:none; border-radius:50px; padding:10px 18px;
+      font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer; transition:all 0.2s;
+    }
+    .filter-btn.active { background:#ff6b6b; color:white; }
+    .filter-btn:not(.active) { background:#f0f0f0; color:#888; }
+
+    .stats-row { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+    .stat-chip {
+      background:white; border-radius:16px; padding:14px 20px;
+      box-shadow:0 2px 10px rgba(0,0,0,0.06); text-align:center; flex:1; min-width:100px;
+    }
+    .stat-chip .num { font-family:'Fredoka One',cursive; font-size:1.8rem; color:#ff6b6b; }
+    .stat-chip .lbl { font-size:0.8rem; color:#aaa; margin-top:2px; }
+
+    /* Art cards */
+    .art-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:20px; }
+    .art-card {
+      background:white; border-radius:20px; overflow:hidden;
+      box-shadow:0 4px 16px rgba(0,0,0,0.07); border:2px solid transparent;
+      cursor:grab; transition:transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    }
+    .art-card:active { cursor:grabbing; }
+    .art-card.dragging { opacity:0.4; transform:scale(0.97); }
+    .art-card.pending  { border-color:#feca57; }
+    .art-card.approved { border-color:#55efc4; }
+    .art-card.rejected { border-color:#ff6b6b; opacity:0.6; }
+    .art-card.recycled { border-color:#ccc; opacity:0.7; }
+    .art-card img { width:100%; height:180px; object-fit:cover; background:#f8f8f8; display:block; pointer-events:none; }
+    .art-card-body { padding:14px 16px 16px; }
+    .art-name { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; margin-bottom:2px; }
+    .art-meta { font-size:0.78rem; color:#aaa; margin-bottom:10px; line-height:1.5; }
+    .status-pill {
+      display:inline-block; border-radius:50px; padding:3px 12px;
+      font-family:'Fredoka One',cursive; font-size:0.75rem; margin-bottom:10px;
+    }
+    .status-pill.pending  { background:#fff3cd; color:#856404; }
+    .status-pill.approved { background:#d4edda; color:#155724; }
+    .status-pill.rejected { background:#ffd6d6; color:#c0392b; }
+    .status-pill.recycled { background:#f0f0f0; color:#999; }
+    .card-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .btn-approve { background:#d4edda; border:none; border-radius:50px; padding:6px 14px; color:#155724; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer; }
+    .btn-reject  { background:#ffd6d6; border:none; border-radius:50px; padding:6px 14px; color:#c0392b; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer; }
+    .btn-restore { background:#d4edda; border:none; border-radius:50px; padding:6px 14px; color:#155724; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer; }
+    .btn-delete  { background:#2d2d2d; border:none; border-radius:50px; padding:6px 14px; color:white; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer; margin-left:auto; }
+    .drag-hint { font-size:0.72rem; color:#ccc; margin-top:8px; text-align:center; }
+
+    /* Recycle bin page */
+    .bin-header {
+      background:linear-gradient(135deg,#ffd6d6,#fff0f0); border-radius:20px;
+      padding:20px 24px; margin-bottom:24px; display:flex; align-items:center; gap:14px;
+    }
+    .bin-header .icon { font-size:2.5rem; }
+    .bin-header h2 { font-family:'Fredoka One',cursive; font-size:1.4rem; color:#c0392b; }
+    .bin-header p { font-size:0.88rem; color:#aaa; margin-top:3px; }
+    .btn-empty-bin {
+      margin-left:auto; background:#c0392b; border:none; border-radius:50px;
+      padding:10px 22px; color:white; font-family:'Fredoka One',cursive;
+      font-size:0.9rem; cursor:pointer; white-space:nowrap;
+    }
+
     /* Accounts */
     .account-list { display:flex; flex-direction:column; gap:12px; }
     .account-row {
       background:white; border-radius:18px; padding:16px 20px;
-      box-shadow:0 2px 10px rgba(0,0,0,0.05);
-      display:flex; align-items:center; gap:14px;
+      box-shadow:0 2px 10px rgba(0,0,0,0.05); display:flex; align-items:center; gap:14px;
     }
     .account-avatar {
-      width:48px; height:48px; border-radius:50%; object-fit:cover;
-      border:3px solid #a29bfe; background:#f4f0ff;
-      display:flex; align-items:center; justify-content:center;
+      width:48px; height:48px; border-radius:50%; border:3px solid #a29bfe;
+      background:#f4f0ff; display:flex; align-items:center; justify-content:center;
       font-size:1.4rem; flex-shrink:0; overflow:hidden;
     }
     .account-avatar img { width:100%; height:100%; object-fit:cover; }
@@ -122,20 +150,12 @@
     .account-name { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; }
     .account-email { font-size:0.8rem; color:#aaa; margin-top:1px; }
     .account-chips { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
-    .account-chip {
-      background:#f4f0ff; color:#a29bfe; border-radius:50px;
-      padding:3px 10px; font-size:0.75rem; font-weight:700;
-    }
-    .ban-btn {
-      background:#ffd6d6; border:none; border-radius:50px; padding:7px 16px;
-      color:#c0392b; font-family:'Fredoka One',cursive; font-size:0.82rem;
-      cursor:pointer; white-space:nowrap; flex-shrink:0;
-    }
-    .ban-btn:hover { background:#ffbcbc; }
+    .account-chip { background:#f4f0ff; color:#a29bfe; border-radius:50px; padding:3px 10px; font-size:0.75rem; font-weight:700; }
+    .ban-btn { background:#ffd6d6; border:none; border-radius:50px; padding:7px 16px; color:#c0392b; font-family:'Fredoka One',cursive; font-size:0.82rem; cursor:pointer; white-space:nowrap; flex-shrink:0; }
 
     .empty { text-align:center; padding:60px 20px; font-family:'Fredoka One',cursive; font-size:1.2rem; color:#ccc; }
     .toast {
-      position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+      position:fixed; bottom:120px; left:50%; transform:translateX(-50%);
       background:#2d2d2d; color:white; padding:12px 24px; border-radius:50px;
       font-family:'Fredoka One',cursive; font-size:0.95rem;
       opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:999;
@@ -151,37 +171,59 @@
     <a href="platform-shop.html" class="back-btn">← Shop</a>
   </header>
 
+  <!-- Recycle bin (fixed) -->
+  <div id="recycleBin" onclick="showTab('bin')"
+    ondragover="event.preventDefault();this.classList.add('drag-over')"
+    ondragleave="this.classList.remove('drag-over')"
+    ondrop="dropIntoBin(event)">
+    <div class="bin-icon">🗑️</div>
+    <div class="bin-count" id="binCount">0 items</div>
+  </div>
+
   <div class="container">
     <p class="page-title">🛠️ Admin Panel</p>
-    <p class="page-sub">Manage artworks and accounts across the platform.</p>
+    <p class="page-sub">Drag artwork cards onto the bin to recycle them. Click the bin to manage recycled art.</p>
 
     <div class="page-tabs">
-      <button class="page-tab active" id="tabArt" onclick="showTab('art')">🖼️ Artworks</button>
-      <button class="page-tab" id="tabAccounts" onclick="showTab('accounts')">👤 Accounts</button>
+      <button class="page-tab active" id="tabArt"      onclick="showTab('art')">🖼️ Artworks</button>
+      <button class="page-tab"        id="tabBin"      onclick="showTab('bin')">🗑️ Recycle Bin</button>
+      <button class="page-tab"        id="tabAccounts" onclick="showTab('accounts')">👤 Accounts</button>
     </div>
 
-    <!-- Artworks section -->
+    <!-- ── Artworks ── -->
     <div id="sectionArt">
-    <div class="stats-row">
-      <div class="stat-chip"><div class="num" id="statTotal">—</div><div class="lbl">Total</div></div>
-      <div class="stat-chip"><div class="num" id="statPending">—</div><div class="lbl">Pending</div></div>
-      <div class="stat-chip"><div class="num" id="statApproved">—</div><div class="lbl">Approved</div></div>
-      <div class="stat-chip"><div class="num" id="statRejected">—</div><div class="lbl">Rejected</div></div>
+      <div class="stats-row">
+        <div class="stat-chip"><div class="num" id="statTotal">—</div><div class="lbl">Total</div></div>
+        <div class="stat-chip"><div class="num" id="statPending">—</div><div class="lbl">Pending</div></div>
+        <div class="stat-chip"><div class="num" id="statApproved">—</div><div class="lbl">Approved</div></div>
+        <div class="stat-chip"><div class="num" id="statRejected">—</div><div class="lbl">Rejected</div></div>
+      </div>
+      <div class="filter-bar">
+        <input type="text" id="searchInput" placeholder="Search by title, kid, or parent..." oninput="renderGrid()" />
+        <button class="filter-btn active" id="btnAll"      onclick="setStatus('all')">All</button>
+        <button class="filter-btn"        id="btnPending"  onclick="setStatus('pending')">⏳ Pending</button>
+        <button class="filter-btn"        id="btnApproved" onclick="setStatus('approved')">✅ Approved</button>
+        <button class="filter-btn"        id="btnRejected" onclick="setStatus('rejected')">❌ Rejected</button>
+      </div>
+      <div class="art-grid" id="artGrid"></div>
+      <div class="empty" id="emptyState" style="display:none">No artworks found.</div>
     </div>
 
-    <div class="filter-bar">
-      <input type="text" id="searchInput" placeholder="Search by title, kid, or parent..." oninput="renderGrid()" />
-      <button class="filter-btn active" id="btnAll" onclick="setStatus('all')">All</button>
-      <button class="filter-btn" id="btnPending" onclick="setStatus('pending')">⏳ Pending</button>
-      <button class="filter-btn" id="btnApproved" onclick="setStatus('approved')">✅ Approved</button>
-      <button class="filter-btn" id="btnRejected" onclick="setStatus('rejected')">❌ Rejected</button>
+    <!-- ── Recycle Bin ── -->
+    <div id="sectionBin" style="display:none;">
+      <div class="bin-header">
+        <div class="icon">🗑️</div>
+        <div>
+          <h2>Recycle Bin</h2>
+          <p>Recycled art is hidden from the shop. Permanently delete to remove it forever.</p>
+        </div>
+        <button class="btn-empty-bin" onclick="emptyBin()">🗑️ Empty Bin</button>
+      </div>
+      <div class="art-grid" id="binGrid"></div>
+      <div class="empty" id="binEmpty" style="display:none">Recycle bin is empty 🎉</div>
     </div>
 
-    <div class="art-grid" id="artGrid"></div>
-    <div class="empty" id="emptyState" style="display:none">No artworks found.</div>
-    </div><!-- end sectionArt -->
-
-    <!-- Accounts section -->
+    <!-- ── Accounts ── -->
     <div id="sectionAccounts" style="display:none;">
       <div class="filter-bar" style="margin-bottom:20px;">
         <input type="text" id="accountSearch" placeholder="Search by name or email..." oninput="renderAccounts()" />
@@ -201,17 +243,8 @@
     let allArtworks = [];
     let allUsers = [];
     let statusFilter = 'all';
-    let currentTab = 'art';
 
-    function showTab(tab) {
-      currentTab = tab;
-      document.getElementById('sectionArt').style.display = tab === 'art' ? 'block' : 'none';
-      document.getElementById('sectionAccounts').style.display = tab === 'accounts' ? 'block' : 'none';
-      document.getElementById('tabArt').classList.toggle('active', tab === 'art');
-      document.getElementById('tabAccounts').classList.toggle('active', tab === 'accounts');
-      if (tab === 'accounts' && allUsers.length === 0) loadUsers();
-    }
-
+    // ── Init ──────────────────────────────────────
     async function init() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user || user.email !== ADMIN_EMAIL) {
@@ -221,71 +254,35 @@
       loadArtworks();
     }
 
-    async function loadUsers() {
-      document.getElementById('accountList').innerHTML = '<p class="empty">Loading...</p>';
-      const { data, error } = await sb.rpc('admin_get_users');
-      if (error) { document.getElementById('accountList').innerHTML = `<p class="empty">Error: ${error.message}</p>`; return; }
-      allUsers = data || [];
-      renderAccounts();
-    }
-
-    function renderAccounts() {
-      const q = (document.getElementById('accountSearch')?.value || '').toLowerCase();
-      const el = document.getElementById('accountList');
-      const filtered = allUsers.filter(u =>
-        !q || (u.email||'').toLowerCase().includes(q) || (u.full_name||'').toLowerCase().includes(q)
-      );
-      if (!filtered.length) { el.innerHTML = '<p class="empty">No accounts found.</p>'; return; }
-      el.innerHTML = filtered.map(u => {
-        const isAdmin = u.email === ADMIN_EMAIL;
-        const joined = new Date(u.created_at).toLocaleDateString();
-        return `
-          <div class="account-row">
-            <div class="account-avatar">
-              ${u.avatar_url ? `<img src="${u.avatar_url}" alt="${u.full_name||u.email}" onerror="this.style.display='none'" />` : '🧑'}
-            </div>
-            <div class="account-info">
-              <p class="account-name">${u.full_name || '(no name)'} ${isAdmin ? '<span style="background:#ff6b6b;color:white;font-size:0.7rem;padding:2px 8px;border-radius:50px;margin-left:4px;">Admin</span>' : ''}</p>
-              <p class="account-email">${u.email}</p>
-              <div class="account-chips">
-                <span class="account-chip">📅 Joined ${joined}</span>
-                <span class="account-chip">🖼️ ${u.artwork_count} artworks</span>
-                <span class="account-chip">🧒 ${u.kid_count} kids</span>
-              </div>
-            </div>
-            ${!isAdmin ? `
-              <button class="ban-btn" onclick="deleteAccount('${u.id}','${u.email}')">🗑️ Delete Account</button>
-            ` : ''}
-          </div>
-        `;
-      }).join('');
-    }
-
-    async function deleteAccount(userId, email) {
-      if (!confirm(`Delete account for ${email}?\n\nThis will remove their account, all their kids, and all their artwork. This cannot be undone.`)) return;
-      const { error } = await sb.rpc('admin_delete_user', { p_user_id: userId });
-      if (error) { showToast('❌ ' + error.message); return; }
-      allUsers = allUsers.filter(u => u.id !== userId);
-      allArtworks = allArtworks.filter(a => a.parent_id !== userId);
-      updateStats();
-      renderAccounts();
-      showToast('🗑️ Account deleted');
-    }
-
     async function loadArtworks() {
       const { data } = await sb.from('artworks').select('*, kids(name)').order('created_at', { ascending: false });
       allArtworks = data || [];
       updateStats();
       renderGrid();
+      renderBin();
     }
 
+    // ── Tab switching ─────────────────────────────
+    function showTab(tab) {
+      ['art','bin','accounts'].forEach(t => {
+        document.getElementById('section' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === tab ? 'block' : 'none';
+        document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
+      });
+      if (tab === 'accounts' && allUsers.length === 0) loadUsers();
+    }
+
+    // ── Stats ─────────────────────────────────────
     function updateStats() {
-      document.getElementById('statTotal').textContent    = allArtworks.length;
-      document.getElementById('statPending').textContent  = allArtworks.filter(a => a.status === 'pending').length;
-      document.getElementById('statApproved').textContent = allArtworks.filter(a => a.status === 'approved').length;
-      document.getElementById('statRejected').textContent = allArtworks.filter(a => a.status === 'rejected').length;
+      const active = allArtworks.filter(a => a.status !== 'recycled');
+      document.getElementById('statTotal').textContent    = active.length;
+      document.getElementById('statPending').textContent  = active.filter(a => a.status === 'pending').length;
+      document.getElementById('statApproved').textContent = active.filter(a => a.status === 'approved').length;
+      document.getElementById('statRejected').textContent = active.filter(a => a.status === 'rejected').length;
+      const binCount = allArtworks.filter(a => a.status === 'recycled').length;
+      document.getElementById('binCount').textContent = binCount + (binCount === 1 ? ' item' : ' items');
     }
 
+    // ── Artworks grid ─────────────────────────────
     function setStatus(s) {
       statusFilter = s;
       ['all','pending','approved','rejected'].forEach(k => {
@@ -300,18 +297,23 @@
       const empty = document.getElementById('emptyState');
 
       const filtered = allArtworks.filter(a => {
+        if (a.status === 'recycled') return false;
         if (statusFilter !== 'all' && a.status !== statusFilter) return false;
         if (!query) return true;
-        return (a.name || '').toLowerCase().includes(query) ||
-               (a.kids?.name || '').toLowerCase().includes(query) ||
-               (a.parent_name || '').toLowerCase().includes(query);
+        return (a.name||'').toLowerCase().includes(query) ||
+               (a.kids?.name||'').toLowerCase().includes(query) ||
+               (a.parent_name||'').toLowerCase().includes(query);
       });
 
-      if (filtered.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+      if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
       empty.style.display = 'none';
+      grid.innerHTML = filtered.map(a => artCardHTML(a, false)).join('');
+      addDragListeners();
+    }
 
-      grid.innerHTML = filtered.map(a => `
-        <div class="art-card ${a.status}" id="card-${a.id}">
+    function artCardHTML(a, inBin) {
+      return `
+        <div class="art-card ${a.status}" id="card-${a.id}" draggable="${!inBin}" data-id="${a.id}">
           <img src="${a.image_url}" alt="${a.name}" loading="lazy" />
           <div class="art-card-body">
             <span class="status-pill ${a.status}">${a.status}</span>
@@ -324,34 +326,129 @@
               ${a.description ? `<br/><em>${a.description.slice(0,80)}${a.description.length>80?'…':''}</em>` : ''}
             </p>
             <div class="card-actions">
-              ${a.status !== 'approved' ? `<button class="btn-approve" onclick="setArtStatus('${a.id}','approved')">✅ Approve</button>` : ''}
-              ${a.status !== 'rejected' ? `<button class="btn-reject" onclick="setArtStatus('${a.id}','rejected')">❌ Reject</button>` : ''}
-              <button class="btn-delete" onclick="deleteArt('${a.id}','${a.image_url}')">🗑️</button>
+              ${inBin ? `
+                <button class="btn-restore" onclick="restoreArt('${a.id}')">↩️ Restore</button>
+                <button class="btn-delete"  onclick="deleteArt('${a.id}')">🗑️ Delete Forever</button>
+              ` : `
+                ${a.status !== 'approved' ? `<button class="btn-approve" onclick="setArtStatus('${a.id}','approved')">✅ Approve</button>` : ''}
+                ${a.status !== 'rejected' ? `<button class="btn-reject"  onclick="setArtStatus('${a.id}','rejected')">❌ Reject</button>` : ''}
+              `}
             </div>
+            ${!inBin ? `<p class="drag-hint">Drag to 🗑️ bin to recycle</p>` : ''}
           </div>
-        </div>
-      `).join('');
+        </div>`;
     }
 
+    // ── Drag & Drop ───────────────────────────────
+    function addDragListeners() {
+      document.querySelectorAll('.art-card[draggable="true"]').forEach(card => {
+        card.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', card.dataset.id);
+          setTimeout(() => card.classList.add('dragging'), 0);
+        });
+        card.addEventListener('dragend', () => card.classList.remove('dragging'));
+      });
+    }
+
+    async function dropIntoBin(e) {
+      e.preventDefault();
+      document.getElementById('recycleBin').classList.remove('drag-over');
+      const id = e.dataTransfer.getData('text/plain');
+      if (!id) return;
+      await setArtStatus(id, 'recycled');
+      showToast('🗑️ Moved to recycle bin');
+    }
+
+    // ── Bin ───────────────────────────────────────
+    function renderBin() {
+      const recycled = allArtworks.filter(a => a.status === 'recycled');
+      const grid = document.getElementById('binGrid');
+      const empty = document.getElementById('binEmpty');
+      if (!recycled.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      grid.innerHTML = recycled.map(a => artCardHTML(a, true)).join('');
+    }
+
+    async function restoreArt(id) {
+      await setArtStatus(id, 'pending');
+      showToast('↩️ Restored to pending');
+    }
+
+    async function emptyBin() {
+      const recycled = allArtworks.filter(a => a.status === 'recycled');
+      if (!recycled.length) return;
+      if (!confirm(`Permanently delete all ${recycled.length} recycled artwork(s)? This cannot be undone.`)) return;
+      for (const a of recycled) await sb.from('artworks').delete().eq('id', a.id);
+      allArtworks = allArtworks.filter(a => a.status !== 'recycled');
+      updateStats(); renderGrid(); renderBin();
+      showToast('🗑️ Bin emptied');
+    }
+
+    // ── Art actions ───────────────────────────────
     async function setArtStatus(id, status) {
       const { error } = await sb.from('artworks').update({ status }).eq('id', id);
       if (error) { showToast('❌ ' + error.message); return; }
       allArtworks = allArtworks.map(a => a.id === id ? { ...a, status } : a);
-      updateStats();
-      renderGrid();
-      showToast(status === 'approved' ? '✅ Approved!' : '❌ Rejected');
+      updateStats(); renderGrid(); renderBin();
+      if (status !== 'recycled') showToast(status === 'approved' ? '✅ Approved!' : '❌ Rejected');
     }
 
-    async function deleteArt(id, imageUrl) {
+    async function deleteArt(id) {
       if (!confirm('Permanently delete this artwork? This cannot be undone.')) return;
       const { error } = await sb.from('artworks').delete().eq('id', id);
       if (error) { showToast('❌ ' + error.message); return; }
       allArtworks = allArtworks.filter(a => a.id !== id);
-      updateStats();
-      renderGrid();
-      showToast('🗑️ Deleted');
+      updateStats(); renderGrid(); renderBin();
+      showToast('🗑️ Deleted permanently');
     }
 
+    // ── Accounts ──────────────────────────────────
+    async function loadUsers() {
+      document.getElementById('accountList').innerHTML = '<p class="empty">Loading...</p>';
+      const { data, error } = await sb.rpc('admin_get_users');
+      if (error) { document.getElementById('accountList').innerHTML = `<p class="empty">Error: ${error.message}</p>`; return; }
+      allUsers = data || [];
+      renderAccounts();
+    }
+
+    function renderAccounts() {
+      const q = (document.getElementById('accountSearch')?.value || '').toLowerCase();
+      const el = document.getElementById('accountList');
+      const filtered = allUsers.filter(u => !q || (u.email||'').toLowerCase().includes(q) || (u.full_name||'').toLowerCase().includes(q));
+      if (!filtered.length) { el.innerHTML = '<p class="empty">No accounts found.</p>'; return; }
+      el.innerHTML = filtered.map(u => {
+        const isAdmin = u.email === ADMIN_EMAIL;
+        const joined  = new Date(u.created_at).toLocaleDateString();
+        return `
+          <div class="account-row">
+            <div class="account-avatar">
+              ${u.avatar_url ? `<img src="${u.avatar_url}" alt="${u.full_name||u.email}" onerror="this.style.display='none'" />` : '🧑'}
+            </div>
+            <div class="account-info">
+              <p class="account-name">${u.full_name || '(no name)'} ${isAdmin ? '<span style="background:#ff6b6b;color:white;font-size:0.7rem;padding:2px 8px;border-radius:50px;margin-left:4px;">Admin</span>' : ''}</p>
+              <p class="account-email">${u.email}</p>
+              <div class="account-chips">
+                <span class="account-chip">📅 Joined ${joined}</span>
+                <span class="account-chip">🖼️ ${u.artwork_count} artworks</span>
+                <span class="account-chip">🧒 ${u.kid_count} kids</span>
+              </div>
+            </div>
+            ${!isAdmin ? `<button class="ban-btn" onclick="deleteAccount('${u.id}','${u.email}')">🗑️ Delete Account</button>` : ''}
+          </div>`;
+      }).join('');
+    }
+
+    async function deleteAccount(userId, email) {
+      if (!confirm(`Delete account for ${email}?\n\nThis removes their account, all kids, and all artwork. Cannot be undone.`)) return;
+      const { error } = await sb.rpc('admin_delete_user', { p_user_id: userId });
+      if (error) { showToast('❌ ' + error.message); return; }
+      allUsers = allUsers.filter(u => u.id !== userId);
+      allArtworks = allArtworks.filter(a => a.parent_id !== userId);
+      updateStats(); renderAccounts();
+      showToast('🗑️ Account deleted');
+    }
+
+    // ── Toast ─────────────────────────────────────
     function showToast(msg) {
       const t = document.getElementById('toast');
       t.textContent = msg; t.classList.add('show');
