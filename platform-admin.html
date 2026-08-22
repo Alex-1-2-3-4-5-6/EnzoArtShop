@@ -27,31 +27,10 @@
       padding:5px 14px; font-family:'Fredoka One',cursive; font-size:0.85rem;
     }
 
-    /* Recycle bin — fixed bottom right */
-    #recycleBin {
-      position:fixed; bottom:28px; right:28px; z-index:200;
-      width:80px; height:80px; border-radius:50%;
-      background:white; box-shadow:0 6px 28px rgba(0,0,0,0.18);
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      cursor:pointer; border:3px solid #eee; transition:all 0.2s;
-      user-select:none;
-    }
-    #recycleBin:hover { transform:scale(1.08); box-shadow:0 10px 36px rgba(0,0,0,0.22); }
-    #recycleBin.drag-over {
-      background:#ffd6d6; border-color:#ff6b6b; transform:scale(1.15);
-      box-shadow:0 10px 40px rgba(255,107,107,0.4);
-    }
-    #recycleBin .bin-icon { font-size:2rem; line-height:1; }
-    #recycleBin .bin-count {
-      font-family:'Fredoka One',cursive; font-size:0.75rem; color:#ff6b6b;
-      margin-top:2px;
-    }
-
-    .container { max-width:960px; margin:36px auto; padding:0 20px 120px; }
+    .container { max-width:960px; margin:36px auto; padding:0 20px 80px; }
     .page-title { font-family:'Fredoka One',cursive; font-size:1.8rem; color:#333; margin-bottom:8px; }
     .page-sub { color:#aaa; font-size:0.9rem; margin-bottom:28px; }
 
-    /* Page tabs */
     .page-tabs {
       display:flex; gap:6px; margin-bottom:24px;
       background:white; border-radius:18px; padding:8px;
@@ -88,20 +67,15 @@
     .stat-chip .num { font-family:'Fredoka One',cursive; font-size:1.8rem; color:#ff6b6b; }
     .stat-chip .lbl { font-size:0.8rem; color:#aaa; margin-top:2px; }
 
-    /* Art cards */
     .art-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:20px; }
     .art-card {
       background:white; border-radius:20px; overflow:hidden;
       box-shadow:0 4px 16px rgba(0,0,0,0.07); border:2px solid transparent;
-      cursor:grab; transition:transform 0.15s, box-shadow 0.15s, opacity 0.15s;
     }
-    .art-card:active { cursor:grabbing; }
-    .art-card.dragging { opacity:0.4; transform:scale(0.97); }
     .art-card.pending  { border-color:#feca57; }
     .art-card.approved { border-color:#55efc4; }
-    .art-card.rejected { border-color:#ff6b6b; opacity:0.6; }
-    .art-card.recycled { border-color:#ccc; opacity:0.7; }
-    .art-card img { width:100%; height:180px; object-fit:cover; background:#f8f8f8; display:block; pointer-events:none; }
+    .art-card.rejected { border-color:#ff6b6b; }
+    .art-card img { width:100%; height:180px; object-fit:cover; background:#f8f8f8; display:block; }
     .art-card-body { padding:14px 16px 16px; }
     .art-name { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; margin-bottom:2px; }
     .art-meta { font-size:0.78rem; color:#aaa; margin-bottom:10px; line-height:1.5; }
@@ -112,18 +86,17 @@
     .status-pill.pending  { background:#fff3cd; color:#856404; }
     .status-pill.approved { background:#d4edda; color:#155724; }
     .status-pill.rejected { background:#ffd6d6; color:#c0392b; }
-    .status-pill.recycled { background:#f0f0f0; color:#999; }
-    .card-actions { display:flex; gap:8px; flex-wrap:wrap; }
-    .btn-approve { background:#d4edda; border:none; border-radius:50px; padding:6px 14px; color:#155724; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer; }
-    .btn-reject  { background:#ffd6d6; border:none; border-radius:50px; padding:6px 14px; color:#c0392b; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer; }
-    .btn-restore { background:#d4edda; border:none; border-radius:50px; padding:6px 14px; color:#155724; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer; }
-    .btn-delete  { background:#2d2d2d; border:none; border-radius:50px; padding:6px 14px; color:white; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer; margin-left:auto; }
-    .drag-hint { font-size:0.72rem; color:#ccc; margin-top:8px; text-align:center; }
+    .card-actions { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    .btn-approve  { background:#d4edda; border:none; border-radius:50px; padding:6px 14px; color:#155724; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer; }
+    .btn-reject   { background:#ffd6d6; border:none; border-radius:50px; padding:6px 14px; color:#c0392b; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer; }
+    .btn-recycle  { background:#f0f0f0; border:none; border-radius:50px; padding:6px 12px; color:#999; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer; margin-left:auto; }
+    .btn-recycle:hover { background:#ffd6d6; color:#c0392b; }
+    .btn-restore  { background:#d4edda; border:none; border-radius:50px; padding:6px 14px; color:#155724; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer; }
+    .btn-delete   { background:#2d2d2d; border:none; border-radius:50px; padding:6px 14px; color:white; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer; }
 
-    /* Recycle bin page */
     .bin-header {
       background:linear-gradient(135deg,#ffd6d6,#fff0f0); border-radius:20px;
-      padding:20px 24px; margin-bottom:24px; display:flex; align-items:center; gap:14px;
+      padding:20px 24px; margin-bottom:24px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
     }
     .bin-header .icon { font-size:2.5rem; }
     .bin-header h2 { font-family:'Fredoka One',cursive; font-size:1.4rem; color:#c0392b; }
@@ -134,7 +107,6 @@
       font-size:0.9rem; cursor:pointer; white-space:nowrap;
     }
 
-    /* Accounts */
     .account-list { display:flex; flex-direction:column; gap:12px; }
     .account-row {
       background:white; border-radius:18px; padding:16px 20px;
@@ -155,7 +127,7 @@
 
     .empty { text-align:center; padding:60px 20px; font-family:'Fredoka One',cursive; font-size:1.2rem; color:#ccc; }
     .toast {
-      position:fixed; bottom:120px; left:50%; transform:translateX(-50%);
+      position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
       background:#2d2d2d; color:white; padding:12px 24px; border-radius:50px;
       font-family:'Fredoka One',cursive; font-size:0.95rem;
       opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:999;
@@ -171,26 +143,17 @@
     <a href="platform-shop.html" class="back-btn">← Shop</a>
   </header>
 
-  <!-- Recycle bin (fixed) -->
-  <div id="recycleBin" onclick="showTab('bin')"
-    ondragover="event.preventDefault();this.classList.add('drag-over')"
-    ondragleave="this.classList.remove('drag-over')"
-    ondrop="dropIntoBin(event)">
-    <div class="bin-icon">🗑️</div>
-    <div class="bin-count" id="binCount">0 items</div>
-  </div>
-
   <div class="container">
     <p class="page-title">🛠️ Admin Panel</p>
-    <p class="page-sub">Drag artwork cards onto the bin to recycle them. Click the bin to manage recycled art.</p>
+    <p class="page-sub">Click 🗑️ on any artwork to recycle it. Recycled art is hidden from the shop.</p>
 
     <div class="page-tabs">
       <button class="page-tab active" id="tabArt"      onclick="showTab('art')">🖼️ Artworks</button>
-      <button class="page-tab"        id="tabBin"      onclick="showTab('bin')">🗑️ Recycle Bin</button>
+      <button class="page-tab"        id="tabBin"      onclick="showTab('bin')">🗑️ Recycle Bin <span id="binBadge" style="display:none;background:#ff6b6b;color:white;border-radius:50px;padding:2px 8px;font-size:0.75rem;margin-left:4px;"></span></button>
       <button class="page-tab"        id="tabAccounts" onclick="showTab('accounts')">👤 Accounts</button>
     </div>
 
-    <!-- ── Artworks ── -->
+    <!-- Artworks -->
     <div id="sectionArt">
       <div class="stats-row">
         <div class="stat-chip"><div class="num" id="statTotal">—</div><div class="lbl">Total</div></div>
@@ -200,22 +163,22 @@
       </div>
       <div class="filter-bar">
         <input type="text" id="searchInput" placeholder="Search by title, kid, or parent..." oninput="renderGrid()" />
-        <button class="filter-btn active" id="btnAll"      onclick="setStatus('all')">All</button>
-        <button class="filter-btn"        id="btnPending"  onclick="setStatus('pending')">⏳ Pending</button>
-        <button class="filter-btn"        id="btnApproved" onclick="setStatus('approved')">✅ Approved</button>
-        <button class="filter-btn"        id="btnRejected" onclick="setStatus('rejected')">❌ Rejected</button>
+        <button class="filter-btn active" id="btnAll"      onclick="setFilter('all')">All</button>
+        <button class="filter-btn"        id="btnPending"  onclick="setFilter('pending')">⏳ Pending</button>
+        <button class="filter-btn"        id="btnApproved" onclick="setFilter('approved')">✅ Approved</button>
+        <button class="filter-btn"        id="btnRejected" onclick="setFilter('rejected')">❌ Rejected</button>
       </div>
       <div class="art-grid" id="artGrid"></div>
       <div class="empty" id="emptyState" style="display:none">No artworks found.</div>
     </div>
 
-    <!-- ── Recycle Bin ── -->
+    <!-- Recycle Bin -->
     <div id="sectionBin" style="display:none;">
       <div class="bin-header">
         <div class="icon">🗑️</div>
         <div>
           <h2>Recycle Bin</h2>
-          <p>Recycled art is hidden from the shop. Permanently delete to remove it forever.</p>
+          <p>Recycled art is hidden from the shop. Restore or permanently delete below.</p>
         </div>
         <button class="btn-empty-bin" onclick="emptyBin()">🗑️ Empty Bin</button>
       </div>
@@ -223,7 +186,7 @@
       <div class="empty" id="binEmpty" style="display:none">Recycle bin is empty 🎉</div>
     </div>
 
-    <!-- ── Accounts ── -->
+    <!-- Accounts -->
     <div id="sectionAccounts" style="display:none;">
       <div class="filter-bar" style="margin-bottom:20px;">
         <input type="text" id="accountSearch" placeholder="Search by name or email..." oninput="renderAccounts()" />
@@ -244,7 +207,6 @@
     let allUsers = [];
     let statusFilter = 'all';
 
-    // ── Init ──────────────────────────────────────
     async function init() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user || user.email !== ADMIN_EMAIL) {
@@ -262,16 +224,15 @@
       renderBin();
     }
 
-    // ── Tab switching ─────────────────────────────
     function showTab(tab) {
       ['art','bin','accounts'].forEach(t => {
-        document.getElementById('section' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === tab ? 'block' : 'none';
-        document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
+        const key = t.charAt(0).toUpperCase() + t.slice(1);
+        document.getElementById('section' + key).style.display = t === tab ? 'block' : 'none';
+        document.getElementById('tab' + key).classList.toggle('active', t === tab);
       });
       if (tab === 'accounts' && allUsers.length === 0) loadUsers();
     }
 
-    // ── Stats ─────────────────────────────────────
     function updateStats() {
       const active = allArtworks.filter(a => a.status !== 'recycled');
       document.getElementById('statTotal').textContent    = active.length;
@@ -279,11 +240,12 @@
       document.getElementById('statApproved').textContent = active.filter(a => a.status === 'approved').length;
       document.getElementById('statRejected').textContent = active.filter(a => a.status === 'rejected').length;
       const binCount = allArtworks.filter(a => a.status === 'recycled').length;
-      document.getElementById('binCount').textContent = binCount + (binCount === 1 ? ' item' : ' items');
+      const badge = document.getElementById('binBadge');
+      if (binCount > 0) { badge.textContent = binCount; badge.style.display = 'inline'; }
+      else { badge.style.display = 'none'; }
     }
 
-    // ── Artworks grid ─────────────────────────────
-    function setStatus(s) {
+    function setFilter(s) {
       statusFilter = s;
       ['all','pending','approved','rejected'].forEach(k => {
         document.getElementById('btn' + k.charAt(0).toUpperCase() + k.slice(1)).classList.toggle('active', k === s);
@@ -308,20 +270,26 @@
       if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
       empty.style.display = 'none';
       grid.innerHTML = filtered.map(a => artCardHTML(a, false)).join('');
-      addDragListeners();
+    }
+
+    function renderBin() {
+      const recycled = allArtworks.filter(a => a.status === 'recycled');
+      const grid  = document.getElementById('binGrid');
+      const empty = document.getElementById('binEmpty');
+      if (!recycled.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      grid.innerHTML = recycled.map(a => artCardHTML(a, true)).join('');
     }
 
     function artCardHTML(a, inBin) {
       return `
-        <div class="art-card ${a.status}" id="card-${a.id}" draggable="${!inBin}" data-id="${a.id}">
+        <div class="art-card ${a.status}" id="card-${a.id}">
           <img src="${a.image_url}" alt="${a.name}" loading="lazy" />
           <div class="art-card-body">
             <span class="status-pill ${a.status}">${a.status}</span>
             <p class="art-name">${a.name}</p>
             <p class="art-meta">
-              $${a.price}
-              ${a.kids?.name ? `· 🧒 ${a.kids.name}` : ''}
-              ${a.parent_name ? `· 👨‍👩‍👧 ${a.parent_name}` : ''}
+              $${a.price}${a.kids?.name ? ` · 🧒 ${a.kids.name}` : ''}${a.parent_name ? ` · 👨‍👩‍👧 ${a.parent_name}` : ''}
               <br/>${new Date(a.created_at).toLocaleDateString()}
               ${a.description ? `<br/><em>${a.description.slice(0,80)}${a.description.length>80?'…':''}</em>` : ''}
             </p>
@@ -331,47 +299,37 @@
                 <button class="btn-delete"  onclick="deleteArt('${a.id}')">🗑️ Delete Forever</button>
               ` : `
                 ${a.status !== 'approved' ? `<button class="btn-approve" onclick="setArtStatus('${a.id}','approved')">✅ Approve</button>` : ''}
-                ${a.status !== 'rejected' ? `<button class="btn-reject"  onclick="setArtStatus('${a.id}','rejected')">❌ Reject</button>` : ''}
+                ${a.status !== 'rejected' ? `<button class="btn-reject"  onclick="setArtStatus('${a.id}','rejected')">❌ Reject</button>`  : ''}
+                <button class="btn-recycle" onclick="recycleArt('${a.id}')">🗑️</button>
               `}
             </div>
-            ${!inBin ? `<p class="drag-hint">Drag to 🗑️ bin to recycle</p>` : ''}
           </div>
         </div>`;
     }
 
-    // ── Drag & Drop ───────────────────────────────
-    function addDragListeners() {
-      document.querySelectorAll('.art-card[draggable="true"]').forEach(card => {
-        card.addEventListener('dragstart', e => {
-          e.dataTransfer.setData('text/plain', card.dataset.id);
-          setTimeout(() => card.classList.add('dragging'), 0);
-        });
-        card.addEventListener('dragend', () => card.classList.remove('dragging'));
-      });
-    }
-
-    async function dropIntoBin(e) {
-      e.preventDefault();
-      document.getElementById('recycleBin').classList.remove('drag-over');
-      const id = e.dataTransfer.getData('text/plain');
-      if (!id) return;
-      await setArtStatus(id, 'recycled');
+    async function recycleArt(id) {
+      const { error } = await sb.from('artworks').update({ status: 'recycled' }).eq('id', id);
+      if (error) { showToast('❌ ' + error.message); return; }
+      allArtworks = allArtworks.map(a => a.id === id ? { ...a, status: 'recycled' } : a);
+      updateStats(); renderGrid(); renderBin();
       showToast('🗑️ Moved to recycle bin');
     }
 
-    // ── Bin ───────────────────────────────────────
-    function renderBin() {
-      const recycled = allArtworks.filter(a => a.status === 'recycled');
-      const grid = document.getElementById('binGrid');
-      const empty = document.getElementById('binEmpty');
-      if (!recycled.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
-      empty.style.display = 'none';
-      grid.innerHTML = recycled.map(a => artCardHTML(a, true)).join('');
+    async function restoreArt(id) {
+      const { error } = await sb.from('artworks').update({ status: 'pending' }).eq('id', id);
+      if (error) { showToast('❌ ' + error.message); return; }
+      allArtworks = allArtworks.map(a => a.id === id ? { ...a, status: 'pending' } : a);
+      updateStats(); renderGrid(); renderBin();
+      showToast('↩️ Restored to pending');
     }
 
-    async function restoreArt(id) {
-      await setArtStatus(id, 'pending');
-      showToast('↩️ Restored to pending');
+    async function deleteArt(id) {
+      if (!confirm('Permanently delete this artwork? This cannot be undone.')) return;
+      const { error } = await sb.from('artworks').delete().eq('id', id);
+      if (error) { showToast('❌ ' + error.message); return; }
+      allArtworks = allArtworks.filter(a => a.id !== id);
+      updateStats(); renderGrid(); renderBin();
+      showToast('🗑️ Deleted permanently');
     }
 
     async function emptyBin() {
@@ -384,25 +342,14 @@
       showToast('🗑️ Bin emptied');
     }
 
-    // ── Art actions ───────────────────────────────
     async function setArtStatus(id, status) {
       const { error } = await sb.from('artworks').update({ status }).eq('id', id);
       if (error) { showToast('❌ ' + error.message); return; }
       allArtworks = allArtworks.map(a => a.id === id ? { ...a, status } : a);
       updateStats(); renderGrid(); renderBin();
-      if (status !== 'recycled') showToast(status === 'approved' ? '✅ Approved!' : '❌ Rejected');
+      showToast(status === 'approved' ? '✅ Approved!' : '❌ Rejected');
     }
 
-    async function deleteArt(id) {
-      if (!confirm('Permanently delete this artwork? This cannot be undone.')) return;
-      const { error } = await sb.from('artworks').delete().eq('id', id);
-      if (error) { showToast('❌ ' + error.message); return; }
-      allArtworks = allArtworks.filter(a => a.id !== id);
-      updateStats(); renderGrid(); renderBin();
-      showToast('🗑️ Deleted permanently');
-    }
-
-    // ── Accounts ──────────────────────────────────
     async function loadUsers() {
       document.getElementById('accountList').innerHTML = '<p class="empty">Loading...</p>';
       const { data, error } = await sb.rpc('admin_get_users');
@@ -418,17 +365,16 @@
       if (!filtered.length) { el.innerHTML = '<p class="empty">No accounts found.</p>'; return; }
       el.innerHTML = filtered.map(u => {
         const isAdmin = u.email === ADMIN_EMAIL;
-        const joined  = new Date(u.created_at).toLocaleDateString();
         return `
           <div class="account-row">
             <div class="account-avatar">
-              ${u.avatar_url ? `<img src="${u.avatar_url}" alt="${u.full_name||u.email}" onerror="this.style.display='none'" />` : '🧑'}
+              ${u.avatar_url ? `<img src="${u.avatar_url}" onerror="this.style.display='none'" />` : '🧑'}
             </div>
             <div class="account-info">
               <p class="account-name">${u.full_name || '(no name)'} ${isAdmin ? '<span style="background:#ff6b6b;color:white;font-size:0.7rem;padding:2px 8px;border-radius:50px;margin-left:4px;">Admin</span>' : ''}</p>
               <p class="account-email">${u.email}</p>
               <div class="account-chips">
-                <span class="account-chip">📅 Joined ${joined}</span>
+                <span class="account-chip">📅 Joined ${new Date(u.created_at).toLocaleDateString()}</span>
                 <span class="account-chip">🖼️ ${u.artwork_count} artworks</span>
                 <span class="account-chip">🧒 ${u.kid_count} kids</span>
               </div>
@@ -443,12 +389,10 @@
       const { error } = await sb.rpc('admin_delete_user', { p_user_id: userId });
       if (error) { showToast('❌ ' + error.message); return; }
       allUsers = allUsers.filter(u => u.id !== userId);
-      allArtworks = allArtworks.filter(a => a.parent_id !== userId);
-      updateStats(); renderAccounts();
+      renderAccounts();
       showToast('🗑️ Account deleted');
     }
 
-    // ── Toast ─────────────────────────────────────
     function showToast(msg) {
       const t = document.getElementById('toast');
       t.textContent = msg; t.classList.add('show');
