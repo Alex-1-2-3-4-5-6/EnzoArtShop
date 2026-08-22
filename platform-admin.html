@@ -90,6 +90,49 @@
       color:white; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer;
       margin-left:auto;
     }
+    /* Page tabs */
+    .page-tabs {
+      display:flex; gap:6px; margin-bottom:24px;
+      background:white; border-radius:18px; padding:8px;
+      box-shadow:0 4px 18px rgba(0,0,0,0.06); width:fit-content;
+    }
+    .page-tab {
+      border:none; border-radius:12px; padding:10px 22px;
+      font-family:'Fredoka One',cursive; font-size:1rem; cursor:pointer;
+      background:transparent; color:#aaa; transition:all 0.15s;
+    }
+    .page-tab.active { background:linear-gradient(135deg,#ff6b6b,#feca57); color:white; }
+    .page-tab:hover:not(.active) { background:#f0f0f0; color:#555; }
+
+    /* Accounts */
+    .account-list { display:flex; flex-direction:column; gap:12px; }
+    .account-row {
+      background:white; border-radius:18px; padding:16px 20px;
+      box-shadow:0 2px 10px rgba(0,0,0,0.05);
+      display:flex; align-items:center; gap:14px;
+    }
+    .account-avatar {
+      width:48px; height:48px; border-radius:50%; object-fit:cover;
+      border:3px solid #a29bfe; background:#f4f0ff;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.4rem; flex-shrink:0; overflow:hidden;
+    }
+    .account-avatar img { width:100%; height:100%; object-fit:cover; }
+    .account-info { flex:1; min-width:0; }
+    .account-name { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; }
+    .account-email { font-size:0.8rem; color:#aaa; margin-top:1px; }
+    .account-chips { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
+    .account-chip {
+      background:#f4f0ff; color:#a29bfe; border-radius:50px;
+      padding:3px 10px; font-size:0.75rem; font-weight:700;
+    }
+    .ban-btn {
+      background:#ffd6d6; border:none; border-radius:50px; padding:7px 16px;
+      color:#c0392b; font-family:'Fredoka One',cursive; font-size:0.82rem;
+      cursor:pointer; white-space:nowrap; flex-shrink:0;
+    }
+    .ban-btn:hover { background:#ffbcbc; }
+
     .empty { text-align:center; padding:60px 20px; font-family:'Fredoka One',cursive; font-size:1.2rem; color:#ccc; }
     .toast {
       position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
@@ -110,8 +153,15 @@
 
   <div class="container">
     <p class="page-title">🛠️ Admin Panel</p>
-    <p class="page-sub">Manage all artwork submissions across the platform.</p>
+    <p class="page-sub">Manage artworks and accounts across the platform.</p>
 
+    <div class="page-tabs">
+      <button class="page-tab active" id="tabArt" onclick="showTab('art')">🖼️ Artworks</button>
+      <button class="page-tab" id="tabAccounts" onclick="showTab('accounts')">👤 Accounts</button>
+    </div>
+
+    <!-- Artworks section -->
+    <div id="sectionArt">
     <div class="stats-row">
       <div class="stat-chip"><div class="num" id="statTotal">—</div><div class="lbl">Total</div></div>
       <div class="stat-chip"><div class="num" id="statPending">—</div><div class="lbl">Pending</div></div>
@@ -129,6 +179,15 @@
 
     <div class="art-grid" id="artGrid"></div>
     <div class="empty" id="emptyState" style="display:none">No artworks found.</div>
+    </div><!-- end sectionArt -->
+
+    <!-- Accounts section -->
+    <div id="sectionAccounts" style="display:none;">
+      <div class="filter-bar" style="margin-bottom:20px;">
+        <input type="text" id="accountSearch" placeholder="Search by name or email..." oninput="renderAccounts()" />
+      </div>
+      <div class="account-list" id="accountList"><p class="empty">Loading...</p></div>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -140,7 +199,18 @@
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let allArtworks = [];
+    let allUsers = [];
     let statusFilter = 'all';
+    let currentTab = 'art';
+
+    function showTab(tab) {
+      currentTab = tab;
+      document.getElementById('sectionArt').style.display = tab === 'art' ? 'block' : 'none';
+      document.getElementById('sectionAccounts').style.display = tab === 'accounts' ? 'block' : 'none';
+      document.getElementById('tabArt').classList.toggle('active', tab === 'art');
+      document.getElementById('tabAccounts').classList.toggle('active', tab === 'accounts');
+      if (tab === 'accounts' && allUsers.length === 0) loadUsers();
+    }
 
     async function init() {
       const { data: { user } } = await sb.auth.getUser();
@@ -149,6 +219,57 @@
         return;
       }
       loadArtworks();
+    }
+
+    async function loadUsers() {
+      document.getElementById('accountList').innerHTML = '<p class="empty">Loading...</p>';
+      const { data, error } = await sb.rpc('admin_get_users');
+      if (error) { document.getElementById('accountList').innerHTML = `<p class="empty">Error: ${error.message}</p>`; return; }
+      allUsers = data || [];
+      renderAccounts();
+    }
+
+    function renderAccounts() {
+      const q = (document.getElementById('accountSearch')?.value || '').toLowerCase();
+      const el = document.getElementById('accountList');
+      const filtered = allUsers.filter(u =>
+        !q || (u.email||'').toLowerCase().includes(q) || (u.full_name||'').toLowerCase().includes(q)
+      );
+      if (!filtered.length) { el.innerHTML = '<p class="empty">No accounts found.</p>'; return; }
+      el.innerHTML = filtered.map(u => {
+        const isAdmin = u.email === ADMIN_EMAIL;
+        const joined = new Date(u.created_at).toLocaleDateString();
+        return `
+          <div class="account-row">
+            <div class="account-avatar">
+              ${u.avatar_url ? `<img src="${u.avatar_url}" alt="${u.full_name||u.email}" onerror="this.style.display='none'" />` : '🧑'}
+            </div>
+            <div class="account-info">
+              <p class="account-name">${u.full_name || '(no name)'} ${isAdmin ? '<span style="background:#ff6b6b;color:white;font-size:0.7rem;padding:2px 8px;border-radius:50px;margin-left:4px;">Admin</span>' : ''}</p>
+              <p class="account-email">${u.email}</p>
+              <div class="account-chips">
+                <span class="account-chip">📅 Joined ${joined}</span>
+                <span class="account-chip">🖼️ ${u.artwork_count} artworks</span>
+                <span class="account-chip">🧒 ${u.kid_count} kids</span>
+              </div>
+            </div>
+            ${!isAdmin ? `
+              <button class="ban-btn" onclick="deleteAccount('${u.id}','${u.email}')">🗑️ Delete Account</button>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function deleteAccount(userId, email) {
+      if (!confirm(`Delete account for ${email}?\n\nThis will remove their account, all their kids, and all their artwork. This cannot be undone.`)) return;
+      const { error } = await sb.rpc('admin_delete_user', { p_user_id: userId });
+      if (error) { showToast('❌ ' + error.message); return; }
+      allUsers = allUsers.filter(u => u.id !== userId);
+      allArtworks = allArtworks.filter(a => a.parent_id !== userId);
+      updateStats();
+      renderAccounts();
+      showToast('🗑️ Account deleted');
     }
 
     async function loadArtworks() {
