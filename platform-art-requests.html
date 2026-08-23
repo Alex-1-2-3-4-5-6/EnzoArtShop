@@ -130,11 +130,12 @@
       el.innerHTML = data.map(p => {
         const waitingSeller = !p.seller_confirmed;
         const sellerDone    =  p.seller_confirmed && !p.buyer_confirmed;
+        const artLink = p.artworks?.id ? `platform-art.html?id=${p.artworks.id}` : '#';
         return `
           <div class="row">
-            <img src="${p.artworks?.image_url||''}" onerror="this.style.display='none'" />
+            <a href="${artLink}"><img src="${p.artworks?.image_url||''}" onerror="this.style.display='none'" style="display:block;" /></a>
             <div class="row-info">
-              <p class="row-name">${p.artworks?.name || p.artwork_name}</p>
+              <a href="${artLink}" style="text-decoration:none;"><p class="row-name" style="color:#333;">${p.artworks?.name || p.artwork_name}</p></a>
               <p class="row-meta">$${p.artwork_price} · ${new Date(p.purchased_at).toLocaleDateString()}</p>
               <p class="status-label ${waitingSeller ? 'status-onway' : 'status-waiting'}">
                 ${waitingSeller ? '⏳ On the way...' : '⚡ Seller sent it — confirm you got it!'}
@@ -160,11 +161,13 @@
         .order('purchased_at', { ascending: false });
 
       if (!data || !data.length) { el.innerHTML = '<p class="empty">Nobody has requested your art yet.</p>'; return; }
-      el.innerHTML = data.map(p => `
+      el.innerHTML = data.map(p => {
+        const artLink = p.artworks?.id ? `platform-art.html?id=${p.artworks.id}` : '#';
+        return `
         <div class="row">
-          <img src="${p.artworks?.image_url||''}" onerror="this.style.display='none'" />
+          <a href="${artLink}"><img src="${p.artworks?.image_url||''}" onerror="this.style.display='none'" style="display:block;" /></a>
           <div class="row-info">
-            <p class="row-name">${p.artworks?.name || p.artwork_name}</p>
+            <a href="${artLink}" style="text-decoration:none;"><p class="row-name" style="color:#333;">${p.artworks?.name || p.artwork_name}</p></a>
             <p class="row-meta">Buyer: ${p.buyer_name} · ${p.buyer_email}</p>
             <p class="row-meta">$${p.artwork_price} · ${new Date(p.purchased_at).toLocaleDateString()}</p>
             <p class="status-label ${p.seller_confirmed ? 'status-confirmed' : 'status-waiting'}">
@@ -181,7 +184,6 @@
     }
 
     async function cancelPurchase(purchaseId, artworkId) {
-      if (!confirm('Cancel this purchase request? This will remove it entirely.')) return;
       await sb.from('purchases').delete().eq('id', purchaseId);
       if (artworkId) await sb.from('artworks').update({ on_hold: false }).eq('id', artworkId);
       toast('✕ Request cancelled');
