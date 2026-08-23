@@ -236,6 +236,16 @@
       document.getElementById('artTitle').textContent = art.name;
       document.getElementById('artPrice').textContent = '$' + art.price;
 
+      if (art.on_hold) {
+        const btn = document.getElementById('buyBtn');
+        btn.textContent = '👀 Preview (On Hold)';
+        btn.disabled = true;
+        btn.style.background = '#e0e0e0';
+        btn.style.color = '#aaa';
+        btn.style.cursor = 'default';
+        btn.onclick = null;
+      }
+
       if (art.description) {
         const d = document.getElementById('artDesc');
         d.textContent = art.description; d.style.display = 'block';
@@ -318,6 +328,7 @@
           })
         });
 
+        await sb.from('artworks').update({ on_hold: true }).eq('id', art.id);
         document.getElementById('buyForm').style.display = 'none';
         document.getElementById('successScreen').style.display = 'block';
         document.getElementById('successMsg').textContent =

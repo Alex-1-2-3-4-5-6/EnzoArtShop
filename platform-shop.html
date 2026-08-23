@@ -105,6 +105,8 @@
       font-family:'Fredoka One',cursive; font-size:1.1rem; cursor:pointer; transition:transform 0.2s;
     }
     .btn-buy:hover { transform:scale(1.04); }
+    .btn-buy.on-hold { background:#e0e0e0; color:#aaa; cursor:default; pointer-events:none; }
+    .card-btn.on-hold { background:#e0e0e0; color:#aaa; cursor:default; pointer-events:none; }
     .btn-close {
       background:#f0f0f0; border:none; border-radius:50px; padding:15px 22px;
       font-family:'Fredoka One',cursive; font-size:1rem; cursor:pointer; color:#888;
@@ -207,7 +209,7 @@
         <p class="modal-price" id="modalPrice"></p>
         <p id="modalDesc" style="color:#666;font-size:0.95rem;margin-bottom:20px;line-height:1.6;display:none;"></p>
         <div class="modal-actions">
-          <button class="btn-buy" onclick="openBuyForm()">🛒 I Want This!</button>
+          <button class="btn-buy" id="modalBuyBtn" onclick="openBuyForm()">🛒 I Want This!</button>
           <button class="btn-close" onclick="closePreview()">Close</button>
         </div>
       </div>
@@ -446,7 +448,7 @@
           <p class="card-title">${art.name}</p>
           ${art.kids?.name ? `<p style="font-size:0.8rem;color:#aaa;margin-bottom:4px;">🎨 by ${art.kids.name}</p>` : ''}
           <p class="card-price">$${art.price}</p>
-          <button class="card-btn" onclick="location.href='platform-art.html?id=${art.id}'">👀 Preview & Buy</button>
+          <button class="card-btn${art.on_hold ? ' on-hold' : ''}" onclick="location.href='platform-art.html?id=${art.id}'">${art.on_hold ? '👀 Preview (On Hold)' : '👀 Preview & Buy'}</button>
         </div>`;
       return card;
     }
@@ -514,7 +516,7 @@
             <p class="card-title">${art.name}</p>
             ${art.kids?.name ? `<p style="font-size:0.8rem;color:#aaa;margin-bottom:4px;">🎨 by ${art.kids.name}</p>` : ''}
             <p class="card-price">$${art.price}</p>
-            <button class="card-btn" onclick="location.href='platform-art.html?id=${art.id}'">👀 Preview & Buy</button>
+            <button class="card-btn${art.on_hold ? ' on-hold' : ''}" onclick="location.href='platform-art.html?id=${art.id}'">${art.on_hold ? '👀 Preview (On Hold)' : '👀 Preview & Buy'}</button>
           </div>
         </div>`).join('');
     }
@@ -535,6 +537,9 @@
       const descEl = document.getElementById('modalDesc');
       if (art.description) { descEl.textContent = art.description; descEl.style.display = 'block'; }
       else { descEl.style.display = 'none'; }
+      const btn = document.getElementById('modalBuyBtn');
+      if (art.on_hold) { btn.textContent = '👀 Preview (On Hold)'; btn.classList.add('on-hold'); }
+      else { btn.textContent = '🛒 I Want This!'; btn.classList.remove('on-hold'); }
       document.getElementById('overlay').classList.add('open');
     }
     function closePreview(e) {
@@ -586,6 +591,8 @@
               `Payment: ${payment}\nDelivery: ${delivery}`
           })
         });
+        await sb.from('artworks').update({ on_hold: true }).eq('id', currentArtId);
+        allArtworks = allArtworks.map(a => a.id === currentArtId ? { ...a, on_hold: true } : a);
         document.getElementById('buyForm').style.display = 'none';
         document.getElementById('successMsg').textContent = `Thanks ${name}! We'll be in touch soon. 😊`;
         document.getElementById('successScreen').style.display = 'block';
