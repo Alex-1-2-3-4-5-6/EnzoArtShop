@@ -282,10 +282,25 @@
       const creators = document.getElementById('creatorRow');
       if (art.kids?.name) creators.innerHTML += avatarChip(art.kids.avatar_url, art.kids.name, '🧒', 'creator-chip');
       if (art.parent_name) creators.innerHTML += avatarChip(art.parent_avatar_url, art.parent_name, '👨‍👩‍👧', 'creator-chip');
+      if (art.parent_id && user && art.parent_id !== user.id) {
+        creators.innerHTML += `<a href="platform-chat.html?with=${art.parent_id}" style="display:inline-flex;align-items:center;gap:6px;background:#f4f0ff;border-radius:50px;padding:6px 14px;color:#a29bfe;font-family:'Fredoka One',cursive;font-size:0.85rem;text-decoration:none;margin-top:6px;">💬 Chat with seller</a>`;
+      }
 
       updateTotal();
 
-      if (!user) {
+      const tradeMode = new URLSearchParams(window.location.search).get('mode') === 'trade' || art.for_trade;
+
+      if (tradeMode) {
+        document.getElementById('buyCard').innerHTML = `
+          <h3 style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#a29bfe;margin-bottom:8px;">🔄 Offer a Trade</h3>
+          <p style="font-size:0.88rem;color:#aaa;margin-bottom:16px;">Pick one of your artworks to offer in exchange.</p>
+          <div id="myArtPicker" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-bottom:16px;"></div>
+          <p id="tradePickLabel" style="font-size:0.82rem;color:#a29bfe;margin-bottom:10px;display:none;">Selected: <strong id="tradePickName"></strong></p>
+          <button id="sendTradeBtn" onclick="sendTrade()" style="width:100%;background:linear-gradient(135deg,#a29bfe,#ff9ff3);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1rem;cursor:pointer;display:none;">🔄 Send Trade Offer</button>
+          <div id="tradeMsgEl" style="margin-top:10px;font-size:0.85rem;text-align:center;color:#aaa;"></div>
+          ${!user ? `<div style="text-align:center;margin-top:12px;"><a href="platform-login.html" style="color:#a29bfe;font-family:'Fredoka One',cursive;">Sign in to trade →</a></div>` : ''}`;
+        if (user) loadMyArtForTrade(user.id);
+      } else if (!user) {
         document.getElementById('buyForm').style.display = 'none';
         document.getElementById('buyCard').innerHTML = `
           <h3>🛒 Claim This Artwork</h3>
@@ -300,6 +315,46 @@
       }
 
       document.getElementById('pageContent').style.display = 'grid';
+    }
+
+    let selectedTradeArtId = null;
+
+    async function loadMyArtForTrade(userId) {
+      const { data } = await sb.from('artworks').select('id,name,image_url').eq('parent_id', userId).eq('status','approved');
+      const picker = document.getElementById('myArtPicker');
+      if (!picker) return;
+      if (!data || !data.length) { picker.innerHTML = '<p style="font-size:0.82rem;color:#aaa;">You have no approved artworks to trade yet.</p>'; return; }
+      picker.innerHTML = data.filter(a => a.id !== art.id).map(a => `
+        <div onclick="selectTradeArt('${a.id}','${a.name.replace(/'/g,"\\'")}',this)" style="border-radius:10px;overflow:hidden;border:2px solid #eee;cursor:pointer;transition:border-color 0.15s;" id="tp-${a.id}">
+          <img src="${a.image_url}" style="width:100%;aspect-ratio:1;object-fit:cover;background:#f0f0f0;display:block;" />
+          <p style="font-size:0.72rem;padding:4px 6px;font-family:'Fredoka One',cursive;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${a.name}</p>
+        </div>`).join('');
+    }
+
+    function selectTradeArt(id, name, el) {
+      selectedTradeArtId = id;
+      document.querySelectorAll('[id^="tp-"]').forEach(e => e.style.borderColor = '#eee');
+      el.style.borderColor = '#a29bfe';
+      document.getElementById('tradePickLabel').style.display = 'block';
+      document.getElementById('tradePickName').textContent = name;
+      document.getElementById('sendTradeBtn').style.display = 'block';
+    }
+
+    async function sendTrade() {
+      if (!selectedTradeArtId) return;
+      const btn = document.getElementById('sendTradeBtn');
+      btn.disabled = true; btn.textContent = 'Sending...';
+      const { error } = await sb.from('trades').insert({
+        target_artwork_id: art.id,
+        offered_artwork_id: selectedTradeArtId,
+        offerer_id: currentUser.id,
+        owner_id: art.parent_id
+      });
+      const msg = document.getElementById('tradeMsgEl');
+      if (error) { msg.textContent = '❌ ' + error.message; btn.disabled=false; btn.textContent='🔄 Send Trade Offer'; return; }
+      msg.style.color = '#27ae60';
+      msg.textContent = '✅ Trade offer sent! Check your dashboard for updates.';
+      btn.style.display = 'none';
     }
 
     function updateTotal() {

@@ -177,6 +177,23 @@
     </a>
   </header>
 
+  <!-- Shop / Trading tabs -->
+  <div style="display:flex;justify-content:center;gap:8px;margin:20px 0 4px;padding:0 20px;">
+    <button id="tabShop" onclick="switchShopTab('shop')" style="background:linear-gradient(135deg,#ff6b6b,#feca57);color:white;border:none;border-radius:50px;padding:10px 28px;font-family:'Fredoka One',cursive;font-size:1rem;cursor:pointer;">🛍️ Art Shop</button>
+    <button id="tabTrade" onclick="switchShopTab('trade')" style="background:#f0f0f0;color:#888;border:none;border-radius:50px;padding:10px 28px;font-family:'Fredoka One',cursive;font-size:1rem;cursor:pointer;">🔄 Art Trading</button>
+  </div>
+
+  <!-- Trading section -->
+  <div id="tradeSection" style="display:none;max-width:960px;margin:0 auto;padding:0 20px;">
+    <p style="text-align:center;color:#aaa;font-size:0.88rem;margin:10px 0 20px;">Offer your art in exchange for someone else's — no money needed! Click on any artwork to propose a trade.</p>
+    <div class="grid" id="tradeGrid"></div>
+    <div class="empty-state" id="tradeEmpty" style="display:none;">
+      <div class="icon">🔄</div>
+      <h2>No trade listings yet!</h2>
+      <p>Submit art with "List for Trading" checked to appear here.</p>
+    </div>
+  </div>
+
   <div class="search-wrap">
     <input id="searchInput" type="text" placeholder="Search for art... 🔍" oninput="renderGrid()" />
     <div style="display:flex;gap:8px;margin-top:10px;justify-content:center;flex-wrap:wrap;align-items:center;">
@@ -376,9 +393,47 @@
       window.location.href = currentUser ? 'platform-dashboard.html' : 'platform-signup.html';
     }
 
+    let shopTab = 'shop';
+    let tradeArtworks = [];
+
+    function switchShopTab(tab) {
+      shopTab = tab;
+      const isShop = tab === 'shop';
+      document.getElementById('tabShop').style.background  = isShop ? 'linear-gradient(135deg,#ff6b6b,#feca57)' : '#f0f0f0';
+      document.getElementById('tabShop').style.color       = isShop ? 'white' : '#888';
+      document.getElementById('tabTrade').style.background = !isShop ? 'linear-gradient(135deg,#a29bfe,#ff9ff3)' : '#f0f0f0';
+      document.getElementById('tabTrade').style.color      = !isShop ? 'white' : '#888';
+      document.querySelector('.search-wrap').style.display = isShop ? 'block' : 'none';
+      document.getElementById('recLabel').style.display    = 'none';
+      document.getElementById('recGrid').style.display     = 'none';
+      document.getElementById('sectionLabel').style.display = isShop ? 'block' : 'none';
+      document.getElementById('grid').style.display        = isShop ? 'grid' : 'none';
+      document.getElementById('emptyState').style.display  = 'none';
+      document.getElementById('tradeSection').style.display = isShop ? 'none' : 'block';
+      if (!isShop) renderTradeGrid();
+    }
+
+    function renderTradeGrid() {
+      const grid = document.getElementById('tradeGrid');
+      const empty = document.getElementById('tradeEmpty');
+      if (!tradeArtworks.length) { grid.innerHTML=''; empty.style.display='block'; return; }
+      empty.style.display = 'none';
+      grid.innerHTML = tradeArtworks.map(a => `
+        <div class="card" onclick="location.href='platform-art.html?id=${a.id}&mode=trade'">
+          <img class="card-img" src="${a.image_url}" alt="${a.name}" loading="lazy" />
+          <div class="card-body">
+            <p class="card-title">${a.name}</p>
+            ${a.kids?.name ? `<p style="font-size:0.8rem;color:#aaa;margin-bottom:4px;">🎨 by ${a.kids.name}</p>` : ''}
+            <p class="card-price" style="color:#a29bfe;">🔄 Trade</p>
+            <button class="card-btn" style="background:linear-gradient(135deg,#a29bfe,#ff9ff3);">🔄 Offer a Trade</button>
+          </div>
+        </div>`).join('');
+    }
+
     async function loadArtworks() {
       const { data } = await sb.from('artworks').select('*, kids(name)').eq('status','approved').order('created_at',{ascending:false});
-      allArtworks = data || [];
+      allArtworks = (data || []).filter(a => !a.for_trade);
+      tradeArtworks = (data || []).filter(a => a.for_trade);
       renderGrid();
       renderRecommendations();
       loadAI();
