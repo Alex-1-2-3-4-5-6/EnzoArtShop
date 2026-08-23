@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Art Requests – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
+    header { background:white; padding:16px 28px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 12px rgba(0,0,0,0.07); }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:#ff6b6b; flex:1; }
+    .logo span { color:#a29bfe; }
+    .hdr-btn { background:#f0f0f0; border:none; border-radius:50px; padding:8px 18px; font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer; color:#888; text-decoration:none; }
+
+    .container { max-width:860px; margin:36px auto; padding:0 20px 80px; }
+    .page-title { font-family:'Fredoka One',cursive; font-size:2rem; color:#333; margin-bottom:6px; }
+    .page-sub { color:#aaa; font-size:0.9rem; margin-bottom:28px; }
+
+    .section { background:white; border-radius:22px; padding:22px 24px; box-shadow:0 4px 16px rgba(0,0,0,0.06); margin-bottom:20px; }
+    .section-title { font-family:'Fredoka One',cursive; font-size:1.1rem; color:#333; margin-bottom:16px; }
+
+    .row { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid #f0f0f0; flex-wrap:wrap; }
+    .row:last-child { border-bottom:none; padding-bottom:0; }
+    .row img { width:54px; height:54px; border-radius:12px; object-fit:cover; background:#f0f0f0; flex-shrink:0; }
+    .row-info { flex:1; min-width:0; }
+    .row-name { font-family:'Fredoka One',cursive; font-size:0.95rem; color:#333; }
+    .row-meta { font-size:0.8rem; color:#aaa; margin-top:2px; }
+    .row-actions { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+
+    .btn { border:none; border-radius:50px; padding:8px 16px; font-family:'Fredoka One',cursive; font-size:0.82rem; cursor:pointer; white-space:nowrap; }
+    .btn-green  { background:#d4edda; color:#155724; }
+    .btn-red    { background:#ffd6d6; color:#c0392b; }
+    .btn-grey   { background:#f0f0f0; color:#999; }
+    .btn-purple { background:linear-gradient(135deg,#a29bfe,#ff9ff3); color:white; }
+    .btn-orange { background:linear-gradient(135deg,#feca57,#ff9f43); color:white; }
+
+    .trade-imgs { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+    .trade-imgs img { width:50px; height:50px; border-radius:10px; object-fit:cover; background:#f0f0f0; }
+    .trade-arrow { font-size:1rem; color:#aaa; }
+
+    .waiting-label { font-size:0.8rem; color:#aaa; font-style:italic; }
+    .their-turn { font-size:0.8rem; color:#e67e22; font-weight:700; }
+
+    .empty { color:#ccc; font-family:'Fredoka One',cursive; font-size:0.95rem; padding:12px 0; }
+
+    .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:#2d2d2d; color:white; padding:12px 24px; border-radius:50px; font-family:'Fredoka One',cursive; font-size:0.95rem; opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:999; }
+    .toast.show { opacity:1; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Little He<span>art</span>works</div>
+    <a href="platform-history.html" class="hdr-btn">📜 History</a>
+    <a href="platform-shop.html" class="hdr-btn">← Shop</a>
+  </header>
+
+  <div class="container">
+    <p class="page-title">📋 Art Requests</p>
+    <p class="page-sub">Manage your purchase requests and trade offers</p>
+
+    <!-- Purchase requests I made -->
+    <div class="section">
+      <p class="section-title">🛒 My Purchase Requests</p>
+      <div id="myPurchases"><p class="empty">Loading...</p></div>
+    </div>
+
+    <!-- Trades needing confirmation -->
+    <div class="section">
+      <p class="section-title">📦 Trades Awaiting Confirmation</p>
+      <div id="pendingConfirm"><p class="empty">Loading...</p></div>
+    </div>
+
+    <!-- Trade offers I received -->
+    <div class="section">
+      <p class="section-title">📬 Trade Offers I Received</p>
+      <div id="receivedTrades"><p class="empty">Loading...</p></div>
+    </div>
+
+    <!-- Trade offers I sent -->
+    <div class="section">
+      <p class="section-title">📤 Trade Offers I Sent</p>
+      <div id="sentTrades"><p class="empty">Loading...</p></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let currentUser = null;
+
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = 'platform-login.html'; return; }
+      currentUser = user;
+      load();
+    }
+
+    async function load() {
+      await Promise.all([loadPurchases(), loadTrades()]);
+    }
+
+    async function loadPurchases() {
+      const { data } = await sb.from('purchases')
+        .select('*, artworks(id, name, image_url, price, on_hold)')
+        .eq('buyer_email', currentUser.email)
+        .order('purchased_at', { ascending: false });
+      const el = document.getElementById('myPurchases');
+      if (!data || !data.length) { el.innerHTML = '<p class="empty">No purchase requests yet.</p>'; return; }
+      el.innerHTML = data.map(p => `
+        <div class="row">
+          <img src="${p.artworks?.image_url||''}" onerror="this.style.display='none'" />
+          <div class="row-info">
+            <p class="row-name">${p.artworks?.name || p.artwork_name}</p>
+            <p class="row-meta">$${p.artwork_price} · ${new Date(p.purchased_at).toLocaleDateString()}</p>
+            <p class="row-meta" style="color:${p.artworks?.on_hold?'#e67e22':'#27ae60'};">${p.artworks?.on_hold?'⏳ On Hold':'✅ Available'}</p>
+          </div>
+          <div class="row-actions">
+            ${p.artworks?.on_hold ? `<button class="btn btn-red" onclick="cancelPurchase('${p.id}','${p.artworks?.id}')">✕ Cancel</button>` : ''}
+          </div>
+        </div>`).join('');
+    }
+
+    async function cancelPurchase(purchaseId, artworkId) {
+      if (!confirm('Cancel your purchase request?')) return;
+      await sb.from('purchases').delete().eq('id', purchaseId);
+      if (artworkId) await sb.from('artworks').update({ on_hold: false }).eq('id', artworkId);
+      toast('✕ Request cancelled');
+      loadPurchases();
+    }
+
+    async function loadTrades() {
+      const { data } = await sb.from('trades')
+        .select('*, target:target_artwork_id(id,name,image_url), offered:offered_artwork_id(id,name,image_url)')
+        .or(`owner_id.eq.${currentUser.id},offerer_id.eq.${currentUser.id}`)
+        .in('status', ['pending','accepted'])
+        .order('created_at', { ascending: false });
+
+      const all = data || [];
+      const received  = all.filter(t => t.owner_id   === currentUser.id && t.status === 'pending');
+      const sent      = all.filter(t => t.offerer_id === currentUser.id && t.status === 'pending');
+      const accepted  = all.filter(t => t.status === 'accepted');
+
+      renderReceived(received);
+      renderSent(sent);
+      renderPendingConfirm(accepted);
+    }
+
+    function renderPendingConfirm(trades) {
+      const el = document.getElementById('pendingConfirm');
+      if (!trades.length) { el.innerHTML = '<p class="empty">No trades waiting on confirmation.</p>'; return; }
+      el.innerHTML = trades.map(t => {
+        const isSeller       = t.owner_id   === currentUser.id;
+        const myConfirmed    = isSeller ? t.seller_confirmed : t.buyer_confirmed;
+        const otherConfirmed = isSeller ? t.buyer_confirmed  : t.seller_confirmed;
+        return `
+          <div class="row">
+            <div class="trade-imgs">
+              <img src="${t.offered?.image_url||''}" title="${t.offered?.name||''}" onerror="this.style.display='none'" />
+              <div class="trade-arrow">⇄</div>
+              <img src="${t.target?.image_url||''}" title="${t.target?.name||''}" onerror="this.style.display='none'" />
+            </div>
+            <div class="row-info">
+              <p class="row-name">${t.offered?.name} ⇄ ${t.target?.name}</p>
+              <p class="row-meta">Trade accepted — confirm your side</p>
+              ${otherConfirmed && !myConfirmed ? '<p class="their-turn">⚡ They confirmed — your turn!</p>' : ''}
+            </div>
+            <div class="row-actions">
+              ${myConfirmed
+                ? '<span class="waiting-label">✅ You confirmed</span>'
+                : `<button class="btn ${isSeller ? 'btn-orange' : 'btn-purple'}" onclick="confirmTrade('${t.id}','${isSeller?'seller':'buyer'}')">
+                    ${isSeller ? '📦 I sent my art' : '📬 I got the art'}
+                  </button>`
+              }
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderReceived(trades) {
+      const el = document.getElementById('receivedTrades');
+      if (!trades.length) { el.innerHTML = '<p class="empty">No offers received.</p>'; return; }
+      el.innerHTML = trades.map(t => `
+        <div class="row">
+          <div class="trade-imgs">
+            <img src="${t.offered?.image_url||''}" title="${t.offered?.name||''}" onerror="this.style.display='none'" />
+            <div class="trade-arrow">→</div>
+            <img src="${t.target?.image_url||''}" title="${t.target?.name||''}" onerror="this.style.display='none'" />
+          </div>
+          <div class="row-info">
+            <p class="row-name">Offer: ${t.offered?.name}</p>
+            <p class="row-meta">For your: ${t.target?.name}</p>
+            <p class="row-meta">${new Date(t.created_at).toLocaleDateString()}</p>
+          </div>
+          <div class="row-actions">
+            <button class="btn btn-green" onclick="respondTrade('${t.id}','accepted')">✅ Accept</button>
+            <button class="btn btn-red"   onclick="respondTrade('${t.id}','rejected')">❌ Reject</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function renderSent(trades) {
+      const el = document.getElementById('sentTrades');
+      if (!trades.length) { el.innerHTML = '<p class="empty">No offers sent.</p>'; return; }
+      el.innerHTML = trades.map(t => `
+        <div class="row">
+          <div class="trade-imgs">
+            <img src="${t.offered?.image_url||''}" title="${t.offered?.name||''}" onerror="this.style.display='none'" />
+            <div class="trade-arrow">→</div>
+            <img src="${t.target?.image_url||''}" title="${t.target?.name||''}" onerror="this.style.display='none'" />
+          </div>
+          <div class="row-info">
+            <p class="row-name">You offered: ${t.offered?.name}</p>
+            <p class="row-meta">For: ${t.target?.name}</p>
+            <p class="row-meta">${new Date(t.created_at).toLocaleDateString()}</p>
+          </div>
+          <div class="row-actions">
+            <button class="btn btn-grey" onclick="cancelTrade('${t.id}')">✕ Cancel</button>
+          </div>
+        </div>`).join('');
+    }
+
+    async function respondTrade(id, status) {
+      await sb.from('trades').update({ status }).eq('id', id);
+      toast(status === 'accepted' ? '✅ Trade accepted!' : '❌ Trade rejected');
+      loadTrades();
+    }
+
+    async function cancelTrade(id) {
+      if (!confirm('Cancel this trade offer?')) return;
+      await sb.from('trades').delete().eq('id', id);
+      toast('✕ Offer cancelled');
+      loadTrades();
+    }
+
+    async function confirmTrade(id, role) {
+      const field = role === 'seller' ? 'seller_confirmed' : 'buyer_confirmed';
+      await sb.from('trades').update({ [field]: true }).eq('id', id);
+      const { data } = await sb.from('trades').select('seller_confirmed,buyer_confirmed').eq('id', id).single();
+      if (data?.seller_confirmed && data?.buyer_confirmed) {
+        await sb.from('trades').update({ completed_at: new Date().toISOString(), status: 'completed' }).eq('id', id);
+        toast('🎉 Trade complete!');
+      } else {
+        toast('✅ Confirmed! Waiting for the other person.');
+      }
+      loadTrades();
+    }
+
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    init();
+  </script>
+</body>
+</html>
