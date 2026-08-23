@@ -315,6 +315,7 @@
       }
 
       document.getElementById('pageContent').style.display = 'grid';
+      checkTradeConfirmation();
     }
 
     let selectedTradeArtId = null;
@@ -338,6 +339,54 @@
       document.getElementById('tradePickLabel').style.display = 'block';
       document.getElementById('tradePickName').textContent = name;
       document.getElementById('sendTradeBtn').style.display = 'block';
+    }
+
+    async function checkTradeConfirmation() {
+      if (!currentUser || !art) return;
+      // Find an accepted trade involving this artwork and this user
+      const { data } = await sb.from('trades')
+        .select('*')
+        .eq('status', 'accepted')
+        .or(`target_artwork_id.eq.${art.id},offered_artwork_id.eq.${art.id}`)
+        .or(`owner_id.eq.${currentUser.id},offerer_id.eq.${currentUser.id}`)
+        .maybeSingle();
+      if (!data) return;
+
+      const isSeller = data.owner_id === currentUser.id;
+      const isBuyer  = data.offerer_id === currentUser.id;
+      if (!isSeller && !isBuyer) return;
+
+      const alreadyConfirmed = (isSeller && data.seller_confirmed) || (isBuyer && data.buyer_confirmed);
+      const otherConfirmed   = (isSeller && data.buyer_confirmed)  || (isBuyer && data.seller_confirmed);
+
+      if (data.completed_at) return; // already done
+
+      const confirmDiv = document.createElement('div');
+      confirmDiv.style.cssText = 'background:#f4f0ff;border-radius:16px;padding:16px;margin-top:14px;text-align:center;';
+      confirmDiv.innerHTML = `
+        <p style="font-family:'Fredoka One',cursive;color:#a29bfe;font-size:1rem;margin-bottom:8px;">🔄 Trade Accepted!</p>
+        <p style="font-size:0.82rem;color:#aaa;margin-bottom:12px;">
+          ${otherConfirmed ? '✅ The other person confirmed. ' : ''}
+          Confirm your side to complete the trade.
+        </p>
+        ${alreadyConfirmed
+          ? `<p style="color:#27ae60;font-family:'Fredoka One',cursive;font-size:0.9rem;">✅ You confirmed. Waiting for the other person.</p>`
+          : `<button onclick="confirmTrade('${data.id}','${isSeller?'seller':'buyer'}')" style="background:linear-gradient(135deg,#a29bfe,#ff9ff3);border:none;border-radius:50px;padding:12px 24px;color:white;font-family:'Fredoka One',cursive;font-size:0.95rem;cursor:pointer;">
+              ${isSeller ? '📦 I sent my art' : '📬 I got the art'}
+            </button>`
+        }`;
+      document.getElementById('buyCard').appendChild(confirmDiv);
+    }
+
+    async function confirmTrade(tradeId, role) {
+      const field = role === 'seller' ? 'seller_confirmed' : 'buyer_confirmed';
+      await sb.from('trades').update({ [field]: true }).eq('id', tradeId);
+      // Check if both confirmed
+      const { data } = await sb.from('trades').select('*').eq('id', tradeId).single();
+      if (data.seller_confirmed && data.buyer_confirmed) {
+        await sb.from('trades').update({ completed_at: new Date().toISOString(), status: 'completed' }).eq('id', tradeId);
+      }
+      location.reload();
     }
 
     async function sendTrade() {

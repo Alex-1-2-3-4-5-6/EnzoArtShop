@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Trades – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
+    header {
+      background:white; padding:16px 28px; display:flex; align-items:center; gap:12px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.07);
+    }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:#ff6b6b; flex:1; }
+    .logo span { color:#a29bfe; }
+    .hdr-btn { background:#f0f0f0; border:none; border-radius:50px; padding:8px 18px; font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer; color:#888; text-decoration:none; }
+
+    .container { max-width:860px; margin:36px auto; padding:0 20px 80px; }
+    .page-title { font-family:'Fredoka One',cursive; font-size:2rem; color:#333; margin-bottom:6px; }
+    .page-sub { color:#aaa; font-size:0.92rem; margin-bottom:28px; }
+
+    .section-title { font-family:'Fredoka One',cursive; font-size:1.1rem; color:#555; margin:28px 0 12px; }
+
+    .trade-card {
+      background:white; border-radius:20px; padding:18px 20px;
+      box-shadow:0 4px 14px rgba(0,0,0,0.06); margin-bottom:14px;
+      display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    }
+    .trade-imgs { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .trade-imgs img { width:60px; height:60px; border-radius:12px; object-fit:cover; background:#f0f0f0; }
+    .trade-arrow { font-size:1.2rem; color:#aaa; }
+    .trade-info { flex:1; min-width:0; }
+    .trade-name { font-family:'Fredoka One',cursive; font-size:0.95rem; color:#333; }
+    .trade-meta { font-size:0.8rem; color:#aaa; margin-top:3px; }
+    .status-badge { display:inline-block; border-radius:50px; padding:3px 12px; font-family:'Fredoka One',cursive; font-size:0.75rem; margin-top:6px; }
+    .status-pending   { background:#fff3cd; color:#856404; }
+    .status-accepted  { background:#d4edda; color:#155724; }
+    .status-rejected  { background:#ffd6d6; color:#c0392b; }
+    .status-completed { background:#d4edda; color:#155724; }
+
+    .confirm-btn {
+      border:none; border-radius:50px; padding:9px 18px;
+      font-family:'Fredoka One',cursive; font-size:0.82rem; cursor:pointer;
+      background:linear-gradient(135deg,#a29bfe,#ff9ff3); color:white; white-space:nowrap;
+    }
+    .confirmed-label { font-family:'Fredoka One',cursive; font-size:0.82rem; color:#27ae60; }
+
+    .empty { text-align:center; padding:40px; color:#ccc; font-family:'Fredoka One',cursive; font-size:1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Little He<span>art</span>works</div>
+    <a href="platform-shop.html" class="hdr-btn">🛍️ Shop</a>
+    <a href="platform-dashboard.html" class="hdr-btn">← Dashboard</a>
+  </header>
+
+  <div class="container">
+    <p class="page-title">🔄 My Trades</p>
+    <p class="page-sub">Your art trading history and active offers</p>
+
+    <p class="section-title">📬 Offers I Received</p>
+    <div id="receivedList"><p class="empty">Loading...</p></div>
+
+    <p class="section-title">📤 Offers I Sent</p>
+    <div id="sentList"><p class="empty">Loading...</p></div>
+
+    <p class="section-title">✅ Completed Trades</p>
+    <div id="completedList"><p class="empty">Loading...</p></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let currentUser = null;
+
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = 'platform-login.html'; return; }
+      currentUser = user;
+      load();
+    }
+
+    async function load() {
+      const { data } = await sb.from('trades')
+        .select('*, target:target_artwork_id(id,name,image_url), offered:offered_artwork_id(id,name,image_url)')
+        .or(`owner_id.eq.${currentUser.id},offerer_id.eq.${currentUser.id}`)
+        .order('created_at', { ascending: false });
+
+      const all = data || [];
+      const received  = all.filter(t => t.owner_id   === currentUser.id && t.status === 'pending');
+      const sent      = all.filter(t => t.offerer_id === currentUser.id && t.status === 'pending');
+      const completed = all.filter(t => t.status === 'completed');
+      const accepted  = all.filter(t => t.status === 'accepted');
+
+      renderReceived([...received, ...accepted.filter(t => t.owner_id === currentUser.id)]);
+      renderSent([...sent, ...accepted.filter(t => t.offerer_id === currentUser.id)]);
+      renderCompleted(completed);
+    }
+
+    function renderReceived(trades) {
+      const el = document.getElementById('receivedList');
+      if (!trades.length) { el.innerHTML = '<p class="empty">No offers received.</p>'; return; }
+      el.innerHTML = trades.map(t => tradeCardHTML(t, 'owner')).join('');
+    }
+
+    function renderSent(trades) {
+      const el = document.getElementById('sentList');
+      if (!trades.length) { el.innerHTML = '<p class="empty">No offers sent.</p>'; return; }
+      el.innerHTML = trades.map(t => tradeCardHTML(t, 'offerer')).join('');
+    }
+
+    function renderCompleted(trades) {
+      const el = document.getElementById('completedList');
+      if (!trades.length) { el.innerHTML = '<p class="empty">No completed trades yet.</p>'; return; }
+      el.innerHTML = trades.map(t => {
+        const isSeller = t.owner_id === currentUser.id;
+        return `
+          <div class="trade-card">
+            <div class="trade-imgs">
+              <img src="${t.offered?.image_url||''}" onerror="this.style.display='none'" />
+              <div class="trade-arrow">⇄</div>
+              <img src="${t.target?.image_url||''}" onerror="this.style.display='none'" />
+            </div>
+            <div class="trade-info">
+              <p class="trade-name">${isSeller ? `Gave: ${t.target?.name}` : `Gave: ${t.offered?.name}`}</p>
+              <p class="trade-meta">Got: ${isSeller ? t.offered?.name : t.target?.name}</p>
+              <p class="trade-meta">${new Date(t.completed_at).toLocaleDateString()}</p>
+              <span class="status-badge status-completed">✅ Completed</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function tradeCardHTML(t, role) {
+      const isSeller = role === 'owner';
+      const myConfirmed    = isSeller ? t.seller_confirmed : t.buyer_confirmed;
+      const otherConfirmed = isSeller ? t.buyer_confirmed  : t.seller_confirmed;
+      const isAccepted = t.status === 'accepted';
+
+      let actions = '';
+      if (t.status === 'pending' && isSeller) {
+        actions = `
+          <button onclick="respond('${t.id}','accepted')" style="background:#d4edda;border:none;border-radius:50px;padding:7px 14px;color:#155724;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">✅ Accept</button>
+          <button onclick="respond('${t.id}','rejected')" style="background:#ffd6d6;border:none;border-radius:50px;padding:7px 14px;color:#c0392b;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">❌ Reject</button>`;
+      } else if (t.status === 'pending' && !isSeller) {
+        actions = `<button onclick="cancelOffer('${t.id}')" style="background:#f0f0f0;border:none;border-radius:50px;padding:7px 14px;color:#999;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">✕ Cancel</button>`;
+      } else if (isAccepted) {
+        if (myConfirmed) {
+          actions = `<span class="confirmed-label">✅ You confirmed — waiting for them</span>`;
+        } else {
+          actions = `<button class="confirm-btn" onclick="confirm('${t.id}','${isSeller?'seller':'buyer'}')">
+            ${isSeller ? '📦 I sent my art' : '📬 I got the art'}
+          </button>`;
+          if (otherConfirmed) actions = `<p style="font-size:0.78rem;color:#e67e22;margin-bottom:6px;">⏳ They confirmed — your turn!</p>` + actions;
+        }
+      }
+
+      return `
+        <div class="trade-card">
+          <div class="trade-imgs">
+            <img src="${t.offered?.image_url||''}" title="${t.offered?.name||''}" onerror="this.style.display='none'" />
+            <div class="trade-arrow">⇄</div>
+            <img src="${t.target?.image_url||''}" title="${t.target?.name||''}" onerror="this.style.display='none'" />
+          </div>
+          <div class="trade-info">
+            <p class="trade-name">${isSeller ? `Someone offers: ${t.offered?.name}` : `You offered: ${t.offered?.name}`}</p>
+            <p class="trade-meta">For your: ${t.target?.name}</p>
+            <p class="trade-meta">${new Date(t.created_at).toLocaleDateString()}</p>
+            <span class="status-badge status-${t.status}">${t.status}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">${actions}</div>
+        </div>`;
+    }
+
+    async function respond(tradeId, status) {
+      await sb.from('trades').update({ status }).eq('id', tradeId);
+      load();
+    }
+
+    async function cancelOffer(tradeId) {
+      if (!confirm('Cancel this trade offer?')) return;
+      await sb.from('trades').delete().eq('id', tradeId);
+      load();
+    }
+
+    async function confirm(tradeId, role) {
+      const field = role === 'seller' ? 'seller_confirmed' : 'buyer_confirmed';
+      await sb.from('trades').update({ [field]: true }).eq('id', tradeId);
+      const { data } = await sb.from('trades').select('*').eq('id', tradeId).single();
+      if (data?.seller_confirmed && data?.buyer_confirmed) {
+        await sb.from('trades').update({ completed_at: new Date().toISOString(), status: 'completed' }).eq('id', tradeId);
+      }
+      load();
+    }
+
+    init();
+  </script>
+</body>
+</html>

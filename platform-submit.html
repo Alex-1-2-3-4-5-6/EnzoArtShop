@@ -131,11 +131,25 @@
         <input type="number" id="artPrice" placeholder="e.g. 5.00" min="0" step="0.01" />
       </div>
 
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;background:#f4f0ff;border-radius:14px;padding:14px 16px;">
-        <input type="checkbox" id="forTrade" style="width:20px;height:20px;accent-color:#a29bfe;flex-shrink:0;" />
-        <div>
-          <label for="forTrade" style="font-family:'Fredoka One',cursive;font-size:0.95rem;color:#a29bfe;cursor:pointer;">🔄 List for Trading</label>
-          <p style="font-size:0.78rem;color:#aaa;margin-top:2px;">Others can offer their art in exchange instead of buying with money.</p>
+      <div style="margin-bottom:16px;">
+        <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#555;margin-bottom:10px;">How do you want to list this?</p>
+        <div style="display:flex;gap:10px;">
+          <label style="flex:1;cursor:pointer;">
+            <input type="radio" name="listingType" id="listSell" value="sell" checked style="display:none;" />
+            <div id="listSellBox" onclick="setListing('sell')" style="border:2.5px solid #ff6b6b;border-radius:16px;padding:14px;text-align:center;background:#fff5f5;transition:all 0.15s;">
+              <p style="font-size:1.4rem;">🛍️</p>
+              <p style="font-family:'Fredoka One',cursive;color:#ff6b6b;font-size:0.95rem;">For Sale</p>
+              <p style="font-size:0.75rem;color:#aaa;margin-top:3px;">Buyers pay money</p>
+            </div>
+          </label>
+          <label style="flex:1;cursor:pointer;">
+            <input type="radio" name="listingType" id="listTrade" value="trade" style="display:none;" />
+            <div id="listTradeBox" onclick="setListing('trade')" style="border:2.5px solid #e0e0e0;border-radius:16px;padding:14px;text-align:center;background:white;transition:all 0.15s;">
+              <p style="font-size:1.4rem;">🔄</p>
+              <p style="font-family:'Fredoka One',cursive;color:#aaa;font-size:0.95rem;">For Trade</p>
+              <p style="font-size:0.75rem;color:#aaa;margin-top:3px;">Trade art for art</p>
+            </div>
+          </label>
         </div>
       </div>
       <button class="submit-btn" id="submitBtn" onclick="submitArt()" disabled>Submit for Approval</button>
@@ -203,6 +217,17 @@
     }
 
     const BAD_WORDS = ['fuck','shit','ass','bitch','cunt','dick','cock','pussy','bastard','damn','hell','crap','piss','slut','whore','nigger','nigga','faggot','retard','rape','kill yourself','kys','sex','porn','nude','naked'];
+    function setListing(type) {
+      document.getElementById('listTrade').checked = type === 'trade';
+      document.getElementById('listSell').checked  = type === 'sell';
+      document.getElementById('listSellBox').style.borderColor  = type === 'sell'  ? '#ff6b6b' : '#e0e0e0';
+      document.getElementById('listSellBox').style.background   = type === 'sell'  ? '#fff5f5' : 'white';
+      document.getElementById('listSellBox').querySelector('p:nth-child(2)').style.color = type === 'sell' ? '#ff6b6b' : '#aaa';
+      document.getElementById('listTradeBox').style.borderColor = type === 'trade' ? '#a29bfe' : '#e0e0e0';
+      document.getElementById('listTradeBox').style.background  = type === 'trade' ? '#f4f0ff' : 'white';
+      document.getElementById('listTradeBox').querySelector('p:nth-child(2)').style.color = type === 'trade' ? '#a29bfe' : '#aaa';
+    }
+
     function contentFilter(text) {
       const lower = text.toLowerCase().replace(/[^a-z0-9\s]/g,'');
       return BAD_WORDS.find(w => lower.includes(w)) || null;
@@ -258,7 +283,7 @@
           parent_name: meta.full_name || currentUser.email,
           parent_avatar_url: meta.avatar_url || null,
           status: kidId ? 'pending' : 'approved',
-          for_trade: document.getElementById('forTrade').checked
+          for_trade: document.getElementById('listTrade').checked
         });
 
         if (insertError) throw insertError;
