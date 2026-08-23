@@ -162,7 +162,7 @@
 
   <header>
     <div class="logo">🎨 Little He<span style="color:#fff176;">art</span>works</div>
-    <button onclick="openInfo()" style="background:rgba(255,255,255,0.25);border:2px solid rgba(255,255,255,0.6);border-radius:50%;width:32px;height:32px;font-size:0.95rem;cursor:pointer;color:white;flex-shrink:0;font-weight:700;">?</button>
+    <button onclick="openInfo()" style="background:rgba(255,255,255,0.25);border:2px solid rgba(255,255,255,0.6);border-radius:50px;padding:6px 14px;font-size:0.82rem;cursor:pointer;color:white;flex-shrink:0;font-family:'Fredoka One',cursive;white-space:nowrap;">❓ Help?</button>
     <a href="platform-index.html" class="home-btn">← Home</a>
     <a href="platform-privacy.html" style="color:rgba(255,255,255,0.8);font-size:0.78rem;font-weight:700;text-decoration:none;background:rgba(255,255,255,0.18);border-radius:50px;padding:5px 12px;white-space:nowrap;">Privacy</a>
     <a href="platform-terms.html" style="color:rgba(255,255,255,0.8);font-size:0.78rem;font-weight:700;text-decoration:none;background:rgba(255,255,255,0.18);border-radius:50px;padding:5px 12px;white-space:nowrap;">Terms</a>
@@ -280,27 +280,43 @@
   <!-- Info modal -->
   <div id="infoOverlay" onclick="closeInfo(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:center;justify-content:center;padding:20px;">
     <div style="background:white;border-radius:28px;max-width:480px;width:100%;padding:36px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;" onclick="event.stopPropagation()">
-      <h2 style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#333;margin-bottom:6px;">How It Works 🎨</h2>
-      <p style="color:#aaa;font-size:0.88rem;margin-bottom:24px;">Little Heartworks — a kids art marketplace</p>
-      <div style="display:flex;flex-direction:column;gap:16px;">
-        <div style="background:#f4f0ff;border-radius:16px;padding:16px 18px;">
-          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#a29bfe;margin-bottom:4px;">👨‍👩‍👧 Parents</p>
-          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Create a free account, add your kids by name, and each kid gets a unique 10-digit code. You can submit artwork on their behalf, set daily request limits, and approve or reject anything before it goes live in the shop.</p>
+      <h2 style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#333;margin-bottom:4px;">❓ Help & Info</h2>
+      <p style="color:#aaa;font-size:0.85rem;margin-bottom:22px;">Little Heartworks — a kids art marketplace</p>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <div style="background:#f4f0ff;border-radius:16px;padding:15px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:0.95rem;color:#a29bfe;margin-bottom:5px;">👨‍👩‍👧 For Parents</p>
+          <p style="font-size:0.85rem;color:#555;line-height:1.6;">Sign up for a free account and add your kids by name — each kid gets a unique 10-digit code. You control everything: approve or reject artwork before it goes live, set daily request limits for kids, and manage your posted art from your dashboard.</p>
         </div>
-        <div style="background:#fff8ee;border-radius:16px;padding:16px 18px;">
-          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#feca57;margin-bottom:4px;">🧒 Kids</p>
-          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Ask your parent for your 10-digit code, then click "I'm a Kid" on the home page. You can browse all the art in the shop and request pieces you like — your parent will see the requests. You can also submit your own artwork for your parent to approve!</p>
+
+        <div style="background:#fff8ee;border-radius:16px;padding:15px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:0.95rem;color:#f0932b;margin-bottom:5px;">🧒 For Kids</p>
+          <p style="font-size:0.85rem;color:#555;line-height:1.6;">Get your 10-digit code from your parent and click "I'm a Kid" on the home page. Browse art, request pieces you love, and submit your own drawings for your parent to approve and post to the shop!</p>
         </div>
-        <div style="background:#fff0f9;border-radius:16px;padding:16px 18px;">
-          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#ff9ff3;margin-bottom:4px;">🛍️ Buying Art</p>
-          <p style="font-size:0.88rem;color:#555;line-height:1.6;">See something you love? Click "Preview & Buy", sign in with your parent account, and send a purchase request. Payment and delivery are arranged in person — we'll send an email to the seller to get things sorted.</p>
+
+        <div style="background:#fff0f9;border-radius:16px;padding:15px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:0.95rem;color:#e84393;margin-bottom:5px;">🛍️ Buying Art</p>
+          <p style="font-size:0.85rem;color:#555;line-height:1.6;">Click "Preview & Buy" on any artwork, fill in your name and email, and send a purchase request. The seller will then send you the art in person — both of you confirm when it's sent and received, and it goes to your purchase history.</p>
         </div>
-        <div style="background:#f0fff4;border-radius:16px;padding:16px 18px;">
-          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#55efc4;margin-bottom:4px;">🔍 Finding Art</p>
-          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Use the search bar to find art by title, description, kid name, or parent. Smart search learns what you like and shows recommendations based on art you've viewed before.</p>
+
+        <div style="background:#f0fff4;border-radius:16px;padding:15px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:0.95rem;color:#27ae60;margin-bottom:5px;">🔄 Trading Art</p>
+          <p style="font-size:0.85rem;color:#555;line-height:1.6;">Switch to the Trading tab to find art listed for trade. Pick one of your own artworks to offer as a swap — no money involved! The owner can accept or reject your offer from their Art Requests page.</p>
         </div>
+
+        <div style="background:#f0f8ff;border-radius:16px;padding:15px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:0.95rem;color:#3498db;margin-bottom:5px;">🔍 Search & Recommendations</p>
+          <p style="font-size:0.85rem;color:#555;line-height:1.6;">Search by artwork title, description, kid name, or parent name. The smart search learns what you like and shows personalized recommendations based on art you've viewed.</p>
+        </div>
+
+        <div style="background:#fff5f5;border-radius:16px;padding:15px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:0.95rem;color:#e74c3c;margin-bottom:5px;">💬 Customer Service</p>
+          <p style="font-size:0.85rem;color:#555;line-height:1.6;">Have a question, issue, or concern? We're here to help!</p>
+          <a href="mailto:pilotal2020@gmail.com" style="display:inline-block;margin-top:10px;background:linear-gradient(135deg,#ff6b6b,#feca57);color:white;text-decoration:none;border-radius:50px;padding:9px 20px;font-family:'Fredoka One',cursive;font-size:0.88rem;">✉️ Email Us</a>
+        </div>
+
       </div>
-      <button onclick="closeInfo()" style="width:100%;margin-top:24px;background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;">Got it! 🎉</button>
+      <button onclick="closeInfo()" style="width:100%;margin-top:20px;background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;">Got it! 🎉</button>
     </div>
   </div>
 
