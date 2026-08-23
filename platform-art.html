@@ -436,7 +436,9 @@
           artwork_price: parseFloat(art.price),
           donation: donate,
           buyer_name: name,
-          buyer_email: email
+          buyer_email: email,
+          seller_id: art.parent_id,
+          status: 'pending'
         });
 
         await fetch('https://api.web3forms.com/submit', {

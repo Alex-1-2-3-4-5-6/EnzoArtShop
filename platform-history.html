@@ -75,12 +75,12 @@
 
     async function loadPurchaseHistory() {
       const el = document.getElementById('purchaseHistory');
-      // Purchases where artwork is no longer on hold (completed) or artwork was deleted
       const { data } = await sb.from('purchases')
-        .select('*, artworks(id, name, image_url, price, on_hold)')
+        .select('*, artworks(id, name, image_url, price)')
         .eq('buyer_email', currentUser.email)
-        .order('purchased_at', { ascending: false });
-      const completed = (data || []).filter(p => !p.artworks?.on_hold);
+        .eq('status', 'completed')
+        .order('completed_at', { ascending: false });
+      const completed = data || [];
       if (!completed.length) { el.innerHTML = '<p class="empty">No completed purchases yet.</p>'; return; }
       el.innerHTML = completed.map(p => {
         const total = (parseFloat(p.artwork_price||0) + parseFloat(p.donation||0)).toFixed(2);
@@ -89,7 +89,7 @@
             <img src="${p.artworks?.image_url||''}" onerror="this.style.display='none'" />
             <div class="row-info">
               <p class="row-name">${p.artworks?.name || p.artwork_name}</p>
-              <p class="row-meta">${new Date(p.purchased_at).toLocaleDateString()}</p>
+              <p class="row-meta">${new Date(p.completed_at || p.purchased_at).toLocaleDateString()}</p>
               <span class="badge">✅ Purchased</span>
             </div>
             <p class="amount">$${total}</p>
