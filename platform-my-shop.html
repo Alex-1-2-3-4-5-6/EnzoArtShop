@@ -143,6 +143,12 @@
       <div id="artGrid" class="art-grid"><p class="empty">Loading...</p></div>
     </div>
 
+    <!-- My purchase requests (parents only) -->
+    <div class="panel" id="purchaseRequestsPanel" style="display:none;">
+      <p class="panel-title">🛒 My Purchase Requests</p>
+      <div id="myPurchasesList"><p class="empty">Loading...</p></div>
+    </div>
+
   </div>
 
   <script>
@@ -188,6 +194,8 @@
         allArtworks = artworks || [];
 
         buildTabs(user, meta, kids || []);
+        document.getElementById('purchaseRequestsPanel').style.display = 'block';
+        loadMyPurchases(user.email);
 
       } else {
         window.location.href = 'platform-index.html';
@@ -276,6 +284,33 @@
           </div>
         `;
       }).join('');
+    }
+
+    async function loadMyPurchases(email) {
+      const el = document.getElementById('myPurchasesList');
+      const { data } = await sb.from('purchases')
+        .select('*, artworks(id, name, image_url, price, on_hold)')
+        .eq('buyer_email', email)
+        .order('purchased_at', { ascending: false });
+      if (!data || !data.length) { el.innerHTML = '<p class="empty">No purchase requests yet.</p>'; return; }
+      el.innerHTML = data.map(p => `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f0;">
+          <img src="${p.artworks?.image_url||''}" style="width:52px;height:52px;border-radius:10px;object-fit:cover;background:#f0f0f0;flex-shrink:0;" onerror="this.style.display='none'" />
+          <div style="flex:1;">
+            <p style="font-family:'Fredoka One',cursive;font-size:0.95rem;color:#333;">${p.artworks?.name||p.artwork_name}</p>
+            <p style="font-size:0.8rem;color:#aaa;">$${p.artwork_price} · ${new Date(p.purchased_at).toLocaleDateString()}</p>
+            <p style="font-size:0.78rem;color:${p.artworks?.on_hold?'#e67e22':'#27ae60'};">${p.artworks?.on_hold?'⏳ On Hold':'✅ Available'}</p>
+          </div>
+          ${p.artworks?.on_hold ? `<button onclick="cancelRequest('${p.id}','${p.artworks?.id}')" style="background:#ffd6d6;border:none;border-radius:50px;padding:7px 14px;color:#c0392b;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;white-space:nowrap;">✕ Cancel</button>` : ''}
+        </div>`).join('');
+    }
+
+    async function cancelRequest(purchaseId, artworkId) {
+      if (!confirm('Cancel your purchase request?')) return;
+      await sb.from('purchases').delete().eq('id', purchaseId);
+      await sb.from('artworks').update({ on_hold: false }).eq('id', artworkId);
+      const { data: { user } } = await sb.auth.getUser();
+      loadMyPurchases(user.email);
     }
 
     init();
