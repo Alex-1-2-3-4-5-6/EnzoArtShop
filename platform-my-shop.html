@@ -143,12 +143,6 @@
       <div id="artGrid" class="art-grid"><p class="empty">Loading...</p></div>
     </div>
 
-    <!-- My purchase requests (parents only) -->
-    <div class="panel" id="purchaseRequestsPanel" style="display:none;">
-      <p class="panel-title">🛒 My Purchase Requests</p>
-      <div id="myPurchasesList"><p class="empty">Loading...</p></div>
-    </div>
-
   </div>
 
   <script>
@@ -194,8 +188,6 @@
         allArtworks = artworks || [];
 
         buildTabs(user, meta, kids || []);
-        document.getElementById('purchaseRequestsPanel').style.display = 'block';
-        loadMyPurchases(user.email);
 
       } else {
         window.location.href = 'platform-index.html';
