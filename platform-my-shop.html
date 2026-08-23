@@ -143,11 +143,6 @@
       <div id="artGrid" class="art-grid"><p class="empty">Loading...</p></div>
     </div>
 
-    <!-- Purchases (parents only) -->
-    <div class="panel" id="purchasesPanel" style="display:none;">
-      <p class="panel-title">💰 Sale History</p>
-      <div id="purchasesList"><p class="empty">Loading...</p></div>
-    </div>
   </div>
 
   <script>
@@ -185,18 +180,14 @@
         const meta = user.user_metadata || {};
         document.getElementById('pageTitle').textContent = `🎨 ${(meta.full_name || 'My').split(' ')[0]}'s Shop`;
 
-        const [{ data: artworks }, { data: kids }, { data: purch }] = await Promise.all([
+        const [{ data: artworks }, { data: kids }] = await Promise.all([
           sb.from('artworks').select('*, kids(id, name, avatar_url)').eq('parent_id', user.id).order('created_at', { ascending: false }),
-          sb.from('kids').select('*').eq('parent_id', user.id),
-          sb.from('purchases').select('*').order('purchased_at', { ascending: false })
+          sb.from('kids').select('*').eq('parent_id', user.id)
         ]);
 
         allArtworks = artworks || [];
-        purchases = purch || [];
 
         buildTabs(user, meta, kids || []);
-        renderPurchases(purchases);
-        document.getElementById('purchasesPanel').style.display = 'block';
 
       } else {
         window.location.href = 'platform-index.html';
