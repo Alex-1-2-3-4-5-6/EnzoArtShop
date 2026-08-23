@@ -247,25 +247,39 @@
 
         if (user) {
           const { data: myPurchase } = await sb.from('purchases')
-            .select('id').eq('artwork_id', art.id).eq('buyer_email', user.email).maybeSingle();
+            .select('id,seller_confirmed,buyer_confirmed').eq('artwork_id', art.id).eq('buyer_email', user.email).maybeSingle();
           if (myPurchase) {
-            const cancelBtn = document.createElement('button');
-            cancelBtn.className = 'buy-btn';
-            cancelBtn.style.cssText = 'background:#f0f0f0;color:#e74c3c;margin-top:10px;';
-            cancelBtn.textContent = '✕ Cancel My Request';
-            cancelBtn.onclick = async () => {
-              if (!confirm('Cancel your purchase request for this artwork?')) return;
-              await sb.from('purchases').delete().eq('id', myPurchase.id);
-              await sb.from('artworks').update({ on_hold: false }).eq('id', art.id);
-              cancelBtn.remove();
-              btn.textContent = 'Send Purchase Request 🎨';
-              btn.disabled = false;
-              btn.style.background = '';
-              btn.style.color = '';
-              btn.style.cursor = '';
-              btn.onclick = submitClaim;
-            };
-            btn.parentNode.insertBefore(cancelBtn, btn.nextSibling);
+            if (myPurchase.seller_confirmed && !myPurchase.buyer_confirmed) {
+              // Seller sent it — show "I got my art!" button
+              const gotBtn = document.createElement('button');
+              gotBtn.className = 'buy-btn';
+              gotBtn.style.cssText = 'background:linear-gradient(135deg,#a29bfe,#ff9ff3);margin-top:10px;';
+              gotBtn.textContent = '📬 I got my art!';
+              gotBtn.onclick = async () => {
+                gotBtn.disabled = true; gotBtn.textContent = 'Confirming...';
+                await sb.from('purchases').update({ buyer_confirmed: true }).eq('id', myPurchase.id);
+                const { data: updated } = await sb.from('purchases').select('seller_confirmed,buyer_confirmed,artwork_id').eq('id', myPurchase.id).single();
+                if (updated?.seller_confirmed && updated?.buyer_confirmed) {
+                  await sb.from('purchases').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', myPurchase.id);
+                  if (updated.artwork_id) await sb.from('artworks').update({ on_hold: false }).eq('id', updated.artwork_id);
+                }
+                window.location.href = 'platform-history.html';
+              };
+              btn.parentNode.insertBefore(gotBtn, btn.nextSibling);
+            } else if (!myPurchase.seller_confirmed) {
+              // Seller hasn't confirmed yet — show cancel
+              const cancelBtn = document.createElement('button');
+              cancelBtn.className = 'buy-btn';
+              cancelBtn.style.cssText = 'background:#f0f0f0;color:#e74c3c;margin-top:10px;';
+              cancelBtn.textContent = '✕ Cancel My Request';
+              cancelBtn.onclick = async () => {
+                if (!confirm('Cancel your purchase request for this artwork?')) return;
+                await sb.from('purchases').delete().eq('id', myPurchase.id);
+                await sb.from('artworks').update({ on_hold: false }).eq('id', art.id);
+                location.reload();
+              };
+              btn.parentNode.insertBefore(cancelBtn, btn.nextSibling);
+            }
           }
         }
       }
