@@ -238,12 +238,36 @@
 
       if (art.on_hold) {
         const btn = document.getElementById('buyBtn');
-        btn.textContent = '👀 Preview (On Hold)';
+        btn.textContent = '⏳ On Hold';
         btn.disabled = true;
         btn.style.background = '#e0e0e0';
         btn.style.color = '#aaa';
         btn.style.cursor = 'default';
         btn.onclick = null;
+
+        if (user) {
+          const { data: myPurchase } = await sb.from('purchases')
+            .select('id').eq('artwork_id', art.id).eq('buyer_email', user.email).maybeSingle();
+          if (myPurchase) {
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'buy-btn';
+            cancelBtn.style.cssText = 'background:#f0f0f0;color:#e74c3c;margin-top:10px;';
+            cancelBtn.textContent = '✕ Cancel My Request';
+            cancelBtn.onclick = async () => {
+              if (!confirm('Cancel your purchase request for this artwork?')) return;
+              await sb.from('purchases').delete().eq('id', myPurchase.id);
+              await sb.from('artworks').update({ on_hold: false }).eq('id', art.id);
+              cancelBtn.remove();
+              btn.textContent = 'Send Purchase Request 🎨';
+              btn.disabled = false;
+              btn.style.background = '';
+              btn.style.color = '';
+              btn.style.cursor = '';
+              btn.onclick = submitClaim;
+            };
+            btn.parentNode.insertBefore(cancelBtn, btn.nextSibling);
+          }
+        }
       }
 
       if (art.description) {
