@@ -192,7 +192,10 @@
               <span class="art-ref">📌 #${a.id.slice(0,6).toUpperCase()}</span>
               <span class="art-posted">📅 ${new Date(a.created_at).toLocaleDateString()}</span>
               <span class="status-badge ${holdClass}">${statusText}</span>
-              <button class="take-down-btn" onclick="takeDown('${a.id}','${a.name}')">Take Down</button>
+              ${a.status === 'rejected'
+                ? `<button class="take-down-btn" style="background:#ffd6d6;color:#c0392b;" onclick="deleteArt('${a.id}','${a.name}')">🗑️ Delete</button>`
+                : `<button class="take-down-btn" onclick="takeDown('${a.id}','${a.name}')">Take Down</button>`
+              }
             </div>
           </div>`;
       }).join('');
@@ -202,6 +205,13 @@
       if (!confirm(`Remove "${name}" from the shop? This can't be undone.`)) return;
       await sb.from('artworks').update({ status: 'recycled' }).eq('id', id);
       toast(`"${name}" taken down`);
+      loadArtworks();
+    }
+
+    async function deleteArt(id, name) {
+      if (!confirm(`Permanently delete "${name}"? This can't be undone.`)) return;
+      await sb.from('artworks').delete().eq('id', id);
+      toast(`"${name}" deleted`);
       loadArtworks();
     }
 
