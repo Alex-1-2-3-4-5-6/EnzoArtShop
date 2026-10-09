@@ -115,6 +115,7 @@
     <!-- Purchase requests from buyers -->
     <div class="panel">
       <p class="panel-title">🛒 Purchase Requests</p>
+      <p style="font-size:0.8rem;color:#bbb;margin-bottom:14px;">Arrange payment and delivery in person, then click "Mark as Sent" when the art is on its way.</p>
       <div id="purchaseList"><p class="empty">Loading...</p></div>
     </div>
 
@@ -230,7 +231,7 @@
       panel.style.display = 'block';
       el.innerHTML = data.map(p => `
         <div class="notif-row" id="kr-${p.id}" style="cursor:pointer;" onclick="location.href='platform-art.html?id=${p.artwork_id}'">
-          <img class="notif-img" src="${p.artwork_image_url||''}" onerror="this.style.display='none'" />
+          <img class="notif-img" src="${p.artworks?.image_url||p.artwork_image_url||''}" onerror="this.style.display='none'" />
           <div class="notif-body">
             <p class="notif-title">${p.artwork_name}</p>
             <p class="notif-meta">A kid wants to buy this for <strong>$${(parseFloat(p.artwork_price||0)+parseFloat(p.donation||0)).toFixed(2)}</strong></p>
@@ -260,7 +261,7 @@
               ${p.buyer_email}
             </p>
             <div class="btn-row">
-              <button class="action-btn btn-green" onclick="event.stopPropagation();confirmSent('${p.id}')">📦 I sent it!</button>
+              <button class="action-btn btn-green" onclick="event.stopPropagation();confirmSent('${p.id}')">📦 Mark as Sent</button>
               <button class="action-btn btn-gray"  onclick="event.stopPropagation();declinePurchase('${p.id}','${p.artwork_id}')">✕ Decline</button>
             </div>
           </div>
@@ -286,8 +287,12 @@
       await sb.from('artworks').update({ on_hold: false }).eq('id', artworkId);
       toast('Purchase request declined.');
       document.getElementById(`pr-${purchaseId}`)?.remove();
+      document.getElementById(`kr-${purchaseId}`)?.remove();
       if (!document.querySelector('#purchaseList .notif-row')) {
         document.getElementById('purchaseList').innerHTML = '<p class="empty">No purchase requests yet.</p>';
+      }
+      if (!document.querySelector('#kidRequestsList .notif-row')) {
+        document.getElementById('kidRequestsPanel').style.display = 'none';
       }
     }
 

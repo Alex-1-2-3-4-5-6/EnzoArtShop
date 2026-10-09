@@ -199,6 +199,7 @@
     }
 
     async function takeDown(id, name) {
+      if (!confirm(`Remove "${name}" from the shop? This can't be undone.`)) return;
       await sb.from('artworks').update({ status: 'recycled' }).eq('id', id);
       toast(`"${name}" taken down`);
       loadArtworks();
