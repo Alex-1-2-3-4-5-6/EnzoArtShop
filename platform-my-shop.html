@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Shop – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
+
+    header {
+      background:white; padding:16px 28px;
+      display:flex; align-items:center; gap:12px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.07); position:sticky; top:0; z-index:40;
+    }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:#ff6b6b; flex:1; }
+    .logo span { color:#a29bfe; }
+    @media(max-width:480px) {
+      header { padding:12px 16px; gap:8px; }
+      .logo  { font-size:1rem; }
+      .hbtn  { padding:7px 13px; font-size:0.8rem; }
+    }
+    .hbtn {
+      border:none; border-radius:50px; padding:9px 20px;
+      font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer;
+      text-decoration:none; white-space:nowrap; transition:transform 0.15s;
+      display:inline-flex; align-items:center; gap:6px;
+    }
+    .hbtn:hover { transform:scale(1.04); }
+    .hbtn-gray   { background:#f0f0f0; color:#888; }
+    .hbtn-green  { background:linear-gradient(135deg,#ff6b6b,#feca57); color:white; }
+
+    .container { max-width:900px; margin:0 auto; padding:32px 20px 80px; }
+
+    .page-title { font-family:'Fredoka One',cursive; font-size:2rem; color:#333; margin-bottom:4px; }
+    .page-sub   { color:#aaa; font-size:0.9rem; margin-bottom:28px; }
+
+    /* Section panels */
+    .panel {
+      background:white; border-radius:22px; padding:24px 26px;
+      box-shadow:0 4px 16px rgba(0,0,0,0.06); margin-bottom:22px;
+    }
+    .panel-header {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:18px; gap:12px; flex-wrap:wrap;
+    }
+    .panel-title { font-family:'Fredoka One',cursive; font-size:1.15rem; color:#333; }
+
+    /* Art grid */
+    .art-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:14px; }
+    .art-card { border-radius:16px; overflow:hidden; border:2px solid #eee; background:white; }
+    .art-card img { width:100%; aspect-ratio:1; object-fit:cover; background:#f0f0f0; display:block; }
+    .art-card-info { padding:10px 12px 12px; }
+    .art-card-name  { font-family:'Fredoka One',cursive; font-size:0.92rem; color:#333; margin-bottom:2px; }
+    .art-card-price { font-size:0.82rem; color:#ff6b6b; font-weight:700; margin-bottom:6px; }
+
+    .status-badge {
+      display:inline-block; border-radius:50px; padding:3px 10px;
+      font-size:0.72rem; font-weight:700; margin-bottom:8px;
+    }
+    .s-approved { background:#d4edda; color:#155724; }
+    .s-pending  { background:#fff3cd; color:#856404; }
+    .s-rejected { background:#ffd6d6; color:#c0392b; }
+    .s-hold     { background:#fff0e0; color:#e67e22; }
+
+    .take-down-btn {
+      display:block; width:100%; border:none; border-radius:50px; padding:7px;
+      background:#ffd6d6; color:#c0392b; font-family:'Fredoka One',cursive;
+      font-size:0.8rem; cursor:pointer; transition:background 0.15s;
+    }
+    .take-down-btn:hover { background:#ffbcbc; }
+
+    /* Sale history rows */
+    .sale-row {
+      display:flex; align-items:center; gap:14px;
+      padding:14px 0; border-bottom:1px solid #f0f0f0;
+    }
+    .sale-row:last-child { border-bottom:none; padding-bottom:0; }
+    .sale-row img {
+      width:54px; height:54px; border-radius:12px; object-fit:cover;
+      background:#f0f0f0; flex-shrink:0;
+    }
+    .sale-info { flex:1; min-width:0; }
+    .sale-name { font-family:'Fredoka One',cursive; font-size:0.95rem; color:#333; }
+    .sale-meta { font-size:0.8rem; color:#aaa; margin-top:2px; }
+    .sale-amount { font-family:'Fredoka One',cursive; font-size:1.05rem; color:#27ae60; white-space:nowrap; }
+
+    .empty { color:#ccc; font-family:'Fredoka One',cursive; font-size:0.95rem; padding:12px 0; text-align:center; }
+
+    .art-ref {
+      font-size:0.68rem; color:#bbb; font-weight:700; letter-spacing:0.4px;
+      margin-bottom:6px; display:block;
+    }
+    .art-posted { font-size:0.68rem; color:#ccc; margin-bottom:6px; display:block; }
+
+    /* ── Mobile ── */
+    @media(max-width:600px) {
+      header { padding:12px 16px; gap:8px; }
+      .hbtn  { padding:7px 13px; font-size:0.8rem; }
+      .container { padding:20px 14px 60px; }
+      .art-grid { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
+      .panel { padding:18px 16px; }
+    }
+    @media(max-width:380px) {
+      .art-grid { grid-template-columns:repeat(2,1fr); }
+    }
+
+    /* Toast */
+    .toast {
+      position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+      background:#2d2d2d; color:white; padding:11px 24px; border-radius:50px;
+      font-family:'Fredoka One',cursive; font-size:0.95rem;
+      opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:999;
+    }
+    .toast.show { opacity:1; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">Little He<span>art</span>works</div>
+    <a href="platform-submit.html" class="hbtn hbtn-green">🎨 Post New Art</a>
+    <a href="platform-shop.html"   class="hbtn hbtn-gray">← Back to Shop</a>
+  </header>
+
+  <div class="container">
+    <p class="page-title" id="pageTitle">🖼️ My Shop</p>
+    <p class="page-sub">Your posted artworks and sales history</p>
+
+    <!-- Posted artworks -->
+    <div class="panel">
+      <div class="panel-header">
+        <p class="panel-title">🖼️ Posted Artworks</p>
+      </div>
+      <div class="art-grid" id="artGrid">
+        <p class="empty" style="grid-column:1/-1;">Loading...</p>
+      </div>
+    </div>
+
+    <!-- Sale history -->
+    <div class="panel">
+      <div class="panel-header">
+        <p class="panel-title">💰 Sales History</p>
+      </div>
+      <div id="salesList"><p class="empty">Loading...</p></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let currentUser = null;
+
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = 'platform-login.html'; return; }
+      currentUser = user;
+      const meta = user.user_metadata || {};
+      const first = (meta.full_name || 'My').split(' ')[0];
+      document.getElementById('pageTitle').textContent = `🖼️ ${first}'s Shop`;
+      loadArtworks();
+      loadSales();
+    }
+
+    async function loadArtworks() {
+      const { data } = await sb.from('artworks')
+        .select('*, kids(name)')
+        .eq('parent_id', currentUser.id)
+        .order('created_at', { ascending: false });
+      const artworks = data || [];
+      const grid = document.getElementById('artGrid');
+      if (!artworks.length) {
+        grid.innerHTML = '<p class="empty" style="grid-column:1/-1;">No artworks posted yet. Post your first one!</p>';
+        return;
+      }
+      grid.innerHTML = artworks.map(a => {
+        const statusClass = a.status === 'approved' ? 's-approved' : a.status === 'pending' ? 's-pending' : 's-rejected';
+        const statusText  = a.status === 'approved' ? (a.on_hold ? '👀 On Hold' : '✅ Live') : a.status === 'pending' ? '⏳ Pending' : '❌ Rejected';
+        const holdClass   = a.on_hold ? 's-hold' : statusClass;
+        return `
+          <div class="art-card">
+            <img src="${a.image_url}" alt="${a.name}" onclick="location.href='platform-art.html?id=${a.id}'" style="cursor:pointer;" />
+            <div class="art-card-info">
+              <p class="art-card-name">${a.name}</p>
+              ${a.kids?.name ? `<p style="font-size:0.72rem;color:#a29bfe;margin-bottom:3px;">🧒 ${a.kids.name}</p>` : ''}
+              <p class="art-card-price">$${a.price}</p>
+              <span class="art-ref">📌 #${a.id.slice(0,6).toUpperCase()}</span>
+              <span class="art-posted">📅 ${new Date(a.created_at).toLocaleDateString()}</span>
+              <span class="status-badge ${holdClass}">${statusText}</span>
+              <button class="take-down-btn" onclick="takeDown('${a.id}','${a.name}')">Take Down</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    async function takeDown(id, name) {
+      await sb.from('artworks').update({ status: 'recycled' }).eq('id', id);
+      toast(`"${name}" taken down`);
+      loadArtworks();
+    }
+
+    async function loadSales() {
+      const { data } = await sb.from('purchases')
+        .select('*')
+        .eq('seller_id', currentUser.id)
+        .eq('status', 'completed')
+        .order('completed_at', { ascending: false });
+      const el = document.getElementById('salesList');
+      if (!data || !data.length) {
+        el.innerHTML = '<p class="empty">No completed sales yet — keep sharing your art!</p>';
+        return;
+      }
+      const total = data.reduce((s, p) => s + parseFloat(p.artwork_price || 0) + parseFloat(p.donation || 0), 0);
+      el.innerHTML = `
+        <div style="background:#f0fff4;border-radius:14px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;">
+          <p style="font-family:'Fredoka One',cursive;color:#27ae60;font-size:1rem;">Total earned</p>
+          <p style="font-family:'Fredoka One',cursive;color:#27ae60;font-size:1.4rem;">$${total.toFixed(2)}</p>
+        </div>
+        ${data.map(p => {
+          const amount = (parseFloat(p.artwork_price||0) + parseFloat(p.donation||0)).toFixed(2);
+          const date   = new Date(p.completed_at || p.purchased_at).toLocaleDateString();
+          return `
+            <div class="sale-row">
+              <img src="${p.artwork_image_url||''}" onerror="this.style.display='none'" />
+              <div class="sale-info">
+                <p class="sale-name">${p.artwork_name}</p>
+                <p class="sale-meta">Bought by ${p.buyer_name}</p>
+                <p class="sale-meta">${date}${parseFloat(p.donation||0) > 0 ? ` · +$${parseFloat(p.donation).toFixed(2)} donation` : ''}</p>
+              </div>
+              <p class="sale-amount">$${amount}</p>
+            </div>`;
+        }).join('')}`;
+    }
+
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg; el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2600);
+    }
+
+    init();
+  </script>
+</body>
+</html>

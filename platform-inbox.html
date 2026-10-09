@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inbox – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
+
+    header {
+      background:linear-gradient(135deg,#ff6b6b,#feca57,#48dbfb,#a29bfe);
+      background-size:300% 300%; animation:gradientShift 8s ease infinite;
+      padding:16px 28px; display:flex; align-items:center; gap:12px;
+      box-shadow:0 4px 20px rgba(0,0,0,0.12); position:sticky; top:0; z-index:40;
+    }
+    @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:white; flex:1; }
+    .logo span { color:#fff176; }
+    .hbtn {
+      border:none; border-radius:50px; padding:9px 20px;
+      font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer;
+      text-decoration:none; white-space:nowrap; transition:transform 0.15s;
+      display:inline-flex; align-items:center; gap:6px; flex-shrink:0;
+    }
+    .hbtn:hover { transform:scale(1.05); }
+    .hbtn-ghost { background:rgba(255,255,255,0.22); color:white; border:2px solid rgba(255,255,255,0.55); backdrop-filter:blur(6px); }
+
+    .container { max-width:700px; margin:0 auto; padding:32px 20px 80px; }
+    .page-title { font-family:'Fredoka One',cursive; font-size:2rem; color:#333; margin-bottom:4px; }
+    .page-sub   { color:#aaa; font-size:0.9rem; margin-bottom:28px; }
+
+    .panel {
+      background:white; border-radius:22px; padding:24px 26px;
+      box-shadow:0 4px 16px rgba(0,0,0,0.06); margin-bottom:20px;
+    }
+    .panel-title { font-family:'Fredoka One',cursive; font-size:1.1rem; color:#333; margin-bottom:16px; }
+
+    .notif-row {
+      display:flex; gap:14px; align-items:flex-start;
+      padding:16px 0; border-bottom:1px solid #f0f0f0;
+    }
+    .notif-row:last-child { border-bottom:none; padding-bottom:0; }
+    .notif-img {
+      width:60px; height:60px; border-radius:14px; object-fit:cover;
+      background:#f0f0f0; flex-shrink:0; cursor:pointer;
+    }
+    .notif-body { flex:1; min-width:0; }
+    .notif-title { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; margin-bottom:3px; }
+    .notif-meta  { font-size:0.82rem; color:#aaa; margin-bottom:10px; line-height:1.5; }
+
+    .btn-row { display:flex; gap:8px; flex-wrap:wrap; }
+    .action-btn {
+      border:none; border-radius:50px; padding:8px 18px;
+      font-family:'Fredoka One',cursive; font-size:0.82rem; cursor:pointer;
+      transition:transform 0.15s;
+    }
+    .action-btn:hover { transform:scale(1.04); }
+    .btn-green  { background:linear-gradient(135deg,#ff6b6b,#feca57); color:white; }
+    .btn-purple { background:linear-gradient(135deg,#a29bfe,#ff9ff3); color:white; }
+    .btn-gray   { background:#f0f0f0; color:#e74c3c; }
+    .btn-view   { background:#f0f0f0; color:#555; }
+
+    .empty { color:#ccc; font-family:'Fredoka One',cursive; font-size:1rem; padding:12px 0; text-align:center; }
+
+    @media(max-width:600px) {
+      header { padding:12px 16px; gap:8px; }
+      .container { padding:20px 14px 60px; }
+      .panel { padding:18px 16px; }
+      .notif-img { width:50px; height:50px; }
+      .action-btn { padding:7px 14px; font-size:0.78rem; }
+    }
+
+    /* Toast */
+    .toast {
+      position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+      background:#2d2d2d; color:white; padding:11px 24px; border-radius:50px;
+      font-family:'Fredoka One',cursive; font-size:0.95rem;
+      opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:999;
+    }
+    .toast.show { opacity:1; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">📬 Inbox</div>
+    <a href="platform-shop.html" class="hbtn hbtn-ghost">← Back to Shop</a>
+  </header>
+
+  <div class="container">
+    <p class="page-title">📬 Your Inbox</p>
+    <p class="page-sub">All requests, offers, and approvals in one place</p>
+
+    <!-- Kid art submissions awaiting approval -->
+    <div class="panel" id="approvalsPanel" style="display:none;">
+      <p class="panel-title">🖼️ Awaiting Your Approval</p>
+      <div id="approvalsList"><p class="empty">Loading...</p></div>
+    </div>
+
+    <!-- Kid buy requests -->
+    <div class="panel" id="kidRequestsPanel" style="display:none;">
+      <p class="panel-title">🧒 Your Kid's Buy Requests</p>
+      <div id="kidRequestsList"><p class="empty">Loading...</p></div>
+    </div>
+
+    <!-- Kid sold art notifications -->
+    <div class="panel" id="kidSalesPanel" style="display:none;">
+      <p class="panel-title">🎉 Kid's Art Sold!</p>
+      <div id="kidSalesList"></div>
+    </div>
+
+    <!-- Purchase requests from buyers -->
+    <div class="panel">
+      <p class="panel-title">🛒 Purchase Requests</p>
+      <div id="purchaseList"><p class="empty">Loading...</p></div>
+    </div>
+
+    <!-- Trade offers -->
+    <div class="panel">
+      <p class="panel-title">🔄 Trade Offers</p>
+      <div id="tradeList"><p class="empty">Loading...</p></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let currentUser = null;
+
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = 'platform-login.html'; return; }
+      currentUser = user;
+      loadApprovals();
+      loadKidRequests();
+      loadKidSales();
+      loadPurchases();
+      loadTrades();
+    }
+
+    async function loadKidSales() {
+      // Recently completed purchases where the artwork had a kid_id
+      const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await sb.from('purchases')
+        .select('*, artworks!artwork_id(kid_id,kids(name))')
+        .eq('seller_id', currentUser.id)
+        .eq('status', 'completed')
+        .gte('completed_at', cutoff)
+        .order('completed_at', { ascending: false });
+      const kidSales = (data || []).filter(p => p.artworks?.kid_id);
+      if (!kidSales.length) return;
+      document.getElementById('kidSalesPanel').style.display = 'block';
+      document.getElementById('kidSalesList').innerHTML = kidSales.map(p => `
+        <div class="notif-row" style="cursor:pointer;" onclick="location.href='platform-art.html?id=${p.artwork_id}'">
+          <img class="notif-img" src="${p.artwork_image_url||''}" onerror="this.style.display='none'" />
+          <div class="notif-body">
+            <p class="notif-title">${p.artwork_name}</p>
+            <p class="notif-meta">
+              ${p.artworks?.kids?.name ? `<strong>${p.artworks.kids.name}'s</strong> art was sold` : 'Art sold'} to ${p.buyer_name} for <strong>$${(parseFloat(p.artwork_price||0)+parseFloat(p.donation||0)).toFixed(2)}</strong>
+            </p>
+          </div>
+        </div>`).join('');
+    }
+
+    async function loadApprovals() {
+      const { data } = await sb.from('artworks')
+        .select('id,name,image_url,price,created_at,kids(name)')
+        .eq('parent_id', currentUser.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+      const panel = document.getElementById('approvalsPanel');
+      const el    = document.getElementById('approvalsList');
+      if (!data || !data.length) return;
+      panel.style.display = 'block';
+      el.innerHTML = data.map(a => `
+        <div class="notif-row" id="ap-${a.id}" style="cursor:pointer;" onclick="location.href='platform-dashboard.html'">
+          <img class="notif-img" src="${a.image_url||''}" onerror="this.style.display='none'" />
+          <div class="notif-body">
+            <p class="notif-title">${a.name}</p>
+            <p class="notif-meta">
+              ${a.kids?.name ? `<strong>${a.kids.name}</strong> submitted this for $${a.price}` : `Submitted for $${a.price}`}<br>
+              📅 ${new Date(a.created_at).toLocaleDateString()}
+            </p>
+            <div class="btn-row">
+              <button class="action-btn btn-green" onclick="event.stopPropagation();approveArt('${a.id}')">✅ Approve</button>
+              <button class="action-btn btn-gray"  onclick="event.stopPropagation();rejectArt('${a.id}')">✕ Reject</button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    async function approveArt(id) {
+      await sb.from('artworks').update({ status: 'approved' }).eq('id', id);
+      toast('Artwork approved and live in the shop! ✅');
+      document.getElementById(`ap-${id}`)?.remove();
+      if (!document.querySelector('#approvalsList .notif-row')) {
+        document.getElementById('approvalsPanel').style.display = 'none';
+      }
+    }
+
+    async function rejectArt(id) {
+      await sb.from('artworks').update({ status: 'rejected' }).eq('id', id);
+      toast('Artwork rejected.');
+      document.getElementById(`ap-${id}`)?.remove();
+      if (!document.querySelector('#approvalsList .notif-row')) {
+        document.getElementById('approvalsPanel').style.display = 'none';
+      }
+    }
+
+    async function loadKidRequests() {
+      // Purchases where the artwork belongs to this parent but the buyer is a kid request
+      // These are identified by purchases where seller_id = currentUser.id and buyer_name contains a kid reference
+      // or we look for kid_request flag (using on_hold artworks with pending purchases from kids)
+      // Simplest: show purchases where seller_id = user.id and status = 'pending' that were created by the request_art_as_kid flow
+      // We check if the artwork has a kid_id set (kid's own art bought by someone is different)
+      const { data } = await sb.from('purchases')
+        .select('*, artworks!artwork_id(kid_id,name,image_url)')
+        .eq('seller_id', currentUser.id)
+        .eq('status', 'pending')
+        .not('artworks.kid_id', 'is', null);
+      const panel = document.getElementById('kidRequestsPanel');
+      const el    = document.getElementById('kidRequestsList');
+      if (!data || !data.length) return;
+      panel.style.display = 'block';
+      el.innerHTML = data.map(p => `
+        <div class="notif-row" id="kr-${p.id}" style="cursor:pointer;" onclick="location.href='platform-art.html?id=${p.artwork_id}'">
+          <img class="notif-img" src="${p.artwork_image_url||''}" onerror="this.style.display='none'" />
+          <div class="notif-body">
+            <p class="notif-title">${p.artwork_name}</p>
+            <p class="notif-meta">A kid wants to buy this for <strong>$${(parseFloat(p.artwork_price||0)+parseFloat(p.donation||0)).toFixed(2)}</strong></p>
+            <div class="btn-row">
+              <button class="action-btn btn-green" onclick="event.stopPropagation();confirmSent('${p.id}')">📦 Approved — Sent!</button>
+              <button class="action-btn btn-gray"  onclick="event.stopPropagation();declinePurchase('${p.id}','${p.artwork_id}')">✕ Decline</button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    async function loadPurchases() {
+      const { data } = await sb.from('purchases')
+        .select('*')
+        .eq('seller_id', currentUser.id)
+        .eq('status', 'pending')
+        .order('purchased_at', { ascending: false });
+      const el = document.getElementById('purchaseList');
+      if (!data || !data.length) { el.innerHTML = '<p class="empty">No purchase requests yet.</p>'; return; }
+      el.innerHTML = data.map(p => `
+        <div class="notif-row" id="pr-${p.id}" style="cursor:pointer;" onclick="location.href='platform-art.html?id=${p.artwork_id}'">
+          <img class="notif-img" src="${p.artwork_image_url||''}" onerror="this.style.display='none'" />
+          <div class="notif-body">
+            <p class="notif-title">${p.artwork_name}</p>
+            <p class="notif-meta">
+              <strong>${p.buyer_name}</strong> wants to buy this for <strong>$${(parseFloat(p.artwork_price||0)+parseFloat(p.donation||0)).toFixed(2)}</strong><br>
+              ${p.buyer_email}
+            </p>
+            <div class="btn-row">
+              <button class="action-btn btn-green" onclick="event.stopPropagation();confirmSent('${p.id}')">📦 I sent it!</button>
+              <button class="action-btn btn-gray"  onclick="event.stopPropagation();declinePurchase('${p.id}','${p.artwork_id}')">✕ Decline</button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    async function confirmSent(purchaseId) {
+      await sb.from('purchases').update({ seller_confirmed: true }).eq('id', purchaseId);
+      const { data } = await sb.from('purchases').select('*').eq('id', purchaseId).single();
+      if (data?.seller_confirmed && data?.buyer_confirmed) {
+        await sb.from('purchases').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', purchaseId);
+        if (data.artwork_id) await sb.from('artworks').update({ on_hold: false }).eq('id', data.artwork_id);
+      }
+      toast('Marked as sent! Waiting for buyer to confirm receipt.');
+      document.getElementById(`pr-${purchaseId}`)?.remove();
+      if (!document.querySelector('#purchaseList .notif-row')) {
+        document.getElementById('purchaseList').innerHTML = '<p class="empty">No purchase requests yet.</p>';
+      }
+    }
+
+    async function declinePurchase(purchaseId, artworkId) {
+      await sb.from('purchases').delete().eq('id', purchaseId);
+      await sb.from('artworks').update({ on_hold: false }).eq('id', artworkId);
+      toast('Purchase request declined.');
+      document.getElementById(`pr-${purchaseId}`)?.remove();
+      if (!document.querySelector('#purchaseList .notif-row')) {
+        document.getElementById('purchaseList').innerHTML = '<p class="empty">No purchase requests yet.</p>';
+      }
+    }
+
+    async function loadTrades() {
+      const { data } = await sb.from('trades')
+        .select('*, offered:offered_artwork_id(id,name,image_url,kids(name)), target:target_artwork_id(id,name,image_url)')
+        .eq('owner_id', currentUser.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+      const el = document.getElementById('tradeList');
+      if (!data || !data.length) { el.innerHTML = '<p class="empty">No trade offers yet.</p>'; return; }
+      el.innerHTML = data.map(t => {
+        const offered = t.offered;
+        const target  = t.target;
+        return `
+          <div class="notif-row" id="tr-${t.id}" style="cursor:pointer;" onclick="location.href='platform-art.html?id=${offered?.id}'">
+            <img class="notif-img" src="${offered?.image_url||''}" onerror="this.style.display='none'" title="Offered: ${offered?.name||''}" />
+            <div class="notif-body">
+              <p class="notif-title">Trade for "${target?.name||'your art'}"</p>
+              <p class="notif-meta">
+                They're offering <strong>${offered?.name||'unknown'}</strong>${offered?.kids?.name ? ` (by ${offered.kids.name})` : ''}<br>
+                in exchange for your art
+              </p>
+              <div class="btn-row">
+                <button class="action-btn btn-purple" onclick="event.stopPropagation();acceptTrade('${t.id}')">✅ Accept</button>
+                <button class="action-btn btn-gray"   onclick="event.stopPropagation();declineTrade('${t.id}')">✕ Decline</button>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    async function acceptTrade(tradeId) {
+      await sb.from('trades').update({ status: 'accepted' }).eq('id', tradeId);
+      toast('Trade accepted! Both of you can now confirm sending.');
+      document.getElementById(`tr-${tradeId}`)?.remove();
+      if (!document.querySelector('#tradeList .notif-row')) {
+        document.getElementById('tradeList').innerHTML = '<p class="empty">No trade offers yet.</p>';
+      }
+    }
+
+    async function declineTrade(tradeId) {
+      await sb.from('trades').update({ status: 'rejected' }).eq('id', tradeId);
+      toast('Trade declined.');
+      document.getElementById(`tr-${tradeId}`)?.remove();
+      if (!document.querySelector('#tradeList .notif-row')) {
+        document.getElementById('tradeList').innerHTML = '<p class="empty">No trade offers yet.</p>';
+      }
+    }
+
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg; el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2800);
+    }
+
+    init();
+  </script>
+</body>
+</html>

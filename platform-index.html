@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      min-height:100vh; font-family:'Nunito',sans-serif;
+      background:linear-gradient(135deg,#ff9ff3,#feca57,#48dbfb,#a29bfe);
+      background-size:300% 300%; animation:gradientShift 10s ease infinite;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding:32px 20px; text-align:center;
+    }
+    @keyframes gradientShift {
+      0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%}
+    }
+
+    .logo {
+      font-family:'Fredoka One',cursive;
+      font-size:clamp(2.6rem,9vw,4.2rem);
+      color:white; text-shadow:0 4px 24px rgba(0,0,0,0.18);
+      margin-bottom:8px; line-height:1.1;
+    }
+    .logo span { color:#fff176; }
+    .tagline {
+      font-size:1.05rem; color:rgba(255,255,255,0.9);
+      font-weight:700; margin-bottom:52px; letter-spacing:0.3px;
+    }
+
+    .btn-stack { display:flex; flex-direction:column; align-items:center; gap:14px; width:100%; max-width:320px; }
+
+    .btn {
+      display:block; width:100%; border:none; border-radius:50px;
+      padding:17px 28px; font-family:'Fredoka One',cursive; font-size:1.15rem;
+      cursor:pointer; text-decoration:none; transition:transform 0.18s, box-shadow 0.18s;
+      box-shadow:0 6px 24px rgba(0,0,0,0.15);
+    }
+    .btn:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 12px 32px rgba(0,0,0,0.22); }
+
+    .btn-shop  { background:white; color:#ff6b6b; }
+    .btn-login { background:rgba(255,255,255,0.22); color:white; border:2.5px solid rgba(255,255,255,0.65); backdrop-filter:blur(8px); box-shadow:none; }
+    .btn-login:hover { background:rgba(255,255,255,0.35); box-shadow:none; transform:translateY(-2px); }
+    .btn-signup { background:rgba(255,255,255,0.22); color:white; border:2.5px solid rgba(255,255,255,0.65); backdrop-filter:blur(8px); box-shadow:none; }
+    .btn-signup:hover { background:rgba(255,255,255,0.35); box-shadow:none; transform:translateY(-2px); }
+    .btn-kid   { background:rgba(255,255,255,0.15); color:rgba(255,255,255,0.85); border:2px solid rgba(255,255,255,0.4); backdrop-filter:blur(8px); font-size:1rem; padding:13px 28px; box-shadow:none; }
+    .btn-kid:hover { background:rgba(255,255,255,0.28); box-shadow:none; transform:translateY(-2px); }
+
+    .divider {
+      width:100%; max-width:320px; display:flex; align-items:center; gap:10px;
+      color:rgba(255,255,255,0.6); font-size:0.82rem; font-weight:700;
+    }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.35); }
+
+    /* Logged-in card */
+    .logged-card {
+      display:none; flex-direction:column; align-items:center; gap:12px;
+      background:rgba(255,255,255,0.2); border:2px solid rgba(255,255,255,0.45);
+      border-radius:28px; padding:28px 36px; backdrop-filter:blur(12px);
+      width:100%; max-width:320px;
+    }
+    .pfp { width:72px; height:72px; border-radius:50%; border:3px solid white; object-fit:cover; background:rgba(255,255,255,0.3); font-size:2rem; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .pfp img { width:100%; height:100%; object-fit:cover; }
+    .logged-name { font-family:'Fredoka One',cursive; font-size:1.2rem; color:white; }
+    .logged-email { font-size:0.8rem; color:rgba(255,255,255,0.7); margin-top:-8px; }
+    .logout-txt { background:none; border:none; color:rgba(255,255,255,0.65); font-size:0.85rem; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:700; }
+
+    /* Kid code modal */
+    .modal-bg {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
+      z-index:100; align-items:center; justify-content:center; padding:20px;
+    }
+    .modal-bg.open { display:flex; }
+    .modal {
+      background:white; border-radius:28px; padding:36px 32px;
+      max-width:360px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.3); text-align:center;
+    }
+    .modal h3 { font-family:'Fredoka One',cursive; font-size:1.6rem; color:#333; margin:10px 0 6px; }
+    .modal p  { color:#aaa; font-size:0.9rem; margin-bottom:20px; }
+    .modal input {
+      width:100%; padding:14px; border:2.5px solid #e0e0e0; border-radius:12px;
+      font-size:1.3rem; text-align:center; letter-spacing:4px;
+      font-family:'Fredoka One',cursive; outline:none; margin-bottom:10px;
+    }
+    .modal input:focus { border-color:#a29bfe; }
+    .modal-pw {
+      position:relative; margin-bottom:14px;
+    }
+    .modal-pw input {
+      font-size:1rem; letter-spacing:normal; font-family:'Nunito',sans-serif;
+      padding-right:46px; margin-bottom:0;
+    }
+    .modal-pw button {
+      position:absolute; right:12px; top:50%; transform:translateY(-50%);
+      background:none; border:none; cursor:pointer; font-size:1.1rem; color:#bbb;
+    }
+    .modal-msg { display:none; padding:10px 14px; border-radius:10px; font-weight:700; font-size:0.88rem; margin-bottom:14px; }
+    .modal-msg.error { background:#ffd6d6; color:#c0392b; }
+    .modal-msg.loading { background:#fff3cd; color:#856404; }
+    .modal-go {
+      width:100%; background:linear-gradient(135deg,#ff6b6b,#feca57);
+      border:none; border-radius:50px; padding:14px; color:white;
+      font-family:'Fredoka One',cursive; font-size:1.1rem; cursor:pointer;
+      margin-bottom:10px; transition:transform 0.18s;
+    }
+    .modal-go:hover { transform:scale(1.02); }
+    .modal-cancel { background:none; border:none; color:#aaa; font-family:'Nunito',sans-serif; font-size:0.9rem; cursor:pointer; }
+
+    /* Floating bubbles */
+    .bubble { position:fixed; border-radius:50%; opacity:0.1; pointer-events:none; animation:floatUp linear infinite; }
+    @keyframes floatUp { 0%{transform:translateY(110vh)} 100%{transform:translateY(-20vh)} }
+
+    /* Footer links */
+    .footer-links {
+      position:fixed; bottom:16px; display:flex; gap:12px;
+    }
+    .footer-links a {
+      color:rgba(255,255,255,0.75); font-size:0.78rem; font-weight:700;
+      text-decoration:none; background:rgba(255,255,255,0.15);
+      border-radius:50px; padding:5px 12px; backdrop-filter:blur(8px);
+    }
+    .footer-links a:hover { background:rgba(255,255,255,0.28); }
+  </style>
+</head>
+<body>
+
+  <div class="logo">Little He<span>art</span>works 🎨</div>
+  <p class="tagline">A safe art marketplace for kids</p>
+
+  <!-- Guest buttons -->
+  <div class="btn-stack" id="guestSection">
+    <a href="platform-shop.html" class="btn btn-shop">🛍️ Browse the Shop</a>
+
+    <div class="divider">account</div>
+
+    <a href="platform-login.html" class="btn btn-login">Log In</a>
+    <a href="platform-signup.html" class="btn btn-signup">Create Account</a>
+
+    <div class="divider">kids</div>
+
+    <button class="btn btn-kid" onclick="openKidModal()">🧒 I'm a Kid</button>
+  </div>
+
+  <!-- Logged-in card -->
+  <div class="logged-card" id="loggedCard">
+    <div class="pfp" id="pfp"><span id="pfpEmoji">🧑</span></div>
+    <p class="logged-name" id="loggedName"></p>
+    <p class="logged-email" id="loggedEmail"></p>
+    <a href="platform-shop.html" class="btn btn-shop" style="margin-top:4px;">🛍️ Browse the Shop</a>
+    <a href="platform-dashboard.html" class="btn btn-login" style="font-size:1rem;padding:14px 28px;">🎨 My Dashboard</a>
+    <button class="logout-txt" onclick="logout()">Log out</button>
+  </div>
+
+  <!-- Kid code modal -->
+  <div class="modal-bg" id="kidModal" onclick="if(event.target===this)closeKidModal()">
+    <div class="modal">
+      <div style="font-size:2.8rem;">🧒</div>
+      <h3>Enter Your Code</h3>
+      <p>Ask your parent for your code and info</p>
+      <input type="text" id="kidFirstName" placeholder="Your first name"
+        style="font-size:1rem;letter-spacing:normal;font-family:'Nunito',sans-serif;text-align:left;"
+        onkeydown="if(event.key==='Enter')goKid()" />
+      <input type="text" id="kidCode" inputmode="numeric" maxlength="10" placeholder="10-digit code"
+        oninput="this.value=this.value.replace(/\D/g,'')"
+        onkeydown="if(event.key==='Enter')goKid()" />
+      <div class="modal-pw">
+        <input type="password" id="kidPw" placeholder="Password (if you have one)"
+          onkeydown="if(event.key==='Enter')goKid()" />
+        <button type="button" onclick="togglePw('kidPw',this)">👁</button>
+      </div>
+      <div class="modal-msg" id="kidMsg"></div>
+      <button class="modal-go" onclick="goKid()">Let's Go! 🎨</button>
+      <button class="modal-cancel" onclick="closeKidModal()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="footer-links">
+    <a href="platform-privacy.html">Privacy Policy</a>
+    <a href="platform-terms.html">Terms of Use</a>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Floating bubbles
+    ['#ff6b6b','#feca57','#48dbfb','#a29bfe','#ff9ff3'].forEach((c, i) => {
+      const b = document.createElement('div'); b.className = 'bubble';
+      const s = 40 + Math.random() * 80;
+      b.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;background:${c};animation-duration:${9+Math.random()*10}s;animation-delay:${Math.random()*9}s;`;
+      document.body.appendChild(b);
+    });
+
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+      document.getElementById('guestSection').style.display = 'none';
+      const card = document.getElementById('loggedCard');
+      card.style.display = 'flex';
+      const meta = user.user_metadata || {};
+      document.getElementById('loggedName').textContent = meta.full_name || user.email;
+      document.getElementById('loggedEmail').textContent = user.email;
+      const pfp = document.getElementById('pfp');
+      if (meta.avatar_url) {
+        pfp.innerHTML = `<img src="${meta.avatar_url}" alt="avatar" />`;
+      }
+    }
+
+    async function logout() { await sb.auth.signOut(); location.reload(); }
+
+    function openKidModal() { document.getElementById('kidModal').classList.add('open'); document.getElementById('kidCode').focus(); }
+    function closeKidModal() {
+      document.getElementById('kidModal').classList.remove('open');
+      document.getElementById('kidFirstName').value = '';
+      document.getElementById('kidCode').value = '';
+      document.getElementById('kidPw').value = '';
+      const msg = document.getElementById('kidMsg'); msg.style.display = 'none'; msg.className = 'modal-msg';
+    }
+
+    function togglePw(id, btn) {
+      const el = document.getElementById(id);
+      el.type = el.type === 'password' ? 'text' : 'password';
+      btn.textContent = el.type === 'password' ? '👁' : '🙈';
+    }
+
+    async function goKid() {
+      const firstName = document.getElementById('kidFirstName').value.trim();
+      const code      = document.getElementById('kidCode').value.trim();
+      const pw        = document.getElementById('kidPw').value;
+      const msg       = document.getElementById('kidMsg');
+
+      if (!firstName) {
+        msg.className = 'modal-msg error'; msg.textContent = 'Please enter your first name.'; msg.style.display = 'block'; return;
+      }
+      if (code.length !== 10) {
+        msg.className = 'modal-msg error'; msg.textContent = 'Please enter your 10-digit code.'; msg.style.display = 'block'; return;
+      }
+      msg.className = 'modal-msg loading'; msg.textContent = '⏳ Checking code...'; msg.style.display = 'block';
+      const { data, error } = await sb.rpc('validate_kid_code', { p_code: code, p_password: pw });
+      if (error || data?.error) {
+        msg.className = 'modal-msg error';
+        msg.textContent = data?.error === 'Wrong password' ? '❌ Wrong password.' : '❌ Invalid code. Ask your parent to check their dashboard.';
+        return;
+      }
+      // Validate first name matches
+      const storedFirst = (data.kid_name || '').split(' ')[0].toLowerCase();
+      if (storedFirst && firstName.toLowerCase() !== storedFirst) {
+        msg.className = 'modal-msg error';
+        msg.textContent = '❌ That name doesn\'t match the code. Ask your parent if your name is set correctly.';
+        return;
+      }
+      localStorage.setItem('kidSession', JSON.stringify({ kid_id: data.kid_id, kid_name: data.kid_name, parent_id: data.parent_id, code }));
+      window.location.href = 'platform-kid-shop.html';
+    }
+
+    init();
+  </script>
+</body>
+</html>

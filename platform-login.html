@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log In – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      min-height:100vh; font-family:'Nunito',sans-serif;
+      background:linear-gradient(135deg,#48dbfb,#a29bfe,#ff9ff3);
+      background-size:300% 300%; animation:gradientShift 8s ease infinite;
+      display:flex; align-items:center; justify-content:center; padding:20px;
+    }
+    @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+    .card {
+      background:white; border-radius:28px; padding:40px 36px;
+      max-width:420px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.2);
+    }
+
+    .back-btn {
+      display:inline-flex; align-items:center; gap:6px;
+      color:#aaa; font-weight:700; font-size:0.88rem; text-decoration:none;
+      margin-bottom:22px; transition:color 0.15s;
+    }
+    .back-btn:hover { color:#a29bfe; }
+
+    .logo { font-family:'Fredoka One',cursive; font-size:1.4rem; color:#ff6b6b; margin-bottom:8px; }
+    .logo span { color:#a29bfe; }
+    h2 { font-family:'Fredoka One',cursive; font-size:1.9rem; color:#333; margin-bottom:4px; }
+    .sub { color:#aaa; font-size:0.9rem; margin-bottom:28px; }
+
+    .field { margin-bottom:16px; }
+    .field label { display:block; font-weight:700; color:#555; margin-bottom:6px; font-size:0.9rem; }
+    .field input {
+      width:100%; padding:13px 16px; border:2.5px solid #e0e0e0;
+      border-radius:12px; font-family:'Nunito',sans-serif; font-size:1rem;
+      outline:none; transition:border-color 0.2s;
+    }
+    .field input:focus { border-color:#a29bfe; }
+    .pw-wrap { position:relative; }
+    .pw-wrap input { padding-right:46px; }
+    .pw-toggle {
+      position:absolute; right:12px; top:50%; transform:translateY(-50%);
+      background:none; border:none; cursor:pointer; font-size:1.1rem; color:#bbb;
+    }
+
+    .keep-row {
+      display:flex; align-items:center; gap:10px; margin-bottom:20px; margin-top:4px;
+    }
+    .keep-row input[type=checkbox] { width:18px; height:18px; accent-color:#a29bfe; cursor:pointer; flex-shrink:0; }
+    .keep-row label { font-size:0.9rem; color:#666; cursor:pointer; }
+
+    .submit-btn {
+      width:100%; background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      border:none; border-radius:50px; padding:15px;
+      color:white; font-family:'Fredoka One',cursive; font-size:1.15rem;
+      cursor:pointer; transition:transform 0.18s;
+    }
+    .submit-btn:hover { transform:scale(1.02); }
+    .submit-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+    .msg { margin-top:14px; padding:12px 16px; border-radius:12px; font-weight:700; font-size:0.9rem; display:none; }
+    .msg.error { background:#ffd6d6; color:#c0392b; }
+
+    .bottom-links { text-align:center; margin-top:20px; font-size:0.9rem; color:#aaa; }
+    .bottom-links a { color:#a29bfe; font-weight:700; text-decoration:none; }
+    .bottom-links a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <a href="platform-index.html" class="back-btn">← Back</a>
+
+    <div class="logo">Little He<span>art</span>works</div>
+    <h2>Welcome Back</h2>
+    <p class="sub">Log in to your parent account</p>
+
+    <div class="field">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')login()" />
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="password" placeholder="Your password" onkeydown="if(event.key==='Enter')login()" />
+        <button type="button" class="pw-toggle" onclick="togglePw()">👁</button>
+      </div>
+    </div>
+
+    <div class="keep-row">
+      <input type="checkbox" id="keepMe" checked />
+      <label for="keepMe">Keep me signed in</label>
+    </div>
+
+    <button class="submit-btn" id="loginBtn" onclick="login()">Log In</button>
+    <div class="msg" id="msg"></div>
+
+    <p class="bottom-links">Don't have an account? <a href="platform-signup.html">Sign up</a></p>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    function togglePw() {
+      const el = document.getElementById('password');
+      const btn = document.querySelector('.pw-toggle');
+      el.type = el.type === 'password' ? 'text' : 'password';
+      btn.textContent = el.type === 'password' ? '👁' : '🙈';
+    }
+
+    async function login() {
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const keepMe   = document.getElementById('keepMe').checked;
+      const btn      = document.getElementById('loginBtn');
+      const msg      = document.getElementById('msg');
+
+      if (!email || !password) {
+        msg.className = 'msg error'; msg.textContent = 'Please fill in your email and password.'; msg.style.display = 'block'; return;
+      }
+
+      btn.disabled = true; btn.textContent = 'Logging in...';
+
+      // If not keeping signed in, use a short session
+      if (!keepMe) {
+        await sb.auth.setSession({ access_token: null, refresh_token: null }).catch(() => {});
+      }
+
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        msg.className = 'msg error'; msg.textContent = '❌ ' + error.message; msg.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Log In';
+      } else {
+        if (!keepMe) {
+          // Store a flag — on next page load if not keepMe, sign out on tab close
+          sessionStorage.setItem('noKeep', '1');
+        }
+        window.location.href = 'platform-shop.html';
+      }
+    }
+  </script>
+</body>
+</html>

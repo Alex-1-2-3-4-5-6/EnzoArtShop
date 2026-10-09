@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – KidsArt Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
+
+    header {
+      background:white; padding:16px 32px;
+      display:flex; align-items:center; gap:16px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.07);
+    }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.4rem; color:#ff6b6b; flex:1; }
+    .logo span { color:#a29bfe; }
+    .user-info { font-size:0.9rem; color:#aaa; font-weight:700; }
+    .logout-btn {
+      background:#f0f0f0; border:none; border-radius:50px;
+      padding:8px 18px; font-family:'Fredoka One',cursive;
+      font-size:0.9rem; cursor:pointer; color:#888;
+    }
+    .logout-btn:hover { background:#e0e0e0; }
+    .shop-btn {
+      background:linear-gradient(135deg,#48dbfb,#a29bfe); border:none; border-radius:50px;
+      padding:8px 18px; font-family:'Fredoka One',cursive;
+      font-size:0.9rem; cursor:pointer; color:white; text-decoration:none;
+    }
+
+    /* Link code */
+    .link-code-box {
+      background:linear-gradient(135deg,#f4f0ff,#fff0f9); border-radius:16px;
+      padding:20px; margin-bottom:16px; text-align:center; border:2px dashed #a29bfe;
+    }
+    .link-code-display {
+      font-family:'Fredoka One',cursive; font-size:2.4rem; letter-spacing:6px;
+      color:#a29bfe; margin:10px 0;
+    }
+    .code-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+    .copy-btn, .regen-btn {
+      border:none; border-radius:50px; padding:9px 20px;
+      font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer; transition:transform 0.2s;
+    }
+    .copy-btn { background:#a29bfe; color:white; }
+    .copy-btn:hover { transform:scale(1.05); }
+    .regen-btn { background:#f0f0f0; color:#888; }
+    .regen-btn:hover { background:#e0e0e0; }
+
+    /* Pending kids */
+    .pending-kid-item {
+      background:#fafafa; border-radius:14px; padding:14px 16px;
+      display:flex; align-items:center; gap:12px;
+      margin-bottom:10px; border:2px solid #eee;
+    }
+    .pending-kid-info { flex:1; }
+    .pending-kid-name { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; }
+    .pending-kid-meta { font-size:0.8rem; color:#aaa; margin-top:2px; }
+    .pending-kid-actions { display:flex; gap:8px; }
+
+    .container { max-width:900px; margin:36px auto; padding:0 20px 80px; }
+
+    .welcome {
+      font-family:'Fredoka One',cursive; font-size:1.8rem;
+      color:#333; margin-bottom:28px;
+    }
+
+    .panel {
+      background:white; border-radius:24px; padding:28px;
+      box-shadow:0 4px 18px rgba(0,0,0,0.06); margin-bottom:24px;
+    }
+    .panel-title {
+      font-family:'Fredoka One',cursive; font-size:1.2rem;
+      color:#333; margin-bottom:18px; display:flex; align-items:center; gap:8px;
+    }
+
+    /* Kids */
+    .kid-list { display:flex; flex-direction:column; gap:0; margin-bottom:16px; }
+    .kid-chip {
+      background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      color:white; border-radius:50px; padding:8px 20px;
+      font-family:'Fredoka One',cursive; font-size:0.95rem;
+      display:flex; align-items:center; gap:8px;
+    }
+    .kid-chip button {
+      background:rgba(255,255,255,0.3); border:none; border-radius:50%;
+      width:20px; height:20px; cursor:pointer; color:white;
+      font-size:0.75rem; display:flex; align-items:center; justify-content:center;
+    }
+
+    .add-kid-form { display:flex; gap:10px; flex-wrap:wrap; }
+    .add-kid-form input {
+      flex:1; min-width:140px; padding:11px 16px;
+      border:2.5px solid #e0e0e0; border-radius:12px;
+      font-family:'Nunito',sans-serif; font-size:0.95rem; outline:none;
+      transition:border-color 0.2s;
+    }
+    .add-kid-form input:focus { border-color:#a29bfe; }
+    .add-kid-btn {
+      background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      border:none; border-radius:50px; padding:11px 24px;
+      color:white; font-family:'Fredoka One',cursive; font-size:0.95rem;
+      cursor:pointer; white-space:nowrap;
+    }
+
+    /* Pending artworks */
+    .pending-item {
+      background:#fafafa; border-radius:16px; padding:16px;
+      display:flex; align-items:flex-start; gap:14px;
+      margin-bottom:12px; border:2px solid #eee;
+    }
+    .pending-item img {
+      width:80px; height:80px; object-fit:cover;
+      border-radius:12px; flex-shrink:0; background:#eee;
+    }
+    .pending-info { flex:1; min-width:0; }
+    .pending-name { font-family:'Fredoka One',cursive; font-size:1.05rem; color:#333; }
+    .pending-meta { font-size:0.82rem; color:#aaa; margin:3px 0 10px; }
+    .pending-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .approve-btn {
+      background:#d4edda; border:none; border-radius:50px;
+      padding:7px 18px; color:#155724; font-family:'Fredoka One',cursive;
+      font-size:0.88rem; cursor:pointer; transition:background 0.2s;
+    }
+    .approve-btn:hover { background:#b8ddc5; }
+    .reject-btn {
+      background:#ffd6d6; border:none; border-radius:50px;
+      padding:7px 18px; color:#c0392b; font-family:'Fredoka One',cursive;
+      font-size:0.88rem; cursor:pointer; transition:background 0.2s;
+    }
+    .reject-btn:hover { background:#ffbcbc; }
+
+    /* Approved artworks */
+    .approved-item {
+      background:#fafafa; border-radius:16px; padding:14px 16px;
+      display:flex; align-items:center; gap:14px;
+      margin-bottom:10px; border:2px solid #d4edda;
+    }
+    .approved-item img { width:60px; height:60px; object-fit:cover; border-radius:10px; flex-shrink:0; }
+    .approved-info { flex:1; }
+    .approved-name { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; }
+    .approved-meta { font-size:0.8rem; color:#aaa; }
+    .remove-btn {
+      background:#fff0f0; border:none; border-radius:50px;
+      padding:7px 16px; color:#ff6b6b; font-family:'Fredoka One',cursive;
+      font-size:0.82rem; cursor:pointer;
+    }
+
+    .submit-art-btn {
+      display:inline-block; background:linear-gradient(135deg,#ff6b6b,#feca57);
+      border:none; border-radius:50px; padding:13px 30px;
+      color:white; font-family:'Fredoka One',cursive; font-size:1.05rem;
+      cursor:pointer; text-decoration:none; transition:transform 0.2s;
+      margin-top:4px;
+    }
+    .submit-art-btn:hover { transform:scale(1.03); }
+
+    .empty { text-align:center; padding:24px; font-family:'Fredoka One',cursive; font-size:1rem; color:#ccc; }
+
+    .status-msg {
+      padding:10px 14px; border-radius:10px; font-weight:700;
+      font-size:0.88rem; margin-top:10px; display:none;
+    }
+    .status-msg.success { background:#d4edda; color:#155724; }
+    .status-msg.error { background:#ffd6d6; color:#c0392b; }
+    .status-msg.loading { background:#fff3cd; color:#856404; }
+
+    .danger-zone {
+      border:2px solid #ffd6d6; border-radius:16px; padding:20px 24px;
+      margin-top:8px;
+    }
+    .danger-zone p { font-size:0.88rem; color:#aaa; margin-bottom:14px; line-height:1.5; }
+    .delete-account-btn {
+      background:#ffd6d6; border:none; border-radius:50px; padding:11px 24px;
+      color:#c0392b; font-family:'Fredoka One',cursive; font-size:0.95rem;
+      cursor:pointer; transition:background 0.2s;
+    }
+    .delete-account-btn:hover { background:#ffbcbc; }
+
+    /* Profile panel */
+    .profile-header {
+      display:flex; align-items:center; gap:20px; margin-bottom:22px; flex-wrap:wrap;
+    }
+    .avatar-wrap { position:relative; flex-shrink:0; }
+    .avatar-img {
+      width:88px; height:88px; border-radius:50%; object-fit:cover;
+      border:4px solid #a29bfe; background:#f0f0f0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:2.2rem;
+    }
+    .avatar-upload-btn {
+      position:absolute; bottom:2px; right:2px;
+      background:#feca57; border:none; border-radius:50%;
+      width:26px; height:26px; cursor:pointer; font-size:0.85rem;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    }
+    #avatarFileInput { display:none; }
+    .profile-fields { flex:1; min-width:200px; display:flex; flex-direction:column; gap:10px; }
+    .profile-fields input {
+      padding:10px 14px; border:2.5px solid #e0e0e0;
+      border-radius:12px; font-family:'Nunito',sans-serif; font-size:0.95rem;
+      outline:none; transition:border-color 0.2s; width:100%;
+    }
+    .profile-fields input:focus { border-color:#a29bfe; }
+    .save-profile-btn {
+      background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      border:none; border-radius:50px; padding:10px 24px;
+      color:white; font-family:'Fredoka One',cursive; font-size:0.95rem;
+      cursor:pointer; align-self:flex-start; transition:transform 0.2s;
+    }
+    .save-profile-btn:hover { transform:scale(1.03); }
+    .save-profile-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">Little He<span style="color:#ff9ff3;">art</span>works</div>
+    <button onclick="openInfo()" style="background:#f0f0f0;border:none;border-radius:50%;width:32px;height:32px;font-size:0.95rem;cursor:pointer;color:#aaa;flex-shrink:0;font-weight:700;">?</button>
+    <a href="platform-shop.html" class="shop-btn">🛍️ Shop</a>
+    <a href="platform-privacy.html" style="color:#aaa;font-size:0.78rem;font-weight:700;text-decoration:none;background:#f0f0f0;border-radius:50px;padding:5px 12px;white-space:nowrap;">Privacy</a>
+    <a href="platform-terms.html" style="color:#aaa;font-size:0.78rem;font-weight:700;text-decoration:none;background:#f0f0f0;border-radius:50px;padding:5px 12px;white-space:nowrap;">Terms</a>
+    <span class="user-info" id="userInfo"></span>
+    <button class="logout-btn" onclick="logout()">Log out</button>
+  </header>
+
+  <div class="container">
+    <p class="welcome" id="welcome">👋 Welcome back!</p>
+
+    <!-- Profile panel -->
+    <div class="panel">
+      <p class="panel-title">👤 My Profile</p>
+      <div class="profile-header">
+        <div class="avatar-wrap">
+          <img class="avatar-img" id="avatarImg" src="" alt="avatar" onerror="this.src=''" />
+          <button class="avatar-upload-btn" onclick="document.getElementById('avatarFileInput').click()" title="Change photo">✏️</button>
+          <input type="file" id="avatarFileInput" accept="image/*" onchange="uploadAvatar(this.files[0])" />
+        </div>
+        <div class="profile-fields">
+          <input type="text" id="profileName" placeholder="Your full name" />
+          <div style="display:flex;gap:8px;">
+            <select id="dobMonth" style="flex:2;padding:10px 8px;border:2.5px solid #e0e0e0;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.9rem;outline:none;background:white;">
+              <option value="">Month</option>
+              <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+              <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+              <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+              <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+            </select>
+            <select id="dobDay" style="flex:1;padding:10px 8px;border:2.5px solid #e0e0e0;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.9rem;outline:none;background:white;"><option value="">Day</option></select>
+            <select id="dobYear" style="flex:1.4;padding:10px 8px;border:2.5px solid #e0e0e0;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.9rem;outline:none;background:white;"><option value="">Year</option></select>
+          </div>
+          <button class="save-profile-btn" id="saveProfileBtn" onclick="saveProfile()">Save Profile</button>
+        </div>
+      </div>
+      <div class="status-msg" id="profileStatus"></div>
+    </div>
+
+    <!-- Kids panel -->
+    <div class="panel">
+      <p class="panel-title">👧 Your Kids</p>
+      <p style="font-size:0.85rem;color:#aaa;margin-bottom:14px;">Each kid gets a 10-digit code — share it with your child so they can submit artwork from the home page.</p>
+      <div class="kid-list" id="kidList"></div>
+      <div class="add-kid-form">
+        <input type="text" id="kidName" placeholder="Child's first name" />
+        <input type="text" id="kidPassword" placeholder="Password (optional)" />
+        <button class="add-kid-btn" onclick="addKid()">+ Add Kid</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:12px;margin-bottom:4px;">
+        <div style="flex:1;height:1px;background:#eee;"></div>
+        <span style="font-size:0.8rem;color:#ccc;font-weight:700;">or link an existing kid</span>
+        <div style="flex:1;height:1px;background:#eee;"></div>
+      </div>
+      <div class="add-kid-form">
+        <input type="text" id="linkCode" placeholder="10-digit code" maxlength="10" style="font-family:monospace;letter-spacing:2px;" oninput="this.value=this.value.replace(/\D/g,'')" />
+        <input type="text" id="linkPassword" placeholder="Password (if set)" />
+        <button class="add-kid-btn" style="background:linear-gradient(135deg,#48dbfb,#a29bfe);" onclick="linkKid()">🔗 Link Kid</button>
+      </div>
+      <div class="status-msg" id="kidStatus"></div>
+    </div>
+
+    <!-- Kid art requests -->
+    <div class="panel">
+      <p class="panel-title">🛒 Art Requests from Kids</p>
+      <div id="requestsList"><p class="empty">Loading...</p></div>
+      <div class="status-msg" id="requestsStatus"></div>
+    </div>
+
+    <!-- Pending approval -->
+    <div class="panel">
+      <p class="panel-title">⏳ Pending Your Approval</p>
+      <div id="pendingList"><p class="empty">Loading...</p></div>
+      <div class="status-msg" id="pendingStatus"></div>
+    </div>
+
+    <!-- Approved art -->
+    <div class="panel">
+      <p class="panel-title">✅ Live in the Shop</p>
+      <div id="approvedList"><p class="empty">Loading...</p></div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="panel">
+      <p class="panel-title" style="color:#c0392b;">⚠️ Danger Zone</p>
+      <div class="danger-zone">
+        <p>Permanently delete your account. This will remove your account, all your kids, and all artwork you have submitted. <strong>This cannot be undone.</strong></p>
+        <button class="delete-account-btn" onclick="deleteAccount()">🗑️ Delete My Account</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let currentUser = null;
+
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = 'platform-login.html'; return; }
+      currentUser = user;
+      const name = user.user_metadata?.full_name || user.email;
+      document.getElementById('userInfo').textContent = user.email;
+      document.getElementById('welcome').textContent = `👋 Welcome back, ${name.split(' ')[0]}!`;
+      // Populate day/year dropdowns
+      const daySelect = document.getElementById('dobDay');
+      const yearSelect = document.getElementById('dobYear');
+      for (let d = 1; d <= 31; d++) { const o = document.createElement('option'); o.value = d; o.textContent = d; daySelect.appendChild(o); }
+      const cur = new Date().getFullYear();
+      for (let y = cur - 18; y >= cur - 100; y--) { const o = document.createElement('option'); o.value = y; o.textContent = y; yearSelect.appendChild(o); }
+      loadProfile();
+      loadKids();
+      loadArtworks();
+      loadRequests();
+    }
+
+    function loadProfile() {
+      const meta = currentUser.user_metadata || {};
+      document.getElementById('profileName').value = meta.full_name || '';
+      const dob = meta.date_of_birth || '';
+      if (dob) {
+        const [y, m, d] = dob.split('-');
+        document.getElementById('dobMonth').value = parseInt(m);
+        document.getElementById('dobDay').value   = parseInt(d);
+        document.getElementById('dobYear').value  = parseInt(y);
+      }
+      const avatar = meta.avatar_url || '';
+      const img = document.getElementById('avatarImg');
+      if (avatar) {
+        img.src = avatar;
+        img.style.fontSize = '0';
+      } else {
+        img.src = '';
+        img.style.fontSize = '2.2rem';
+        img.alt = '🧑';
+      }
+    }
+
+    async function uploadAvatar(file) {
+      if (!file) return;
+      const st = document.getElementById('profileStatus');
+      showStatus(st, 'loading' , '⏳ Uploading photo...');
+      const ext = file.name.split('.').pop();
+      const filename = `avatar-${currentUser.id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await sb.storage.from('avatars').upload(filename, file, { upsert: true, contentType: file.type });
+      if (upErr) { showStatus(st, 'error', upErr.message); return; }
+      const { data: urlData } = sb.storage.from('avatars').getPublicUrl(filename);
+      const avatar_url = urlData.publicUrl;
+      const { error } = await sb.auth.updateUser({ data: { ...currentUser.user_metadata, avatar_url } });
+      if (error) { showStatus(st, 'error', error.message); return; }
+      currentUser = (await sb.auth.getUser()).data.user;
+      loadProfile();
+      showStatus(st, 'success', '✅ Photo updated!');
+    }
+
+    async function saveProfile() {
+      const name  = document.getElementById('profileName').value.trim();
+      const month = document.getElementById('dobMonth').value;
+      const day   = document.getElementById('dobDay').value;
+      const year  = document.getElementById('dobYear').value;
+      const dob   = (month && day && year) ? `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}` : '';
+      const btn   = document.getElementById('saveProfileBtn');
+      const st    = document.getElementById('profileStatus');
+      if (!name) { showStatus(st, 'error', 'Please enter your name.'); return; }
+      if (dob) {
+        const age = Math.floor((new Date() - new Date(dob)) / (365.25 * 24 * 60 * 60 * 1000));
+        if (age < 18) { showStatus(st, 'error', 'You must be 18 or older to have a parent account.'); return; }
+      }
+      btn.disabled = true;
+      const { error } = await sb.auth.updateUser({ data: { ...currentUser.user_metadata, full_name: name, date_of_birth: dob } });
+      if (error) { showStatus(st, 'error', error.message); }
+      else {
+        currentUser = (await sb.auth.getUser()).data.user;
+        const firstName = name.split(' ')[0];
+        document.getElementById('welcome').textContent = `👋 Welcome back, ${firstName}!`;
+        showStatus(st, 'success', '✅ Profile saved!');
+      }
+      btn.disabled = false;
+    }
+
+    async function logout() {
+      await sb.auth.signOut();
+      window.location.href = 'platform-login.html';
+    }
+
+    async function deleteAccount() {
+      if (!confirm('Are you sure you want to delete your account?\n\nThis will permanently delete your account, all your kids, and all artwork. This cannot be undone.')) return;
+      if (!confirm('Last chance — are you absolutely sure?')) return;
+
+      const { error } = await sb.rpc('delete_own_account');
+      if (error) {
+        alert('Error deleting account: ' + error.message);
+        return;
+      }
+      await sb.auth.signOut();
+      window.location.href = 'platform-index.html';
+    }
+
+    // ── Kids ──
+    function genKidCode() {
+      return String(Math.floor(Math.random() * 9000000000) + 1000000000);
+    }
+
+    async function loadKids() {
+      const [{ data: ownKids }, { data: linkedLinks }] = await Promise.all([
+        sb.from('kids').select('*').eq('parent_id', currentUser.id),
+        sb.from('kid_parent_links').select('kid_id, kids(*)').eq('parent_id', currentUser.id)
+      ]);
+      const linked = (linkedLinks || []).map(l => ({ ...l.kids, _linked: true }));
+      const data = [...(ownKids || []), ...linked];
+      const list = document.getElementById('kidList');
+      if (!data || data.length === 0) { list.innerHTML = '<p style="color:#ccc;font-size:0.9rem;">No kids added yet.</p>'; return; }
+      list.innerHTML = data.map(k => `
+        <div style="background:white;border-radius:20px;padding:20px;border:2px solid #ede9ff;box-shadow:0 2px 12px rgba(162,155,254,0.1);margin-bottom:14px;width:100%;">
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="position:relative;flex-shrink:0;">
+                <img src="${k.avatar_url || ''}" alt="${k.name}"
+                  style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:3px solid #a29bfe;background:#f4f0ff;font-size:1.6rem;"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+                  ${k.avatar_url ? '' : 'style="display:none"'} />
+                <div style="width:52px;height:52px;border-radius:50%;background:#f4f0ff;border:3px solid #a29bfe;display:${k.avatar_url ? 'none' : 'flex'};align-items:center;justify-content:center;font-size:1.6rem;">🧒</div>
+                <label title="Change photo" style="position:absolute;bottom:0;right:0;background:#feca57;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.65rem;box-shadow:0 2px 6px rgba(0,0,0,0.15);">
+                  ✏️<input type="file" accept="image/*" style="display:none" onchange="uploadKidAvatar('${k.id}',this.files[0])" />
+                </label>
+              </div>
+              <span style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#333;">${k.name} ${k._linked ? '<span style="background:#e0f7ff;color:#48dbfb;font-size:0.7rem;border-radius:50px;padding:3px 10px;margin-left:6px;">🔗 Linked</span>' : ''}</span>
+            </div>
+            ${k._linked
+              ? `<button onclick="unlinkKid('${k.id}')" style="background:#e0f7ff;border:none;border-radius:50px;padding:5px 12px;cursor:pointer;color:#48dbfb;font-size:0.8rem;font-family:'Fredoka One',cursive;">Unlink</button>`
+              : `<button onclick="deleteKid('${k.id}')" style="background:#ffd6d6;border:none;border-radius:50px;padding:5px 12px;cursor:pointer;color:#c0392b;font-size:0.8rem;font-family:'Fredoka One',cursive;">Remove</button>`}
+          </div>
+
+          <p style="font-size:0.75rem;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Daily Request Limit</p>
+          <div style="display:flex;align-items:center;gap:10px;background:#f0fff4;border-radius:14px;padding:12px 16px;margin-bottom:14px;">
+            <span style="font-size:0.9rem;color:#27ae60;flex:1;">🛒 ${k.daily_request_limit ?? 3} requests per day</span>
+            <button onclick="toggleLimitEdit('${k.id}')" style="background:#55efc4;border:none;border-radius:50px;padding:8px 16px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:white;">Change</button>
+          </div>
+          <div id="limit-edit-${k.id}" style="display:none;gap:8px;align-items:center;margin-bottom:14px;">
+            <input type="number" id="limit-input-${k.id}" value="${k.daily_request_limit ?? 3}" min="0" max="99"
+              style="width:80px;padding:10px 14px;border:2px solid #55efc4;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.95rem;outline:none;" />
+            <span style="font-size:0.85rem;color:#aaa;">requests/day (0 = unlimited)</span>
+            <button onclick="saveDailyLimit('${k.id}')" style="background:#55efc4;border:none;border-radius:50px;padding:10px 18px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:white;white-space:nowrap;">Save</button>
+            <button onclick="toggleLimitEdit('${k.id}')" style="background:#f0f0f0;border:none;border-radius:50px;padding:10px 14px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:#aaa;">Cancel</button>
+          </div>
+
+          <p style="font-size:0.75rem;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">10-Digit Code</p>
+          <div style="display:flex;align-items:center;gap:10px;background:#f4f0ff;border-radius:14px;padding:12px 16px;margin-bottom:14px;">
+            <span style="font-family:monospace;font-size:1.2rem;letter-spacing:4px;color:#a29bfe;font-weight:700;flex:1;">${k.code || '—'}</span>
+            <button onclick="navigator.clipboard.writeText('${k.code}').then(()=>alert('Copied!'))" style="background:#a29bfe;border:none;border-radius:50px;padding:8px 16px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:white;white-space:nowrap;">📋 Copy</button>
+          </div>
+
+          <p style="font-size:0.75rem;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Password</p>
+          <div style="background:#fff8ee;border-radius:14px;padding:12px 16px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:0.95rem;color:${k.kid_password ? '#f0932b' : '#ccc'};flex:1;">${k.kid_password ? `🔒 <span style="font-family:monospace;letter-spacing:2px;">${k.kid_password}</span>` : '🔓 No password'}</span>
+              <button onclick="togglePasswordEdit('${k.id}')" style="background:#feca57;border:none;border-radius:50px;padding:8px 16px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:white;white-space:nowrap;">${k.kid_password ? 'Change' : 'Set'}</button>
+              ${k.kid_password ? `<button onclick="removePassword('${k.id}')" style="background:#ffd6d6;border:none;border-radius:50px;padding:8px 16px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:#c0392b;white-space:nowrap;">Remove</button>` : ''}
+            </div>
+            <div id="pw-edit-${k.id}" style="display:none;margin-top:10px;display:none;gap:8px;align-items:center;">
+              <input type="text" id="pw-input-${k.id}" placeholder="Enter new password"
+                style="flex:1;padding:10px 14px;border:2px solid #feca57;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.95rem;outline:none;" />
+              <button onclick="saveInlinePassword('${k.id}')" style="background:#feca57;border:none;border-radius:50px;padding:10px 18px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:white;white-space:nowrap;">Save</button>
+              <button onclick="togglePasswordEdit('${k.id}')" style="background:#f0f0f0;border:none;border-radius:50px;padding:10px 14px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:#aaa;">Cancel</button>
+            </div>
+          </div>
+
+        </div>
+      `).join('');
+    }
+
+    async function addKid() {
+      const name     = document.getElementById('kidName').value.trim();
+      const password = document.getElementById('kidPassword').value.trim();
+      const st       = document.getElementById('kidStatus');
+      if (!name) { showStatus(st,'error','Please enter a name.'); return; }
+      const code = genKidCode();
+      const { error } = await sb.from('kids').insert({ parent_id: currentUser.id, name, code, kid_password: password || null });
+      if (error) { showStatus(st,'error',error.message); return; }
+      document.getElementById('kidName').value = '';
+      document.getElementById('kidPassword').value = '';
+      showStatus(st,'success',`✅ ${name} added! Share their code with them.`);
+      loadKids();
+    }
+
+    function togglePasswordEdit(kidId) {
+      const el = document.getElementById('pw-edit-' + kidId);
+      const showing = el.style.display === 'flex';
+      el.style.display = showing ? 'none' : 'flex';
+      if (!showing) document.getElementById('pw-input-' + kidId).focus();
+    }
+
+    async function saveInlinePassword(kidId) {
+      const pw = document.getElementById('pw-input-' + kidId).value.trim();
+      const { error } = await sb.from('kids').update({ kid_password: pw || null }).eq('id', kidId);
+      if (error) { alert('Error: ' + error.message); return; }
+      loadKids();
+    }
+
+    async function uploadKidAvatar(kidId, file) {
+      if (!file) return;
+      const ext = file.name.split('.').pop();
+      const filename = `kid-avatar-${kidId}-${Date.now()}.${ext}`;
+      const { error: upErr } = await sb.storage.from('avatars').upload(filename, file, { upsert: true, contentType: file.type });
+      if (upErr) { alert('Upload error: ' + upErr.message); return; }
+      const { data: urlData } = sb.storage.from('avatars').getPublicUrl(filename);
+      const { error } = await sb.from('kids').update({ avatar_url: urlData.publicUrl }).eq('id', kidId);
+      if (error) { alert('Save error: ' + error.message); return; }
+      loadKids();
+    }
+
+    async function removePassword(kidId) {
+      await sb.from('kids').update({ kid_password: null }).eq('id', kidId);
+      loadKids();
+    }
+
+    function toggleLimitEdit(kidId) {
+      const el = document.getElementById('limit-edit-' + kidId);
+      el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    async function saveDailyLimit(kidId) {
+      const val = parseInt(document.getElementById('limit-input-' + kidId).value);
+      const limit = isNaN(val) || val < 0 ? 3 : val;
+      const { error } = await sb.from('kids').update({ daily_request_limit: limit }).eq('id', kidId);
+      if (error) { alert('Error: ' + error.message); return; }
+      document.getElementById('limit-edit-' + kidId).style.display = 'none';
+      loadKids();
+    }
+
+    async function loadRequests() {
+      const { data } = await sb.from('art_requests')
+        .select('*, artworks(name, image_url, price), kids(name)')
+        .eq('parent_id', currentUser.id)
+        .eq('status', 'pending')
+        .order('requested_at', { ascending: false });
+
+      const el = document.getElementById('requestsList');
+      if (!data || data.length === 0) { el.innerHTML = '<p class="empty">No pending requests 🎉</p>'; return; }
+
+      el.innerHTML = data.map(r => `
+        <div class="pending-item">
+          <img src="${r.artworks?.image_url}" alt="${r.artworks?.name}" />
+          <div class="pending-info">
+            <p class="pending-name">${r.artworks?.name || 'Unknown'}</p>
+            <p class="pending-meta">$${r.artworks?.price} &nbsp;·&nbsp; Requested by ${r.kids?.name} &nbsp;·&nbsp; ${new Date(r.requested_at).toLocaleDateString()}</p>
+            <div class="pending-actions">
+              <button class="approve-btn" onclick="resolveRequest('${r.id}','approved','${r.artwork_id}')">✅ Approve</button>
+              <button class="reject-btn" onclick="resolveRequest('${r.id}','rejected')">❌ Decline</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function resolveRequest(id, status, artworkId) {
+      const { error } = await sb.from('art_requests').update({ status }).eq('id', id);
+      if (error) { alert('Error: ' + error.message); return; }
+      if (status === 'approved' && artworkId) {
+        window.location.href = `platform-shop.html?preview=${artworkId}`;
+      } else {
+        loadRequests();
+      }
+    }
+
+    async function loadMyPurchases() {
+      const el = document.getElementById('myPurchasesList');
+      const { data } = await sb.from('purchases')
+        .select('*, artworks(id, name, image_url, price, on_hold)')
+        .eq('buyer_email', currentUser.email)
+        .order('purchased_at', { ascending: false });
+      if (!data || !data.length) { el.innerHTML = '<p class="empty">No purchase requests yet.</p>'; return; }
+      el.innerHTML = data.map(p => `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f0;">
+          <img src="${p.artworks?.image_url||''}" style="width:52px;height:52px;border-radius:10px;object-fit:cover;background:#f0f0f0;flex-shrink:0;" onerror="this.style.display='none'" />
+          <div style="flex:1;">
+            <p style="font-family:'Fredoka One',cursive;font-size:0.95rem;color:#333;">${p.artworks?.name||p.artwork_name}</p>
+            <p style="font-size:0.8rem;color:#aaa;">$${p.artwork_price} · ${new Date(p.purchased_at).toLocaleDateString()}</p>
+            <p style="font-size:0.78rem;color:${p.artworks?.on_hold?'#e67e22':'#27ae60'};">${p.artworks?.on_hold?'⏳ On Hold':'✅ Available'}</p>
+          </div>
+          ${p.artworks?.on_hold ? `<button onclick="cancelMyRequest('${p.id}','${p.artworks?.id}')" style="background:#ffd6d6;border:none;border-radius:50px;padding:7px 14px;color:#c0392b;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;white-space:nowrap;">✕ Cancel</button>` : ''}
+        </div>`).join('');
+    }
+
+    async function cancelMyRequest(purchaseId, artworkId) {
+      if (!confirm('Cancel your purchase request?')) return;
+      await sb.from('purchases').delete().eq('id', purchaseId);
+      await sb.from('artworks').update({ on_hold: false }).eq('id', artworkId);
+      loadMyPurchases();
+    }
+
+    async function loadMyTrades() {
+      const el = document.getElementById('myTradesList');
+      const { data } = await sb.from('trades')
+        .select('*, target:target_artwork_id(name,image_url), offered:offered_artwork_id(name,image_url)')
+        .eq('offerer_id', currentUser.id)
+        .order('created_at', { ascending: false });
+      if (!data || !data.length) { el.innerHTML = '<p class="empty">No trade offers sent yet.</p>'; return; }
+      el.innerHTML = data.map(t => `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f0;">
+          <img src="${t.offered?.image_url||''}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;background:#f0f0f0;" />
+          <div style="font-size:1.2rem;color:#aaa;">→</div>
+          <img src="${t.target?.image_url||''}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;background:#f0f0f0;" />
+          <div style="flex:1;">
+            <p style="font-family:'Fredoka One',cursive;font-size:0.88rem;color:#333;">${t.offered?.name} → ${t.target?.name}</p>
+            <p style="font-size:0.78rem;color:${t.status==='pending'?'#e67e22':t.status==='accepted'?'#27ae60':'#c0392b'};">${t.status==='pending'?'⏳ Pending':t.status==='accepted'?'✅ Accepted':'❌ Rejected'}</p>
+          </div>
+          ${t.status==='pending'?`<button onclick="cancelTrade('${t.id}')" style="background:#f0f0f0;border:none;border-radius:50px;padding:6px 12px;color:#999;font-family:'Fredoka One',cursive;font-size:0.78rem;cursor:pointer;">✕ Cancel</button>`:''}
+        </div>`).join('');
+    }
+
+    async function cancelTrade(tradeId) {
+      if (!confirm('Cancel this trade offer?')) return;
+      await sb.from('trades').delete().eq('id', tradeId);
+      loadMyTrades();
+    }
+
+    async function loadReceivedTrades() {
+      const el = document.getElementById('receivedTradesList');
+      const { data } = await sb.from('trades')
+        .select('*, target:target_artwork_id(name,image_url), offered:offered_artwork_id(name,image_url)')
+        .eq('owner_id', currentUser.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+      if (!data || !data.length) { el.innerHTML = '<p class="empty">No trade offers received yet.</p>'; return; }
+      el.innerHTML = data.map(t => `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f0;flex-wrap:wrap;">
+          <img src="${t.offered?.image_url||''}" style="width:52px;height:52px;border-radius:10px;object-fit:cover;background:#f0f0f0;" />
+          <div style="flex:1;min-width:120px;">
+            <p style="font-family:'Fredoka One',cursive;font-size:0.9rem;color:#333;">Offer: ${t.offered?.name}</p>
+            <p style="font-size:0.8rem;color:#aaa;">for your: ${t.target?.name}</p>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="respondTrade('${t.id}','accepted')" style="background:#d4edda;border:none;border-radius:50px;padding:7px 14px;color:#155724;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">✅ Accept</button>
+            <button onclick="respondTrade('${t.id}','rejected')" style="background:#ffd6d6;border:none;border-radius:50px;padding:7px 14px;color:#c0392b;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">❌ Reject</button>
+          </div>
+        </div>`).join('');
+    }
+
+    async function respondTrade(tradeId, status) {
+      await sb.from('trades').update({ status }).eq('id', tradeId);
+      loadReceivedTrades();
+    }
+
+    async function linkKid() {
+      const code = document.getElementById('linkCode').value.trim();
+      const pw   = document.getElementById('linkPassword').value.trim();
+      const st   = document.getElementById('kidStatus');
+      if (code.length !== 10) { showStatus(st, 'error', 'Please enter a 10-digit code.'); return; }
+      const { data, error } = await sb.rpc('link_kid_by_code', { p_code: code, p_password: pw });
+      if (error || data?.error) {
+        const msgs = { 'Invalid code': 'Invalid code.', 'Wrong password': 'Wrong password.', 'This is already your kid': 'That kid is already on your account.' };
+        showStatus(st, 'error', '❌ ' + (msgs[data?.error] || 'Something went wrong.')); return;
+      }
+      document.getElementById('linkCode').value = '';
+      document.getElementById('linkPassword').value = '';
+      showStatus(st, 'success', `✅ Linked to ${data.kid_name}!`);
+      loadKids();
+    }
+
+    async function unlinkKid(kidId) {
+      if (!confirm('Unlink this kid from your account?')) return;
+      await sb.from('kid_parent_links').delete().eq('kid_id', kidId).eq('parent_id', currentUser.id);
+      loadKids();
+    }
+
+    async function deleteKid(id) {
+      if (!confirm('Remove this kid? Their code will stop working.')) return;
+      await sb.from('kids').delete().eq('id', id);
+      loadKids();
+    }
+
+    // ── Artworks ──
+    async function loadArtworks() {
+      const { data } = await sb.from('artworks').select('*').eq('parent_id', currentUser.id).order('created_at', { ascending: false });
+
+      const pending  = (data || []).filter(a => a.status === 'pending');
+      const approved = (data || []).filter(a => a.status === 'approved');
+
+      renderPending(pending);
+      renderApproved(approved);
+    }
+
+    function renderPending(items) {
+      const el = document.getElementById('pendingList');
+      if (items.length === 0) { el.innerHTML = '<p class="empty">No artwork waiting for approval 🎉</p>'; return; }
+      el.innerHTML = items.map(a => `
+        <div class="pending-item">
+          <img src="${a.image_url}" alt="${a.name}" />
+          <div class="pending-info">
+            <p class="pending-name">${a.name}</p>
+            <p class="pending-meta">$${a.price} &nbsp;·&nbsp; Submitted ${new Date(a.created_at).toLocaleDateString()}</p>
+            <div class="pending-actions">
+              <button class="approve-btn" onclick="updateStatus('${a.id}','approved')">✅ Approve</button>
+              <button class="reject-btn" onclick="updateStatus('${a.id}','rejected')">❌ Reject</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderApproved(items) {
+      const el = document.getElementById('approvedList');
+      if (items.length === 0) { el.innerHTML = '<p class="empty">No approved artworks yet</p>'; return; }
+      el.innerHTML = items.map(a => `
+        <div class="approved-item">
+          <img src="${a.image_url}" alt="${a.name}" />
+          <div class="approved-info">
+            <p class="approved-name">${a.name}</p>
+            <p class="approved-meta">$${a.price}</p>
+          </div>
+          <button class="remove-btn" onclick="updateStatus('${a.id}','rejected')">Remove</button>
+        </div>
+      `).join('');
+    }
+
+    async function updateStatus(id, status) {
+      const st = document.getElementById('pendingStatus');
+      const { error } = await sb.from('artworks').update({ status }).eq('id', id);
+      if (error) { showStatus(st,'error',error.message); return; }
+      loadArtworks();
+    }
+
+    function showStatus(el, type, msg) {
+      el.className = 'status-msg ' + type;
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 3000);
+    }
+
+    function openInfo() { document.getElementById('infoOverlay').style.display='flex'; }
+    function closeInfo(e) { if(!e||e.target===document.getElementById('infoOverlay')) document.getElementById('infoOverlay').style.display='none'; }
+    init();
+  </script>
+  <div id="infoOverlay" onclick="closeInfo(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:white;border-radius:28px;max-width:480px;width:100%;padding:36px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;" onclick="event.stopPropagation()">
+      <h2 style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#333;margin-bottom:6px;">How It Works 🎨</h2>
+      <p style="color:#aaa;font-size:0.88rem;margin-bottom:24px;">Little Heartworks — a kids art marketplace</p>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="background:#f4f0ff;border-radius:16px;padding:16px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#a29bfe;margin-bottom:4px;">👨‍👩‍👧 Parents</p>
+          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Create a free account, add your kids by name, and each kid gets a unique 10-digit code. You can submit artwork on their behalf, set daily request limits, and approve or reject anything before it goes live in the shop.</p>
+        </div>
+        <div style="background:#fff8ee;border-radius:16px;padding:16px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#feca57;margin-bottom:4px;">🧒 Kids</p>
+          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Ask your parent for your 10-digit code, then click "I'm a Kid" on the home page. You can browse all the art in the shop and request pieces you like — your parent will see the requests. You can also submit your own artwork for your parent to approve!</p>
+        </div>
+        <div style="background:#fff0f9;border-radius:16px;padding:16px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#ff9ff3;margin-bottom:4px;">🛍️ Buying Art</p>
+          <p style="font-size:0.88rem;color:#555;line-height:1.6;">See something you love? Click "Preview & Buy", sign in with your parent account, and send a purchase request. Payment and delivery are arranged in person — we'll send an email to the seller to get things sorted.</p>
+        </div>
+        <div style="background:#f0fff4;border-radius:16px;padding:16px 18px;">
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#55efc4;margin-bottom:4px;">🔍 Finding Art</p>
+          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Use the search bar to find art by title, description, kid name, or parent. Smart search learns what you like and shows recommendations based on art you've viewed before.</p>
+        </div>
+      </div>
+      <button onclick="closeInfo()" style="width:100%;margin-top:24px;background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;">Got it! 🎉</button>
+    </div>
+  </div>
+</body>
+</html>

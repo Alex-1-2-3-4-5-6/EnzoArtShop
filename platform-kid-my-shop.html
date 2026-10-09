@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Art – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#fff9f0; font-family:'Nunito',sans-serif; }
+
+    header {
+      background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      padding:14px 20px; display:flex; align-items:center; gap:10px;
+      box-shadow:0 4px 20px rgba(162,155,254,0.3); position:sticky; top:0; z-index:40;
+    }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.2rem; color:white; flex:1; }
+    .nav-btn {
+      background:white; border:none; border-radius:50px; padding:8px 16px;
+      font-family:'Fredoka One',cursive; font-size:0.85rem; cursor:pointer;
+      color:#a29bfe; text-decoration:none; transition:transform 0.2s; flex-shrink:0;
+    }
+    .nav-btn:hover { transform:scale(1.04); }
+    .nav-btn-ghost {
+      background:rgba(255,255,255,0.2); border:2px solid rgba(255,255,255,0.5);
+      border-radius:50px; padding:7px 14px; font-family:'Fredoka One',cursive;
+      font-size:0.82rem; color:white; cursor:pointer; text-decoration:none; flex-shrink:0;
+    }
+
+    .container { max-width:900px; margin:0 auto; padding:28px 18px 80px; }
+
+    .kid-banner {
+      background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      border-radius:20px; padding:16px 22px; margin-bottom:24px;
+      display:flex; align-items:center; gap:12px;
+      box-shadow:0 4px 18px rgba(162,155,254,0.25);
+    }
+    .kid-avatar {
+      width:46px; height:46px; border-radius:50%; border:3px solid white;
+      background:rgba(255,255,255,0.3); display:flex; align-items:center;
+      justify-content:center; font-size:1.5rem; flex-shrink:0;
+    }
+    .kid-info .name { font-family:'Fredoka One',cursive; font-size:1.05rem; color:white; }
+    .kid-info .sub  { font-size:0.8rem; color:rgba(255,255,255,0.8); margin-top:2px; }
+
+    .panel { background:white; border-radius:22px; padding:22px 24px; box-shadow:0 4px 14px rgba(0,0,0,0.06); margin-bottom:20px; }
+    .panel-title { font-family:'Fredoka One',cursive; font-size:1.1rem; color:#333; margin-bottom:16px; }
+
+    .art-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:12px; }
+    .art-card { border-radius:16px; overflow:hidden; border:2px solid #eee; background:white; }
+    .art-card img { width:100%; aspect-ratio:1; object-fit:cover; background:#f0f0f0; display:block; }
+    .art-card-info { padding:10px 12px 12px; }
+    .art-card-name  { font-family:'Fredoka One',cursive; font-size:0.88rem; color:#333; margin-bottom:3px; }
+    .art-card-price { font-size:0.8rem; color:#ff6b6b; font-weight:700; margin-bottom:4px; }
+    .art-ref   { font-size:0.68rem; color:#bbb; font-weight:700; display:block; margin-bottom:3px; }
+    .art-date  { font-size:0.67rem; color:#ddd; display:block; margin-bottom:6px; }
+
+    .status-badge { display:inline-block; border-radius:50px; padding:3px 10px; font-size:0.7rem; font-weight:700; }
+    .s-approved { background:#d4edda; color:#155724; }
+    .s-pending  { background:#fff3cd; color:#856404; }
+    .s-rejected { background:#ffd6d6; color:#c0392b; }
+    .s-hold     { background:#fff0e0; color:#e67e22; }
+
+    .empty { color:#ccc; font-family:'Fredoka One',cursive; font-size:0.95rem; text-align:center; padding:16px 0; }
+
+    .submit-cta {
+      text-align:center; padding:20px;
+    }
+    .submit-cta a {
+      display:inline-block; background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      color:white; border-radius:50px; padding:14px 32px;
+      font-family:'Fredoka One',cursive; font-size:1rem; text-decoration:none;
+      box-shadow:0 4px 14px rgba(162,155,254,0.35);
+    }
+
+    @media(max-width:480px) {
+      header { padding:10px 14px; gap:8px; }
+      .logo  { font-size:1rem; }
+      .nav-btn { padding:7px 12px; font-size:0.78rem; }
+      .art-grid { grid-template-columns:repeat(2,1fr); gap:9px; }
+      .container { padding:20px 12px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">🎨 My Art</div>
+    <a href="platform-kid-submit.html" class="nav-btn">✏️ Submit New Art</a>
+    <a href="platform-kid-shop.html" class="nav-btn-ghost">← Browse</a>
+  </header>
+
+  <div class="container">
+    <div class="kid-banner" id="kidBanner">
+      <div class="kid-avatar">🧒</div>
+      <div class="kid-info">
+        <p class="name" id="kidNameDisplay">Loading...</p>
+        <p class="sub">Your posted artworks</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <p class="panel-title">🖼️ Your Artworks</p>
+      <div class="art-grid" id="artGrid">
+        <p class="empty" style="grid-column:1/-1;">Loading...</p>
+      </div>
+    </div>
+
+    <div class="submit-cta">
+      <a href="platform-kid-submit.html">✏️ Submit New Art</a>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function init() {
+      const raw = localStorage.getItem('kidSession');
+      if (!raw) { window.location.href = 'platform-index.html'; return; }
+      const kidSession = JSON.parse(raw);
+      document.getElementById('kidNameDisplay').textContent = `${kidSession.kid_name}'s Art 🎨`;
+
+      const { data } = await sb.from('artworks')
+        .select('*')
+        .eq('kid_id', kidSession.kid_id)
+        .order('created_at', { ascending: false });
+
+      const grid = document.getElementById('artGrid');
+      if (!data || !data.length) {
+        grid.innerHTML = '<p class="empty" style="grid-column:1/-1;">No art posted yet — submit your first piece! 🎨</p>';
+        return;
+      }
+
+      grid.innerHTML = data.map(a => {
+        const statusClass = a.status === 'approved' ? (a.on_hold ? 's-hold' : 's-approved') : a.status === 'pending' ? 's-pending' : 's-rejected';
+        const statusText  = a.status === 'approved' ? (a.on_hold ? '👀 On Hold' : '✅ Live') : a.status === 'pending' ? '⏳ Waiting for parent' : '❌ Not approved';
+        return `
+          <div class="art-card">
+            <img src="${a.image_url}" alt="${a.name}" />
+            <div class="art-card-info">
+              <p class="art-card-name">${a.name}</p>
+              <p class="art-card-price">$${a.price}</p>
+              <span class="art-ref">📌 #${a.id.slice(0,6).toUpperCase()}</span>
+              <span class="art-date">📅 ${new Date(a.created_at).toLocaleDateString()}</span>
+              <span class="status-badge ${statusClass}">${statusText}</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    init();
+  </script>
+</body>
+</html>

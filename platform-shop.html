@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
+
+    /* ── Header ── */
+    header {
+      background:linear-gradient(135deg,#ff6b6b,#feca57,#48dbfb,#a29bfe);
+      background-size:300% 300%; animation:gradientShift 8s ease infinite;
+      padding:16px 28px; display:flex; align-items:center; gap:12px;
+      box-shadow:0 4px 20px rgba(0,0,0,0.15); position:sticky; top:0; z-index:50;
+    }
+    @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.5rem; color:white; flex:1; text-shadow:0 2px 8px rgba(0,0,0,0.12); white-space:nowrap; }
+    .logo span { color:#fff176; }
+
+    .hbtn {
+      border:none; border-radius:50px; padding:9px 20px;
+      font-family:'Fredoka One',cursive; font-size:0.9rem; cursor:pointer;
+      text-decoration:none; white-space:nowrap; transition:transform 0.15s, opacity 0.15s;
+      display:inline-flex; align-items:center; gap:7px; flex-shrink:0;
+    }
+    .hbtn:hover { transform:scale(1.05); opacity:0.92; }
+    .hbtn-white { background:white; color:#ff6b6b; }
+    .hbtn-ghost { background:rgba(255,255,255,0.22); color:white; border:2px solid rgba(255,255,255,0.55); backdrop-filter:blur(6px); }
+
+    .account-btn {
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(255,255,255,0.2); border:2px solid rgba(255,255,255,0.55);
+      border-radius:50px; padding:7px 16px 7px 8px;
+      font-family:'Fredoka One',cursive; font-size:0.9rem; color:white;
+      text-decoration:none; cursor:pointer; transition:background 0.2s; backdrop-filter:blur(6px); flex-shrink:0;
+    }
+    .account-btn:hover { background:rgba(255,255,255,0.35); }
+    .account-pfp {
+      width:30px; height:30px; border-radius:50%; border:2px solid white;
+      background:rgba(255,255,255,0.3); display:flex; align-items:center;
+      justify-content:center; font-size:0.95rem; overflow:hidden; flex-shrink:0;
+    }
+    .account-pfp img { width:100%; height:100%; object-fit:cover; }
+
+    /* Inbox button */
+    .inbox-btn {
+      position:relative; display:none; align-items:center; gap:7px;
+      background:rgba(255,255,255,0.22); color:white; border:2px solid rgba(255,255,255,0.55);
+      border-radius:50px; padding:9px 20px; font-family:'Fredoka One',cursive; font-size:0.9rem;
+      cursor:pointer; text-decoration:none; transition:background 0.2s; backdrop-filter:blur(6px); flex-shrink:0;
+    }
+    .inbox-btn:hover { background:rgba(255,255,255,0.35); }
+    .inbox-dot {
+      position:absolute; top:4px; right:4px; width:10px; height:10px;
+      background:#ff6b6b; border-radius:50%; border:2px solid white; display:none;
+    }
+
+    /* ── Tabs ── */
+    .tabs { display:flex; justify-content:center; gap:8px; padding:20px 20px 0; }
+    .tab {
+      border:none; border-radius:50px; padding:10px 28px;
+      font-family:'Fredoka One',cursive; font-size:1rem; cursor:pointer; transition:all 0.2s;
+    }
+    .tab.active-shop  { background:linear-gradient(135deg,#ff6b6b,#feca57); color:white; box-shadow:0 4px 14px rgba(255,107,107,0.35); }
+    .tab.active-trade { background:linear-gradient(135deg,#a29bfe,#ff9ff3); color:white; box-shadow:0 4px 14px rgba(162,155,254,0.35); }
+    .tab.inactive { background:white; color:#aaa; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+
+    /* ── Search ── */
+    .search-section { max-width:700px; margin:20px auto 0; padding:0 20px; }
+    .search-wrap { position:relative; }
+    .search-wrap input {
+      width:100%; padding:15px 24px 15px 52px; border-radius:50px;
+      border:3px solid #feca57; font-family:'Nunito',sans-serif; font-size:1.05rem;
+      outline:none; background:white; box-shadow:0 4px 16px rgba(254,202,87,0.25);
+      transition:border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-wrap input:focus { border-color:#ff6b6b; box-shadow:0 4px 20px rgba(255,107,107,0.2); }
+    .search-icon { position:absolute; left:20px; top:50%; transform:translateY(-50%); font-size:1.1rem; pointer-events:none; }
+    .filter-row { display:flex; gap:8px; margin-top:10px; justify-content:center; flex-wrap:wrap; align-items:center; }
+    .filter-btn {
+      border:none; border-radius:50px; padding:6px 16px;
+      font-family:'Fredoka One',cursive; font-size:0.85rem; cursor:pointer; transition:all 0.15s;
+    }
+    .filter-btn.on  { background:#ff6b6b; color:white; }
+    .filter-btn.off { background:white; color:#aaa; }
+    .ai-status { font-size:0.75rem; color:#aaa; }
+
+    /* ── Content ── */
+    .content { max-width:1000px; margin:0 auto; padding:24px 20px 80px; }
+    .section-label {
+      font-family:'Fredoka One',cursive; font-size:1.3rem; color:#444;
+      margin-bottom:16px; display:flex; align-items:center; gap:8px;
+    }
+    .section-label .count { font-size:0.9rem; color:#bbb; font-family:'Nunito',sans-serif; font-weight:700; }
+
+    /* ── Art Grid ── */
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:22px; margin-bottom:36px; }
+
+    .card {
+      background:white; border-radius:20px; overflow:hidden;
+      box-shadow:0 4px 16px rgba(0,0,0,0.07); border:2.5px solid transparent;
+      transition:transform 0.22s, box-shadow 0.22s, border-color 0.22s; cursor:pointer;
+    }
+    .card:hover { transform:translateY(-5px) scale(1.02); box-shadow:0 12px 30px rgba(0,0,0,0.12); border-color:#feca57; }
+    .card img { width:100%; aspect-ratio:1; object-fit:cover; background:#f0f0f0; display:block; }
+    .card-body { padding:14px 16px 18px; }
+    .card-title { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; margin-bottom:3px; }
+    .card-by { font-size:0.78rem; color:#aaa; margin-bottom:8px; }
+    .card-price { font-family:'Fredoka One',cursive; font-size:1.1rem; color:#ff6b6b; margin-bottom:12px; }
+    .card-price.trade-price { color:#a29bfe; }
+    .card-btn {
+      display:block; width:100%; border:none; border-radius:50px; padding:9px;
+      color:white; font-family:'Fredoka One',cursive; font-size:0.9rem; cursor:pointer;
+      background:linear-gradient(135deg,#a29bfe,#ff9ff3); transition:opacity 0.18s;
+    }
+    .card-btn:hover { opacity:0.85; }
+    .card-btn.hold { background:#e0e0e0; color:#aaa; cursor:default; }
+    .card-btn.trade { background:linear-gradient(135deg,#a29bfe,#ff9ff3); }
+
+    /* Rec strip */
+    .rec-strip { margin-bottom:36px; }
+
+    /* ── Empty ── */
+    .empty { text-align:center; padding:60px 20px; }
+    .empty .icon { font-size:4rem; margin-bottom:14px; }
+    .empty h3 { font-family:'Fredoka One',cursive; font-size:1.5rem; color:#ccc; margin-bottom:8px; }
+    .empty p { color:#bbb; font-size:0.95rem; }
+
+    /* ── Help modal ── */
+    .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:200; align-items:center; justify-content:center; padding:20px; }
+    .modal-bg.open { display:flex; }
+    .modal-box { background:white; border-radius:28px; max-width:480px; width:100%; padding:36px; box-shadow:0 20px 60px rgba(0,0,0,0.3); max-height:90vh; overflow-y:auto; }
+    .modal-box h2 { font-family:'Fredoka One',cursive; font-size:1.6rem; color:#333; margin-bottom:4px; }
+    .modal-box .sub { color:#aaa; font-size:0.85rem; margin-bottom:20px; }
+    .info-block { border-radius:14px; padding:14px 16px; margin-bottom:12px; }
+    .info-block .title { font-family:'Fredoka One',cursive; font-size:0.95rem; margin-bottom:5px; }
+    .info-block p { font-size:0.85rem; color:#555; line-height:1.6; }
+    .modal-close { width:100%; margin-top:18px; background:linear-gradient(135deg,#ff6b6b,#feca57); border:none; border-radius:50px; padding:13px; color:white; font-family:'Fredoka One',cursive; font-size:1rem; cursor:pointer; }
+
+    footer { background:#2d2d2d; padding:18px 32px; text-align:center; }
+    footer a { color:#888; text-decoration:none; font-size:0.82rem; margin:0 10px; }
+    footer a:hover { color:#ccc; }
+
+    /* ── Mobile ── */
+    @media(max-width:600px) {
+      header { padding:12px 16px; gap:8px; }
+      .logo  { font-size:1.1rem; }
+      /* Hide Help and Post Art on mobile — accessible from My Shop / Dashboard */
+      #postArtBtn, .hbtn-ghost.help-btn { display:none !important; }
+      .hbtn  { padding:7px 13px; font-size:0.8rem; }
+      .account-btn { padding:6px 12px 6px 6px; font-size:0.8rem; }
+      .account-btn span { display:none; }  /* show pfp only */
+      .tabs  { padding:14px 12px 0; gap:6px; }
+      .tab   { padding:9px 18px; font-size:0.88rem; }
+      .grid  { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; }
+    }
+    @media(max-width:400px) {
+      .grid { grid-template-columns:repeat(2,1fr); gap:10px; }
+      .hbtn-white { display:none !important; } /* hide My Shop on very small screens */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">🎨 Little He<span>art</span>works</div>
+
+    <button class="hbtn hbtn-ghost help-btn" onclick="openInfo()">Help?</button>
+
+    <a href="platform-my-shop.html" class="hbtn hbtn-white" id="myShopBtn" style="display:none;">🖼️ My Shop</a>
+    <a href="platform-submit.html" class="hbtn hbtn-ghost" id="postArtBtn" style="display:none;">🎨 Post Art</a>
+
+    <a href="platform-inbox.html" class="inbox-btn" id="inboxBtn">
+      📬 Inbox
+      <span class="inbox-dot" id="inboxDot"></span>
+    </a>
+
+    <a href="#" class="account-btn" id="accountBtn" onclick="handleAccount(event)">
+      <div class="account-pfp" id="accountPfp">👤</div>
+      <span id="accountLabel">Sign In</span>
+    </a>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active-shop" id="tabShop" onclick="switchTab('shop')">🛍️ Art Shop</button>
+    <button class="tab inactive"    id="tabTrade" onclick="switchTab('trade')">🔄 Art Trading</button>
+  </div>
+
+  <!-- Search (shop only) -->
+  <div class="search-section" id="searchSection">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input id="searchInput" type="text" placeholder="Search for art..." oninput="onSearch()" />
+    </div>
+    <div class="filter-row">
+      <button class="filter-btn on"  id="fArt"     onclick="setFilter('art')">🖼️ Art</button>
+      <button class="filter-btn off" id="fKid"     onclick="setFilter('kid')">🧒 Kid</button>
+      <button class="filter-btn off" id="fParent"  onclick="setFilter('parent')">👨‍👩‍👧 Parent</button>
+      <span class="ai-status" id="aiStatus">🤖 Loading smart search...</span>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Recommendations -->
+    <div id="recSection" style="display:none;" class="rec-strip">
+      <p class="section-label">✨ Recommended for You</p>
+      <div class="grid" id="recGrid"></div>
+    </div>
+
+    <!-- Main grid label -->
+    <p class="section-label" id="mainLabel" style="display:none;"></p>
+
+    <!-- Shop grid -->
+    <div class="grid" id="shopGrid" style="display:none;"></div>
+
+    <!-- Trade grid -->
+    <div id="tradeSection" style="display:none;">
+      <p style="text-align:center;color:#aaa;font-size:0.88rem;margin-bottom:20px;">Offer your own art in exchange — no money needed. Click any piece to propose a trade.</p>
+      <div class="grid" id="tradeGrid"></div>
+    </div>
+
+    <!-- Empty -->
+    <div class="empty" id="emptyState" style="display:none;">
+      <div class="icon">🖌️</div>
+      <h3>No art here yet!</h3>
+      <p>Check back soon — kids are creating.</p>
+    </div>
+
+  </div>
+
+  <!-- Help modal -->
+  <div class="modal-bg" id="helpModal" onclick="if(event.target===this)closeInfo()">
+    <div class="modal-box">
+      <h2>❓ Help &amp; Info</h2>
+      <p class="sub">Little Heartworks — a kids art marketplace</p>
+
+      <div class="info-block" style="background:#f4f0ff;">
+        <p class="title" style="color:#a29bfe;">👨‍👩‍👧 For Parents</p>
+        <p>Sign up for a free account to post your kids' art, approve submissions, and manage everything from your dashboard.</p>
+      </div>
+      <div class="info-block" style="background:#fff8ee;">
+        <p class="title" style="color:#f0932b;">🧒 For Kids</p>
+        <p>Get your 10-digit code from your parent and click "I'm a Kid" on the home page to browse and request art.</p>
+      </div>
+      <div class="info-block" style="background:#fff0f9;">
+        <p class="title" style="color:#e84393;">🛍️ Buying Art</p>
+        <p>Click any artwork to preview it and send a purchase request. Both you and the seller confirm when the art is sent and received — then it moves to your history.</p>
+      </div>
+      <div class="info-block" style="background:#f0fff4;">
+        <p class="title" style="color:#27ae60;">🔄 Trading Art</p>
+        <p>Switch to the Trading tab to find art listed for trade. Offer one of your own artworks as a swap — no money involved!</p>
+      </div>
+      <div class="info-block" style="background:#f0f8ff;">
+        <p class="title" style="color:#3498db;">🔍 Search</p>
+        <p>Smart AI search understands what you mean even without exact words. Recommendations are based on what you've looked at before.</p>
+      </div>
+      <div class="info-block" style="background:#fff5f5;">
+        <p class="title" style="color:#e74c3c;">💬 Customer Service</p>
+        <p style="margin-bottom:10px;">Have a question or concern? We're here to help.</p>
+        <a href="mailto:pilotal2020@gmail.com" style="display:inline-block;background:linear-gradient(135deg,#ff6b6b,#feca57);color:white;text-decoration:none;border-radius:50px;padding:8px 20px;font-family:'Fredoka One',cursive;font-size:0.85rem;">✉️ Email Us</a>
+      </div>
+
+      <button class="modal-close" onclick="closeInfo()">Got it! 🎉</button>
+    </div>
+  </div>
+
+  <footer>
+    <a href="platform-privacy.html">Privacy Policy</a>
+    <a href="platform-terms.html">Terms of Use</a>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let allArtworks  = [];
+    let tradeArtworks = [];
+    let currentUser  = null;
+    let activeFilter = 'art';
+    let activeTab    = 'shop';
+
+    // ── AI ──
+    let embPipeline  = null;
+    let artEmbs      = {};
+
+    async function loadAI() {
+      try {
+        const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2');
+        embPipeline = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+        document.getElementById('aiStatus').textContent = '✨ Smart search ready';
+        for (const a of allArtworks) {
+          const text = [a.name, a.description || '', a.kids?.name || ''].join(' ');
+          artEmbs[a.id] = Array.from((await embPipeline(text, { pooling:'mean', normalize:true })).data);
+        }
+        renderRecs();
+      } catch(e) {
+        document.getElementById('aiStatus').textContent = '';
+      }
+    }
+
+    function cosineSim(a, b) { let d = 0; for (let i = 0; i < a.length; i++) d += a[i]*b[i]; return d; }
+
+    async function embed(text) {
+      const out = await embPipeline(text, { pooling:'mean', normalize:true });
+      return Array.from(out.data);
+    }
+
+    // ── Init ──
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      currentUser = user;
+      if (user) {
+        const meta = user.user_metadata || {};
+        document.getElementById('accountLabel').textContent = (meta.full_name || user.email).split(' ')[0];
+        if (meta.avatar_url) {
+          document.getElementById('accountPfp').innerHTML = `<img src="${meta.avatar_url}" alt="" />`;
+        }
+        document.getElementById('myShopBtn').style.display = 'inline-flex';
+        document.getElementById('postArtBtn').style.display = 'inline-flex';
+        document.getElementById('inboxBtn').style.display = 'inline-flex';
+        checkInbox(user);
+      }
+      await loadArtworks();
+      loadAI();
+      const tab = new URLSearchParams(window.location.search).get('tab');
+      if (tab === 'trade') switchTab('trade');
+    }
+
+    async function checkInbox(user) {
+      const [{ data: trades }, { data: purchases }, { data: approvals }] = await Promise.all([
+        sb.from('trades').select('id').eq('owner_id', user.id).eq('status', 'pending'),
+        sb.from('purchases').select('id').eq('seller_id', user.id).eq('status', 'pending'),
+        sb.from('artworks').select('id').eq('parent_id', user.id).eq('status', 'pending')
+      ]);
+      const count = (trades?.length || 0) + (purchases?.length || 0) + (approvals?.length || 0);
+      if (count > 0) document.getElementById('inboxDot').style.display = 'block';
+    }
+
+    function handleAccount(e) {
+      e.preventDefault();
+      window.location.href = currentUser ? 'platform-dashboard.html' : 'platform-login.html';
+    }
+
+    // ── Data ──
+    async function loadArtworks() {
+      const { data } = await sb.from('artworks').select('*, kids(name)').eq('status','approved').order('created_at', { ascending:false });
+      allArtworks   = (data || []).filter(a => !a.for_trade);
+      tradeArtworks = (data || []).filter(a =>  a.for_trade);
+      renderShop();
+      renderRecs();
+      const preview = new URLSearchParams(window.location.search).get('preview');
+      if (preview) window.location.href = `platform-art.html?id=${preview}`;
+    }
+
+    // ── Tabs ──
+    function switchTab(tab) {
+      activeTab = tab;
+      const isShop = tab === 'shop';
+      document.getElementById('tabShop').className  = 'tab ' + (isShop  ? 'active-shop'  : 'inactive');
+      document.getElementById('tabTrade').className = 'tab ' + (!isShop ? 'active-trade' : 'inactive');
+      document.getElementById('searchSection').style.display = isShop ? 'block' : 'none';
+      document.getElementById('recSection').style.display    = isShop ? (document.getElementById('recGrid').innerHTML ? 'block' : 'none') : 'none';
+      document.getElementById('shopGrid').style.display      = isShop ? 'grid' : 'none';
+      document.getElementById('mainLabel').style.display     = isShop ? 'block' : 'none';
+      document.getElementById('tradeSection').style.display  = isShop ? 'none' : 'block';
+      document.getElementById('emptyState').style.display    = 'none';
+      if (!isShop) renderTrade();
+    }
+
+    // ── Search / filter ──
+    function setFilter(f) {
+      activeFilter = f;
+      ['art','kid','parent'].forEach(k => {
+        document.getElementById('f' + k.charAt(0).toUpperCase() + k.slice(1)).className =
+          'filter-btn ' + (k === f ? 'on' : 'off');
+      });
+      const hints = { art:'Search for art...', kid:'Search by kid name...', parent:'Search by parent name...' };
+      document.getElementById('searchInput').placeholder = hints[f];
+      renderShop();
+    }
+
+    function onSearch() { renderShop(); }
+
+    function filterArtworks() {
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      if (!q) return allArtworks;
+      return allArtworks.filter(a => {
+        if (activeFilter === 'kid')    return (a.kids?.name || '').toLowerCase().includes(q);
+        if (activeFilter === 'parent') return (a.parent_name || '').toLowerCase().includes(q);
+        return a.name.toLowerCase().includes(q) || (a.description || '').toLowerCase().includes(q);
+      });
+    }
+
+    function renderShop() {
+      const q = document.getElementById('searchInput').value.trim();
+      const filtered = filterArtworks();
+      const grid  = document.getElementById('shopGrid');
+      const label = document.getElementById('mainLabel');
+      const empty = document.getElementById('emptyState');
+
+      // hide recs when searching
+      const recSec = document.getElementById('recSection');
+      if (q) { recSec.style.display = 'none'; }
+      else   { recSec.style.display = document.getElementById('recGrid').innerHTML ? 'block' : 'none'; }
+
+      grid.style.display = 'grid';
+      label.style.display = 'block';
+
+      if (!filtered.length) {
+        grid.innerHTML = '';
+        grid.style.display = 'none';
+        label.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+
+      if (q && activeFilter === 'art' && embPipeline) {
+        label.textContent = 'Searching... 🤖';
+        renderShopAI(q, filtered, grid, label);
+        return;
+      }
+
+      label.innerHTML = q
+        ? `${filtered.length} result${filtered.length!==1?'s':''} for "<em>${q}</em>" <span class="count"></span>`
+        : `All Artworks <span class="count">(${filtered.length})</span>`;
+
+      grid.innerHTML = filtered.map(artCard).join('');
+    }
+
+    async function renderShopAI(q, fallback, grid, label) {
+      try {
+        const qEmb = await embed(q);
+        const scored = allArtworks
+          .map(a => ({ a, s: artEmbs[a.id] ? cosineSim(qEmb, artEmbs[a.id]) : 0 }))
+          .filter(x => x.s > 0.15)
+          .sort((a, b) => b.s - a.s);
+        const results = scored.length ? scored.map(x => x.a) : fallback;
+        label.innerHTML = `${results.length} result${results.length!==1?'s':''} for "<em>${q}</em>"`;
+        grid.innerHTML = results.map(artCard).join('');
+        document.getElementById('emptyState').style.display = results.length ? 'none' : 'block';
+      } catch(e) {
+        grid.innerHTML = fallback.map(artCard).join('');
+      }
+    }
+
+    // ── Recommendations ──
+    async function getHistory() {
+      if (currentUser) {
+        const { data } = await sb.from('artwork_views').select('artwork_id').eq('user_id', currentUser.id).order('viewed_at', { ascending:false }).limit(20);
+        return (data || []).map(r => r.artwork_id);
+      }
+      return JSON.parse(localStorage.getItem('viewedArt') || '[]');
+    }
+
+    async function renderRecs() {
+      const history = await getHistory();
+      const recGrid = document.getElementById('recGrid');
+      const recSec  = document.getElementById('recSection');
+      if (!history.length) { recSec.style.display = 'none'; return; }
+
+      let recs = [];
+
+      if (embPipeline && Object.keys(artEmbs).length) {
+        const viewedEmbs = history.map(id => artEmbs[id]).filter(Boolean);
+        if (!viewedEmbs.length) { recSec.style.display = 'none'; return; }
+        const avg = viewedEmbs[0].map((_, i) => viewedEmbs.reduce((s,e) => s+e[i],0)/viewedEmbs.length);
+        recs = allArtworks
+          .filter(a => !history.includes(a.id) && artEmbs[a.id])
+          .map(a => ({ a, s: cosineSim(avg, artEmbs[a.id]) }))
+          .sort((x, y) => y.s - x.s)
+          .slice(0, 4)
+          .map(x => x.a);
+      } else {
+        const seen = new Set(history);
+        const words = new Set(
+          history.flatMap(id => { const a = allArtworks.find(x => x.id===id); return a ? bagOfWords(a) : []; })
+        );
+        recs = allArtworks
+          .filter(a => !seen.has(a.id))
+          .map(a => ({ a, s: bagOfWords(a).filter(w => words.has(w)).length }))
+          .filter(x => x.s > 0)
+          .sort((x,y) => y.s - x.s)
+          .slice(0,4).map(x=>x.a);
+      }
+
+      if (!recs.length) { recSec.style.display = 'none'; return; }
+      recGrid.innerHTML = recs.map(artCard).join('');
+      if (activeTab === 'shop' && !document.getElementById('searchInput').value) {
+        recSec.style.display = 'block';
+      }
+    }
+
+    function bagOfWords(a) {
+      return ((a.name||'') + ' ' + (a.description||'')).toLowerCase().split(/\W+/).filter(w=>w.length>2);
+    }
+
+    // ── Trade ──
+    function renderTrade() {
+      const grid  = document.getElementById('tradeGrid');
+      const empty = document.getElementById('emptyState');
+      if (!tradeArtworks.length) { grid.innerHTML=''; empty.style.display='block'; return; }
+      empty.style.display = 'none';
+      grid.innerHTML = tradeArtworks.map(a => `
+        <div class="card" onclick="location.href='platform-art.html?id=${a.id}&mode=trade'">
+          <img src="${a.image_url}" alt="${a.name}" loading="lazy" />
+          <div class="card-body">
+            <p class="card-title">${a.name}</p>
+            ${a.kids?.name ? `<p class="card-by">🎨 by ${a.kids.name}</p>` : ''}
+            <p class="card-price trade-price">🔄 Trade</p>
+            <button class="card-btn trade">🔄 Offer a Trade</button>
+          </div>
+        </div>`).join('');
+    }
+
+    // ── Card template ──
+    function artCard(a) {
+      const hold = a.on_hold;
+      return `
+        <div class="card" onclick="location.href='platform-art.html?id=${a.id}'">
+          <img src="${a.image_url}" alt="${a.name}" loading="lazy" />
+          <div class="card-body">
+            <p class="card-title">${a.name}</p>
+            ${a.kids?.name ? `<p class="card-by">🎨 by ${a.kids.name}</p>` : ''}
+            <p class="card-price">$${a.price}</p>
+            <button class="card-btn${hold?' hold':''}">${hold ? '👀 Preview (On Hold)' : '👀 Preview &amp; Buy'}</button>
+          </div>
+        </div>`;
+    }
+
+    // ── Help modal ──
+    function openInfo()  { document.getElementById('helpModal').classList.add('open'); }
+    function closeInfo() { document.getElementById('helpModal').classList.remove('open'); }
+    document.addEventListener('keydown', e => { if (e.key==='Escape') closeInfo(); });
+
+    init();
+  </script>
+</body>
+</html>
