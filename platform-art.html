@@ -314,7 +314,7 @@
                 const { data: updated } = await sb.from('purchases').select('seller_confirmed,buyer_confirmed,artwork_id').eq('id', myPurchase.id).single();
                 if (updated?.seller_confirmed && updated?.buyer_confirmed) {
                   await sb.from('purchases').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', myPurchase.id);
-                  if (updated.artwork_id) await sb.from('artworks').update({ on_hold: false }).eq('id', updated.artwork_id);
+                  if (updated.artwork_id) await sb.from('artworks').update({ status: 'sold', on_hold: false }).eq('id', updated.artwork_id);
                 }
                 window.location.href = 'platform-history.html';
               };

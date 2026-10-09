@@ -238,7 +238,8 @@
           p_name: name,
           p_price: parseFloat(price),
           p_image_url: urlData.publicUrl,
-          p_description: desc || ''
+          p_description: desc || '',
+          p_parent_avatar_url: ''
         });
 
         if (rpcErr) throw rpcErr;

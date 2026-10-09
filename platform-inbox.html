@@ -305,10 +305,11 @@
       const { data } = await sb.from('purchases').select('*').eq('id', purchaseId).single();
       if (data?.seller_confirmed && data?.buyer_confirmed) {
         await sb.from('purchases').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', purchaseId);
-        if (data.artwork_id) await sb.from('artworks').update({ on_hold: false }).eq('id', data.artwork_id);
+        if (data.artwork_id) await sb.from('artworks').update({ status: 'sold', on_hold: false }).eq('id', data.artwork_id);
       }
-      toast('Marked as sent! Waiting for buyer to confirm receipt.');
+      toast('Marked as sent! Waiting for buyer to confirm receipt. 📦');
       document.getElementById(`pr-${purchaseId}`)?.remove();
+      document.getElementById(`kr-${purchaseId}`)?.remove();
       if (!document.querySelector('#purchaseList .notif-row')) {
         document.getElementById('purchaseList').innerHTML = '<p class="empty">No purchase requests yet.</p>';
       }
