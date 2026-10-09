@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Notifications – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#fff9f0; font-family:'Nunito',sans-serif; }
+
+    header {
+      background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      padding:16px 24px; display:flex; align-items:center; gap:12px;
+      box-shadow:0 4px 20px rgba(162,155,254,0.3); position:sticky; top:0; z-index:40;
+    }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:white; flex:1; }
+    .nav-btn {
+      background:white; border:none; border-radius:50px; padding:8px 18px;
+      font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer;
+      color:#a29bfe; text-decoration:none; transition:transform 0.2s; flex-shrink:0;
+    }
+    .nav-btn:hover { transform:scale(1.05); }
+
+    .container { max-width:680px; margin:0 auto; padding:28px 20px 80px; }
+    .page-title { font-family:'Fredoka One',cursive; font-size:2rem; color:#333; margin-bottom:4px; }
+    .page-sub   { color:#aaa; font-size:0.9rem; margin-bottom:28px; }
+
+    .empty-state {
+      text-align:center; padding:60px 20px;
+      font-family:'Fredoka One',cursive; font-size:1.2rem; color:#ccc;
+    }
+    .empty-state .icon { font-size:3rem; margin-bottom:12px; }
+
+    .panel {
+      background:white; border-radius:22px; padding:24px 26px;
+      box-shadow:0 4px 16px rgba(0,0,0,0.06); margin-bottom:20px;
+    }
+    .panel-title {
+      font-family:'Fredoka One',cursive; font-size:1.1rem; color:#333; margin-bottom:16px;
+      display:flex; align-items:center; gap:8px;
+    }
+
+    .notif-row {
+      display:flex; gap:14px; align-items:flex-start;
+      padding:16px 0; border-bottom:1px solid #f0f0f0; position:relative;
+    }
+    .notif-row:last-child { border-bottom:none; padding-bottom:0; }
+    .notif-img {
+      width:64px; height:64px; border-radius:14px; object-fit:cover;
+      background:#f0f0f0; flex-shrink:0; cursor:pointer;
+    }
+    .notif-body { flex:1; min-width:0; }
+    .notif-title { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; margin-bottom:4px; }
+    .notif-meta  { font-size:0.83rem; color:#aaa; line-height:1.55; }
+    .notif-badge {
+      display:inline-block; border-radius:50px; padding:4px 12px;
+      font-family:'Fredoka One',cursive; font-size:0.78rem; margin-top:8px;
+    }
+    .badge-sold    { background:#d4edda; color:#155724; }
+    .badge-pending { background:#fff3cd; color:#856404; }
+    .badge-request { background:#f4f0ff; color:#a29bfe; }
+
+    .dismiss-btn {
+      position:absolute; top:12px; right:0;
+      background:#f0f0f0; border:none; border-radius:50%;
+      width:28px; height:28px; font-size:0.85rem; color:#888;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:background 0.15s, color 0.15s;
+    }
+    .dismiss-btn:hover { background:#ffd6d6; color:#c0392b; }
+
+    .celebration {
+      background:linear-gradient(135deg,#feca57,#ff6b6b);
+      border-radius:22px; padding:28px; text-align:center; margin-bottom:20px;
+      color:white;
+    }
+    .celebration .big { font-family:'Fredoka One',cursive; font-size:1.8rem; margin-bottom:6px; }
+    .celebration .sub { font-size:0.9rem; opacity:0.9; }
+
+    @media(max-width:600px) {
+      header { padding:12px 16px; gap:8px; }
+      .container { padding:20px 14px 60px; }
+      .panel { padding:18px 16px; }
+      .notif-img { width:52px; height:52px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">📬 My Notifications</div>
+    <a href="platform-kid-shop.html" class="nav-btn">← Shop</a>
+  </header>
+
+  <div class="container">
+    <p class="page-title">📬 My Notifications</p>
+    <p class="page-sub" id="kidNameSub">Here's what's happening with your art</p>
+
+    <div id="mainContent">
+      <p style="text-align:center;padding:40px;color:#ccc;font-family:'Fredoka One',cursive;">Loading...</p>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let kidSession = null;
+
+    function getDismissed() { return new Set(JSON.parse(localStorage.getItem('kidInboxDismissed') || '[]')); }
+    function dismissItem(id, rowEl, listEl, panelEl) {
+      const d = getDismissed(); d.add(id); localStorage.setItem('kidInboxDismissed', JSON.stringify([...d]));
+      rowEl.remove();
+      if (panelEl && !listEl.querySelector('.notif-row')) panelEl.remove();
+      checkEmpty();
+    }
+    function checkEmpty() {
+      const main = document.getElementById('mainContent');
+      if (!main.querySelector('.panel') && !main.querySelector('.celebration')) {
+        main.innerHTML = `<div class="empty-state"><div class="icon">🎨</div>No new notifications yet.<br><span style="font-size:0.85rem;font-family:'Nunito',sans-serif;font-weight:700;">Your art sales and requests will show up here!</span></div>`;
+      }
+    }
+
+    async function init() {
+      const raw = localStorage.getItem('kidSession');
+      if (!raw) { window.location.href = 'platform-index.html'; return; }
+      kidSession = JSON.parse(raw);
+      document.getElementById('kidNameSub').textContent = `Hey ${kidSession.kid_name}! Here's what's happening with your art 🎨`;
+
+      const dismissed = getDismissed();
+      const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+      // Load sold artworks (purchases completed in last 30 days)
+      const { data: soldPurchases } = await sb.from('purchases')
+        .select('*, artworks!artwork_id(id, name, image_url, price, kid_id)')
+        .eq('status', 'completed')
+        .gte('completed_at', cutoff)
+        .order('completed_at', { ascending: false });
+
+      // Filter to this kid's artworks
+      const kidSales = (soldPurchases || []).filter(p =>
+        p.artworks?.kid_id === kidSession.kid_id && !dismissed.has('ks-' + p.id)
+      );
+
+      // Load pending purchases on this kid's art (someone wants to buy but not confirmed yet)
+      const { data: pendingPurchases } = await sb.from('purchases')
+        .select('*, artworks!artwork_id(id, name, image_url, price, kid_id)')
+        .eq('status', 'pending')
+        .order('purchased_at', { ascending: false });
+
+      const kidPending = (pendingPurchases || []).filter(p =>
+        p.artworks?.kid_id === kidSession.kid_id && !dismissed.has('kp-' + p.id)
+      );
+
+      // Load this kid's art requests (art they asked their parent to buy)
+      const { data: myRequests } = await sb.from('art_requests')
+        .select('*, artworks(id, name, image_url, price)')
+        .eq('kid_id', kidSession.kid_id)
+        .order('requested_at', { ascending: false });
+
+      const approvedRequests = (myRequests || []).filter(r => r.status === 'approved' && !dismissed.has('ar-' + r.id));
+      const rejectedRequests = (myRequests || []).filter(r => r.status === 'rejected' && !dismissed.has('rr-' + r.id));
+
+      const main = document.getElementById('mainContent');
+      let html = '';
+
+      // 🎉 Sales celebration panel
+      if (kidSales.length) {
+        html += `<div class="celebration">
+          <div class="big">🎉 Your art sold!</div>
+          <div class="sub">You're a real artist — people are buying your work!</div>
+        </div>`;
+        html += `<div class="panel" id="salesPanel">
+          <p class="panel-title">💰 Sold Artwork</p>
+          <div id="salesList">` +
+          kidSales.map(p => `
+            <div class="notif-row" id="ks-${p.id}" onclick="location.href='platform-art.html?id=${p.artworks?.id}'" style="cursor:pointer;">
+              <img class="notif-img" src="${p.artworks?.image_url||''}" onerror="this.style.display='none'" />
+              <div class="notif-body">
+                <p class="notif-title">${p.artworks?.name || p.artwork_name}</p>
+                <p class="notif-meta">Sold for <strong>$${p.artwork_price}</strong>${p.donation_amount > 0 ? ` + $${p.donation_amount} tip` : ''}<br>
+                  ${new Date(p.completed_at).toLocaleDateString('en-US', { month:'long', day:'numeric' })}</p>
+                <span class="notif-badge badge-sold">✅ Sold!</span>
+              </div>
+              <button class="dismiss-btn" onclick="event.stopPropagation();dismissItem('ks-${p.id}',this.closest('.notif-row'),document.getElementById('salesList'),document.getElementById('salesPanel'))">✕</button>
+            </div>`).join('') +
+          `</div></div>`;
+      }
+
+      // ⏳ Pending sales (someone wants to buy but waiting on parent to confirm)
+      if (kidPending.length) {
+        html += `<div class="panel" id="pendingPanel">
+          <p class="panel-title">⏳ Someone Wants to Buy Your Art!</p>
+          <div id="pendingList">` +
+          kidPending.map(p => `
+            <div class="notif-row" id="kp-${p.id}" onclick="location.href='platform-art.html?id=${p.artworks?.id}'" style="cursor:pointer;">
+              <img class="notif-img" src="${p.artworks?.image_url||''}" onerror="this.style.display='none'" />
+              <div class="notif-body">
+                <p class="notif-title">${p.artworks?.name || p.artwork_name}</p>
+                <p class="notif-meta">Someone sent a request to buy this for <strong>$${p.artwork_price}</strong>.<br>
+                  Your parent will arrange the sale!</p>
+                <span class="notif-badge badge-pending">⏳ In Progress</span>
+              </div>
+              <button class="dismiss-btn" onclick="event.stopPropagation();dismissItem('kp-${p.id}',this.closest('.notif-row'),document.getElementById('pendingList'),document.getElementById('pendingPanel'))">✕</button>
+            </div>`).join('') +
+          `</div></div>`;
+      }
+
+      // ✅ Approved art requests (parent said yes to buying something for the kid)
+      if (approvedRequests.length) {
+        html += `<div class="panel" id="approvedPanel">
+          <p class="panel-title">✅ Your Parent Said Yes!</p>
+          <div id="approvedList">` +
+          approvedRequests.map(r => `
+            <div class="notif-row" id="ar-${r.id}" onclick="location.href='platform-art.html?id=${r.artwork_id}'" style="cursor:pointer;">
+              <img class="notif-img" src="${r.artworks?.image_url||''}" onerror="this.style.display='none'" />
+              <div class="notif-body">
+                <p class="notif-title">${r.artworks?.name || 'Artwork'}</p>
+                <p class="notif-meta">Your parent approved your request for <strong>$${r.artworks?.price}</strong>.<br>
+                  They'll arrange the purchase!</p>
+                <span class="notif-badge badge-request">✅ Approved!</span>
+              </div>
+              <button class="dismiss-btn" onclick="event.stopPropagation();dismissItem('ar-${r.id}',this.closest('.notif-row'),document.getElementById('approvedList'),document.getElementById('approvedPanel'))">✕</button>
+            </div>`).join('') +
+          `</div></div>`;
+      }
+
+      // ❌ Rejected art requests
+      if (rejectedRequests.length) {
+        html += `<div class="panel" id="rejectedPanel">
+          <p class="panel-title">❌ Request Not Approved</p>
+          <div id="rejectedList">` +
+          rejectedRequests.map(r => `
+            <div class="notif-row" id="rr-${r.id}">
+              <img class="notif-img" src="${r.artworks?.image_url||''}" onerror="this.style.display='none'" />
+              <div class="notif-body">
+                <p class="notif-title">${r.artworks?.name || 'Artwork'}</p>
+                <p class="notif-meta">Your parent declined this request.<br>Maybe ask them about it!</p>
+                <span class="notif-badge" style="background:#ffd6d6;color:#c0392b;">❌ Not this time</span>
+              </div>
+              <button class="dismiss-btn" onclick="event.stopPropagation();dismissItem('rr-${r.id}',this.closest('.notif-row'),document.getElementById('rejectedList'),document.getElementById('rejectedPanel'))">✕</button>
+            </div>`).join('') +
+          `</div></div>`;
+      }
+
+      main.innerHTML = html || '';
+      checkEmpty();
+    }
+
+    init();
+  </script>
+</body>
+</html>

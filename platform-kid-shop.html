@@ -122,8 +122,12 @@
     <div class="logo">🎨 Little He<span style="color:#fff176;">art</span>works</div>
     <button onclick="openInfo()" style="background:rgba(255,255,255,0.25);border:2px solid rgba(255,255,255,0.6);border-radius:50%;width:32px;height:32px;font-size:0.95rem;cursor:pointer;color:white;flex-shrink:0;font-weight:700;">?</button>
     <div class="kid-badge" id="kidBadge">🧒 ...</div>
-    <a href="platform-kid-submit.html" class="nav-btn">✏️ Submit Art</a>
-    <a href="platform-kid-my-shop.html" class="nav-btn" style="background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.5);">🖼️ My Shop</a>
+    <a href="platform-kid-submit.html" class="nav-btn">✏️ Submit</a>
+    <a href="platform-kid-my-shop.html" class="nav-btn" style="background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.5);">🖼️ My Art</a>
+    <a href="platform-kid-inbox.html" class="nav-btn" style="position:relative;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.5);" id="inboxNavBtn">
+      📬 Inbox
+      <span id="kidInboxDot" style="display:none;position:absolute;top:-3px;right:-3px;width:10px;height:10px;background:#ff6b6b;border-radius:50%;border:2px solid white;"></span>
+    </a>
     <button class="switch-btn" onclick="switchKid()">Switch</button>
   </header>
 
@@ -216,7 +220,7 @@
       if (!raw) { window.location.href = 'platform-index.html'; return; }
       kidSession = JSON.parse(raw);
       document.getElementById('kidBadge').textContent = '🧒 ' + kidSession.kid_name;
-      await Promise.all([loadArtworks(), loadKidInfo()]);
+      await Promise.all([loadArtworks(), loadKidInfo(), checkKidInbox()]);
     }
 
     async function loadKidInfo() {
@@ -361,6 +365,25 @@
       msgEl.style.cssText = 'display:block;background:#d4edda;color:#155724;margin-top:12px;padding:10px 14px;border-radius:12px;font-weight:700;font-size:0.88rem;';
       msgEl.textContent = '🎉 Request sent to your parent!';
       renderGrid();
+    }
+
+    async function checkKidInbox() {
+      if (!kidSession?.kid_id) return;
+      const dismissed = new Set(JSON.parse(localStorage.getItem('kidInboxDismissed') || '[]'));
+      const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+      const [{ data: sales }, { data: pending }, { data: requests }] = await Promise.all([
+        sb.from('purchases').select('id, artworks!artwork_id(kid_id)').eq('status','completed').gte('completed_at', cutoff),
+        sb.from('purchases').select('id, artworks!artwork_id(kid_id)').eq('status','pending'),
+        sb.from('art_requests').select('id,status').eq('kid_id', kidSession.kid_id).in('status',['approved','rejected'])
+      ]);
+
+      const count =
+        (sales   || []).filter(p => p.artworks?.kid_id === kidSession.kid_id && !dismissed.has('ks-' + p.id)).length +
+        (pending || []).filter(p => p.artworks?.kid_id === kidSession.kid_id && !dismissed.has('kp-' + p.id)).length +
+        (requests|| []).filter(r => !dismissed.has('ar-' + r.id) && !dismissed.has('rr-' + r.id)).length;
+
+      if (count > 0) document.getElementById('kidInboxDot').style.display = 'block';
     }
 
     function switchKid() {
