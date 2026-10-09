@@ -336,12 +336,16 @@
     }
 
     async function checkInbox(user) {
+      const dismissed = new Set(JSON.parse(localStorage.getItem('inboxDismissed') || '[]'));
       const [{ data: trades }, { data: purchases }, { data: approvals }] = await Promise.all([
         sb.from('trades').select('id').eq('owner_id', user.id).eq('status', 'pending'),
         sb.from('purchases').select('id').eq('seller_id', user.id).eq('status', 'pending'),
         sb.from('artworks').select('id').eq('parent_id', user.id).eq('status', 'pending')
       ]);
-      const count = (trades?.length || 0) + (purchases?.length || 0) + (approvals?.length || 0);
+      const count =
+        (trades    || []).filter(t => !dismissed.has('tr-' + t.id)).length +
+        (purchases || []).filter(p => !dismissed.has('pr-' + p.id) && !dismissed.has('kr-' + p.id)).length +
+        (approvals || []).filter(a => !dismissed.has('ap-' + a.id)).length;
       if (count > 0) document.getElementById('inboxDot').style.display = 'block';
     }
 
