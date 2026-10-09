@@ -43,120 +43,65 @@
     }
     .account-pfp img { width:100%; height:100%; object-fit:cover; }
 
+    .lightbox {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88);
+      z-index:200; align-items:center; justify-content:center; padding:24px; cursor:zoom-out;
+    }
+    .lightbox.open { display:flex; }
+    .lightbox img { max-width:90vw; max-height:90vh; border-radius:18px; object-fit:contain; }
+
+    .not-found {
+      text-align:center; padding:80px 20px;
+      font-family:'Fredoka One',cursive; font-size:1.4rem; color:#aaa;
+    }
+    .not-found a {
+      display:inline-block; margin-top:16px;
+      background:linear-gradient(135deg,#ff6b6b,#feca57);
+      color:white; border-radius:50px; padding:12px 28px; font-size:1rem; text-decoration:none;
+    }
+
     .page {
       max-width:1040px; margin:40px auto; padding:0 24px 80px;
       display:grid; grid-template-columns:1fr 420px; gap:40px; align-items:start;
     }
-    @media(max-width:760px) { .page { grid-template-columns:1fr; } }
-
-    /* Left: image */
-    .art-image-wrap {
-      position:sticky; top:90px;
-    }
+    .art-image-wrap { position:sticky; top:90px; }
     .art-image-wrap img {
-      width:100%; border-radius:24px;
-      box-shadow:0 12px 40px rgba(0,0,0,0.14);
-      display:block; background:#f0f0f0;
-      cursor:zoom-in; transition:transform 0.2s;
+      width:100%; border-radius:24px; box-shadow:0 12px 40px rgba(0,0,0,0.14);
+      display:block; background:#f0f0f0; cursor:zoom-in; transition:transform 0.2s;
     }
     .art-image-wrap img:hover { transform:scale(1.01); }
-
-    /* Lightbox */
-    .lightbox {
-      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88);
-      z-index:200; align-items:center; justify-content:center; padding:24px;
-      cursor:zoom-out;
-    }
-    .lightbox.open { display:flex; }
-    .lightbox img { max-width:90vw; max-height:90vh; border-radius:18px; object-fit:contain; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
-    .art-badges {
-      display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;
-    }
+    .art-badges { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
     .badge {
       background:white; border-radius:50px; padding:7px 16px;
-      font-size:0.82rem; color:#777; font-weight:700;
-      box-shadow:0 2px 8px rgba(0,0,0,0.07);
+      font-size:0.82rem; color:#777; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,0.07);
+    }
+    .art-ref {
+      display:inline-block; background:#f0f0f0; border-radius:50px;
+      padding:4px 12px; font-size:0.75rem; color:#aaa; font-weight:700; letter-spacing:0.5px;
     }
 
-    /* Right: info + buy */
     .art-info { display:flex; flex-direction:column; gap:20px; }
-
-    .info-card {
-      background:white; border-radius:24px; padding:28px;
-      box-shadow:0 4px 18px rgba(0,0,0,0.06);
-    }
+    .info-card { background:white; border-radius:24px; padding:28px; box-shadow:0 4px 18px rgba(0,0,0,0.06); }
     .art-title { font-family:'Fredoka One',cursive; font-size:2rem; color:#333; margin-bottom:8px; }
     .art-price { font-family:'Fredoka One',cursive; font-size:2.2rem; color:#ff6b6b; margin-bottom:14px; }
     .art-desc { color:#666; font-size:0.98rem; line-height:1.7; margin-bottom:16px; }
-    .creator-row {
-      display:flex; gap:10px; flex-wrap:wrap;
-    }
-    .creator-chip {
-      background:#f4f0ff; border-radius:50px; padding:7px 16px;
-      font-size:0.85rem; color:#a29bfe; font-weight:700;
-    }
+    .creator-row { display:flex; gap:10px; flex-wrap:wrap; }
+    .creator-chip { background:#f4f0ff; border-radius:50px; padding:7px 16px; font-size:0.85rem; color:#a29bfe; font-weight:700; }
 
-    /* Buy form */
-    .buy-card {
-      background:white; border-radius:24px; padding:28px;
-      box-shadow:0 4px 18px rgba(0,0,0,0.06);
+    .buy-card { background:white; border-radius:24px; padding:28px; box-shadow:0 4px 18px rgba(0,0,0,0.06); }
+    .big-btn {
+      display:block; width:100%; text-align:center; text-decoration:none;
+      background:linear-gradient(135deg,#ff6b6b,#feca57);
+      border:none; border-radius:50px; padding:18px;
+      color:white; font-family:'Fredoka One',cursive; font-size:1.15rem;
+      cursor:pointer; transition:transform 0.2s; margin-top:8px;
     }
-    .buy-card h3 { font-family:'Fredoka One',cursive; font-size:1.3rem; color:#333; margin-bottom:18px; }
-    .form-field { margin-bottom:14px; }
-    .form-field label { display:block; font-weight:700; color:#555; margin-bottom:6px; font-size:0.88rem; }
-    .form-field input {
-      width:100%; padding:12px 16px; border:2.5px solid #e0e0e0;
-      border-radius:12px; font-family:'Nunito',sans-serif; font-size:0.98rem;
-      outline:none; transition:border-color 0.2s;
-    }
-    .form-field input:focus { border-color:#feca57; }
+    .big-btn:hover { transform:scale(1.02); }
+    .big-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+    .big-btn.purple { background:linear-gradient(135deg,#a29bfe,#ff9ff3); }
+    .big-btn.red { background:#f0f0f0; color:#e74c3c; }
 
-    .donate-row {
-      background:#fff8ee; border-radius:16px; padding:16px 18px; margin-bottom:16px;
-    }
-    .donate-row label { font-family:'Fredoka One',cursive; font-size:0.95rem; color:#f0932b; display:block; margin-bottom:6px; }
-    .donate-row .hint { font-size:0.78rem; color:#bbb; margin-top:4px; }
-    .donate-row input {
-      width:100%; padding:11px 16px; border:2.5px solid #feca57;
-      border-radius:12px; font-family:'Nunito',sans-serif; font-size:0.98rem;
-      outline:none;
-    }
-
-    .total-row {
-      display:flex; justify-content:space-between; align-items:center;
-      background:#f8f8f8; border-radius:12px; padding:12px 16px; margin-bottom:18px;
-    }
-    .total-row span { font-weight:700; color:#555; font-size:0.9rem; }
-    .total-row strong { font-family:'Fredoka One',cursive; font-size:1.3rem; color:#ff6b6b; }
-
-    .buy-btn {
-      width:100%; background:linear-gradient(135deg,#ff6b6b,#feca57);
-      border:none; border-radius:50px; padding:16px;
-      color:white; font-family:'Fredoka One',cursive; font-size:1.1rem;
-      cursor:pointer; transition:transform 0.2s;
-    }
-    .buy-btn:hover { transform:scale(1.02); }
-    .buy-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
-
-    .msg { margin-top:14px; padding:12px 16px; border-radius:12px; font-weight:700; font-size:0.88rem; display:none; }
-    .msg.error { background:#ffd6d6; color:#c0392b; }
-    .msg.success { background:#d4edda; color:#155724; }
-
-    .success-screen {
-      display:none; text-align:center; padding:20px 0;
-    }
-    .success-screen .icon { font-size:3.5rem; margin-bottom:12px; }
-    .success-screen h3 { font-family:'Fredoka One',cursive; font-size:1.5rem; color:#333; margin-bottom:8px; }
-    .success-screen p { color:#777; margin-bottom:20px; font-size:0.92rem; line-height:1.6; }
-    .done-btn {
-      background:linear-gradient(135deg,#a29bfe,#ff9ff3); border:none;
-      border-radius:50px; padding:12px 32px; color:white;
-      font-family:'Fredoka One',cursive; font-size:1rem; cursor:pointer;
-    }
-
-    .login-prompt {
-      background:#f4f0ff; border-radius:16px; padding:20px; text-align:center;
-    }
+    .login-prompt { background:#f4f0ff; border-radius:16px; padding:20px; text-align:center; }
     .login-prompt p { color:#a29bfe; font-weight:700; margin-bottom:14px; font-size:0.95rem; }
     .login-prompt a {
       display:inline-block; background:linear-gradient(135deg,#a29bfe,#ff9ff3);
@@ -164,24 +109,13 @@
       font-family:'Fredoka One',cursive; font-size:0.95rem; text-decoration:none;
     }
 
-    .not-found { text-align:center; padding:80px 20px; font-family:'Fredoka One',cursive; font-size:1.4rem; color:#aaa; }
-    .not-found a { display:inline-block; margin-top:16px; background:linear-gradient(135deg,#ff6b6b,#feca57); color:white; border-radius:50px; padding:12px 28px; font-size:1rem; text-decoration:none; }
-
-    /* Art ref badge */
-    .art-ref {
-      display:inline-block; background:#f0f0f0; border-radius:50px;
-      padding:4px 12px; font-size:0.75rem; color:#aaa; font-weight:700;
-      margin-top:10px; letter-spacing:0.5px;
-    }
-
-    /* ── Mobile ── */
+    @media(max-width:760px) { .page { grid-template-columns:1fr; } }
     @media(max-width:600px) {
       header { padding:12px 16px; gap:8px; }
-      .logo  { font-size:1rem; }
-      .hbtn  { padding:7px 12px; font-size:0.78rem; }
-      /* Hide Trading on mobile */
+      .logo { font-size:1rem; }
+      .hbtn { padding:7px 12px; font-size:0.78rem; }
       #tradingBtn { display:none !important; }
-      .account-btn { padding:6px 10px 6px 6px; font-size:0.78rem; }
+      .account-btn { padding:6px 10px 6px 6px; }
       .account-btn span { display:none; }
       .page { margin:20px auto; padding:0 14px 60px; gap:24px; }
       .art-image-wrap { position:static; }
@@ -203,21 +137,20 @@
     </a>
   </header>
 
-  <!-- Lightbox -->
   <div class="lightbox" id="lightbox" onclick="closeLightbox()">
     <img id="lightboxImg" src="" alt="" />
   </div>
 
-  <div id="notFound" class="not-found" style="display:none">🖼️ Artwork not found.<br><a href="platform-shop.html">← Back to Shop</a></div>
+  <div id="notFound" class="not-found" style="display:none">
+    🖼️ Artwork not found.<br>
+    <a href="platform-shop.html">← Back to Shop</a>
+  </div>
 
   <div class="page" id="pageContent" style="display:none">
-    <!-- Left: image -->
     <div class="art-image-wrap">
       <img id="artImg" src="" alt="" onclick="openLightbox(this.src,this.alt)" />
       <div class="art-badges" id="artBadges"></div>
     </div>
-
-    <!-- Right: info + buy -->
     <div class="art-info">
       <div class="info-card">
         <h1 class="art-title" id="artTitle"></h1>
@@ -225,27 +158,23 @@
         <p class="art-desc" id="artDesc" style="display:none"></p>
         <div class="creator-row" id="creatorRow"></div>
       </div>
-
-      <div class="buy-card" id="buyCard">
-        <!-- filled by JS -->
-      </div>
+      <div class="buy-card" id="buyCard"></div>
     </div>
   </div>
 
   <script>
     const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
-    const WEB3FORMS_KEY = 'd0c60520-e920-4f5d-90bc-d6b71aa29543';
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let art = null;
     let currentUser = null;
+    let selectedTradeArtId = null;
 
     function openLightbox(src, alt) {
-      const lb = document.getElementById('lightbox');
       document.getElementById('lightboxImg').src = src;
       document.getElementById('lightboxImg').alt = alt;
-      lb.classList.add('open');
+      document.getElementById('lightbox').classList.add('open');
     }
     function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
@@ -253,13 +182,6 @@
     function handleAccount(e) {
       e.preventDefault();
       window.location.href = currentUser ? 'platform-dashboard.html' : 'platform-login.html';
-    }
-
-    function avatarChip(avatarUrl, name, fallbackEmoji, cls) {
-      const img = avatarUrl
-        ? `<img src="${avatarUrl}" alt="${name}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1.5px solid rgba(0,0,0,0.1);" onerror="this.style.display='none'" />`
-        : `<span style="font-size:1rem;">${fallbackEmoji}</span>`;
-      return `<span class="${cls}" style="display:inline-flex;align-items:center;gap:6px;">${img}${name}</span>`;
     }
 
     async function init() {
@@ -273,7 +195,6 @@
 
       currentUser = user;
 
-      // Header auth
       if (user) {
         const meta = user.user_metadata || {};
         document.getElementById('accountLabel').textContent = (meta.full_name || user.email).split(' ')[0];
@@ -290,80 +211,88 @@
       document.getElementById('artTitle').textContent = art.name;
       document.getElementById('artPrice').textContent = '$' + art.price;
 
-
       if (art.description) {
         const d = document.getElementById('artDesc');
-        d.textContent = art.description; d.style.display = 'block';
+        d.textContent = art.description;
+        d.style.display = 'block';
       }
-
-      // Art reference code
-      const refBadge = document.createElement('span');
-      refBadge.className = 'art-ref';
-      refBadge.textContent = 'Art #' + art.id.slice(0, 6).toUpperCase();
-      document.getElementById('artBadges').appendChild(refBadge);
 
       const badges = document.getElementById('artBadges');
-      if (art.kids?.name) badges.innerHTML += avatarChip(art.kids.avatar_url, art.kids.name, '🧒', 'badge');
-      if (art.parent_name) badges.innerHTML += avatarChip(art.parent_avatar_url, art.parent_name, '👨‍👩‍👧', 'badge');
+      badges.innerHTML = `<span class="art-ref">Art #${art.id.slice(0,6).toUpperCase()}</span>`;
+      if (art.kids?.name) badges.innerHTML += `<span class="badge">🧒 ${art.kids.name}</span>`;
 
       const creators = document.getElementById('creatorRow');
-      if (art.kids?.name) creators.innerHTML += avatarChip(art.kids.avatar_url, art.kids.name, '🧒', 'creator-chip');
-      if (art.parent_name) creators.innerHTML += avatarChip(art.parent_avatar_url, art.parent_name, '👨‍👩‍👧', 'creator-chip');
+      if (art.kids?.name) creators.innerHTML += `<span class="creator-chip">🧒 ${art.kids.name}</span>`;
       if (art.parent_id && user && art.parent_id !== user.id) {
-        creators.innerHTML += `<a href="platform-chat.html?with=${art.parent_id}" style="display:inline-flex;align-items:center;gap:6px;background:#f4f0ff;border-radius:50px;padding:6px 14px;color:#a29bfe;font-family:'Fredoka One',cursive;font-size:0.85rem;text-decoration:none;margin-top:6px;">💬 Chat with seller</a>`;
+        creators.innerHTML += `<a href="platform-chat.html?with=${art.parent_id}" style="display:inline-flex;align-items:center;gap:6px;background:#f4f0ff;border-radius:50px;padding:6px 14px;color:#a29bfe;font-family:'Fredoka One',cursive;font-size:0.85rem;text-decoration:none;">💬 Chat with seller</a>`;
       }
 
-      updateTotal();
+      await buildBuyCard();
 
+      document.getElementById('pageContent').style.display = 'grid';
+    }
+
+    async function buildBuyCard() {
+      const buyCard = document.getElementById('buyCard');
       const tradeMode = new URLSearchParams(window.location.search).get('mode') === 'trade' || art.for_trade;
 
-      const buyCard = document.getElementById('buyCard');
       if (tradeMode) {
         buyCard.innerHTML = `
           <h3 style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#a29bfe;margin-bottom:8px;">🔄 Offer a Trade</h3>
           <p style="font-size:0.88rem;color:#aaa;margin-bottom:16px;">Pick one of your artworks to offer in exchange.</p>
           <div id="myArtPicker" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-bottom:16px;"></div>
           <p id="tradePickLabel" style="font-size:0.82rem;color:#a29bfe;margin-bottom:10px;display:none;">Selected: <strong id="tradePickName"></strong></p>
-          <button id="sendTradeBtn" onclick="sendTrade()" style="width:100%;background:linear-gradient(135deg,#a29bfe,#ff9ff3);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1rem;cursor:pointer;display:none;">🔄 Send Trade Offer</button>
+          <button id="sendTradeBtn" onclick="sendTrade()" class="big-btn purple" style="display:none;">🔄 Send Trade Offer</button>
           <div id="tradeMsgEl" style="margin-top:10px;font-size:0.85rem;text-align:center;color:#aaa;"></div>
-          ${!user ? `<div style="text-align:center;margin-top:12px;"><a href="platform-login.html" style="color:#a29bfe;font-family:'Fredoka One',cursive;">Sign in to trade →</a></div>` : ''}`;
-        if (user) loadMyArtForTrade(user.id);
+          ${!currentUser ? `<div style="text-align:center;margin-top:12px;"><a href="platform-login.html" style="color:#a29bfe;font-family:'Fredoka One',cursive;">Sign in to trade →</a></div>` : ''}`;
+        if (currentUser) loadMyArtForTrade(currentUser.id);
+
       } else if (art.on_hold) {
-        buyCard.innerHTML = `<p style="font-family:'Fredoka One',cursive;color:#e67e22;font-size:1.1rem;margin-bottom:6px;">⏳ On Hold</p><p style="font-size:0.88rem;color:#aaa;">Someone is already purchasing this artwork.</p>`;
-        if (user) {
+        buyCard.innerHTML = `
+          <p style="font-family:'Fredoka One',cursive;color:#e67e22;font-size:1.1rem;margin-bottom:6px;">⏳ On Hold</p>
+          <p style="font-size:0.88rem;color:#aaa;margin-bottom:14px;">Someone is already purchasing this artwork.</p>`;
+
+        if (currentUser) {
           const { data: myPurchase } = await sb.from('purchases')
-            .select('id,seller_confirmed,buyer_confirmed').eq('artwork_id', art.id).eq('buyer_email', user.email).maybeSingle();
+            .select('id,seller_confirmed,buyer_confirmed')
+            .eq('artwork_id', art.id)
+            .eq('buyer_email', currentUser.email)
+            .maybeSingle();
           if (myPurchase) {
             if (myPurchase.seller_confirmed && !myPurchase.buyer_confirmed) {
-              buyCard.innerHTML += `<button class="buy-btn" style="background:linear-gradient(135deg,#a29bfe,#ff9ff3);margin-top:12px;" onclick="confirmReceived('${myPurchase.id}')">📬 I got my art!</button>`;
+              buyCard.innerHTML += `<button class="big-btn purple" onclick="confirmReceived('${myPurchase.id}')">📬 I got my art!</button>`;
             } else if (!myPurchase.seller_confirmed) {
-              buyCard.innerHTML += `<button class="buy-btn" style="background:#f0f0f0;color:#e74c3c;margin-top:12px;" onclick="cancelPurchase('${myPurchase.id}')">✕ Cancel My Request</button>`;
+              buyCard.innerHTML += `<button class="big-btn red" onclick="cancelPurchase('${myPurchase.id}')">✕ Cancel My Request</button>`;
             }
           }
         }
-      } else if (!user) {
+
+      } else if (art.status === 'sold') {
+        buyCard.innerHTML = `
+          <p style="font-family:'Fredoka One',cursive;color:#27ae60;font-size:1.1rem;margin-bottom:6px;">✅ Sold!</p>
+          <p style="font-size:0.88rem;color:#aaa;">This artwork has already been sold.</p>`;
+
+      } else if (!currentUser) {
         buyCard.innerHTML = `
           <h3 style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#333;margin-bottom:14px;">🛒 Buy This Artwork</h3>
           <div class="login-prompt">
             <p>Sign in to purchase this artwork</p>
             <a href="platform-login.html">Sign In →</a>
           </div>`;
+
       } else {
         buyCard.innerHTML = `
           <h3 style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#333;margin-bottom:6px;">🛒 Buy This Artwork</h3>
-          <p style="font-size:0.88rem;color:#aaa;margin-bottom:16px;">Tap below to go to checkout and send a purchase request.</p>
+          <p style="font-size:0.88rem;color:#aaa;margin-bottom:16px;">Send a request to the seller, then arrange payment and pickup in person.</p>
           <div style="background:#fff8ee;border-radius:14px;padding:14px 16px;margin-bottom:16px;">
-            <p style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#ff6b6b;">${'$' + art.price}</p>
-            <p style="font-size:0.8rem;color:#bbb;">Payment arranged with the seller after request</p>
+            <p style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#ff6b6b;">$${art.price}</p>
+            <p style="font-size:0.8rem;color:#bbb;">Payment arranged with the seller in person</p>
           </div>
-          <a href="platform-checkout.html?id=${art.id}" class="buy-btn" style="display:block;text-align:center;text-decoration:none;font-size:1.15rem;padding:18px;">🛒 Buy This Art</a>`;
+          <a href="platform-checkout.html?id=${art.id}" class="big-btn">🛒 Buy This Art</a>`;
       }
 
-      document.getElementById('pageContent').style.display = 'grid';
-      checkTradeConfirmation();
+      await checkTradeConfirmation();
     }
-
-    let selectedTradeArtId = null;
 
     async function loadMyArtForTrade(userId) {
       const { data } = await sb.from('artworks').select('id,name,image_url').eq('parent_id', userId).eq('status','approved');
@@ -372,7 +301,7 @@
       if (!data || !data.length) { picker.innerHTML = '<p style="font-size:0.82rem;color:#aaa;">You have no approved artworks to trade yet.</p>'; return; }
       picker.innerHTML = data.filter(a => a.id !== art.id).map(a => `
         <div onclick="selectTradeArt('${a.id}','${a.name.replace(/'/g,"\\'")}',this)" style="border-radius:10px;overflow:hidden;border:2px solid #eee;cursor:pointer;transition:border-color 0.15s;" id="tp-${a.id}">
-          <img src="${a.image_url}" style="width:100%;aspect-ratio:1;object-fit:cover;background:#f0f0f0;display:block;" />
+          <img src="${a.image_url}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;" />
           <p style="font-size:0.72rem;padding:4px 6px;font-family:'Fredoka One',cursive;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${a.name}</p>
         </div>`).join('');
     }
@@ -386,54 +315,6 @@
       document.getElementById('sendTradeBtn').style.display = 'block';
     }
 
-    async function checkTradeConfirmation() {
-      if (!currentUser || !art) return;
-      // Find an accepted trade involving this artwork and this user
-      const { data } = await sb.from('trades')
-        .select('*')
-        .eq('status', 'accepted')
-        .or(`target_artwork_id.eq.${art.id},offered_artwork_id.eq.${art.id}`)
-        .or(`owner_id.eq.${currentUser.id},offerer_id.eq.${currentUser.id}`)
-        .maybeSingle();
-      if (!data) return;
-
-      const isSeller = data.owner_id === currentUser.id;
-      const isBuyer  = data.offerer_id === currentUser.id;
-      if (!isSeller && !isBuyer) return;
-
-      const alreadyConfirmed = (isSeller && data.seller_confirmed) || (isBuyer && data.buyer_confirmed);
-      const otherConfirmed   = (isSeller && data.buyer_confirmed)  || (isBuyer && data.seller_confirmed);
-
-      if (data.completed_at) return; // already done
-
-      const confirmDiv = document.createElement('div');
-      confirmDiv.style.cssText = 'background:#f4f0ff;border-radius:16px;padding:16px;margin-top:14px;text-align:center;';
-      confirmDiv.innerHTML = `
-        <p style="font-family:'Fredoka One',cursive;color:#a29bfe;font-size:1rem;margin-bottom:8px;">🔄 Trade Accepted!</p>
-        <p style="font-size:0.82rem;color:#aaa;margin-bottom:12px;">
-          ${otherConfirmed ? '✅ The other person confirmed. ' : ''}
-          Confirm your side to complete the trade.
-        </p>
-        ${alreadyConfirmed
-          ? `<p style="color:#27ae60;font-family:'Fredoka One',cursive;font-size:0.9rem;">✅ You confirmed. Waiting for the other person.</p>`
-          : `<button onclick="confirmTrade('${data.id}','${isSeller?'seller':'buyer'}')" style="background:linear-gradient(135deg,#a29bfe,#ff9ff3);border:none;border-radius:50px;padding:12px 24px;color:white;font-family:'Fredoka One',cursive;font-size:0.95rem;cursor:pointer;">
-              ${isSeller ? '📦 I sent my art' : '📬 I got the art'}
-            </button>`
-        }`;
-      document.getElementById('buyCard').appendChild(confirmDiv);
-    }
-
-    async function confirmTrade(tradeId, role) {
-      const field = role === 'seller' ? 'seller_confirmed' : 'buyer_confirmed';
-      await sb.from('trades').update({ [field]: true }).eq('id', tradeId);
-      // Check if both confirmed
-      const { data } = await sb.from('trades').select('*').eq('id', tradeId).single();
-      if (data.seller_confirmed && data.buyer_confirmed) {
-        await sb.from('trades').update({ completed_at: new Date().toISOString(), status: 'completed' }).eq('id', tradeId);
-      }
-      location.reload();
-    }
-
     async function sendTrade() {
       if (!selectedTradeArtId) return;
       const btn = document.getElementById('sendTradeBtn');
@@ -445,10 +326,49 @@
         owner_id: art.parent_id
       });
       const msg = document.getElementById('tradeMsgEl');
-      if (error) { msg.textContent = '❌ ' + error.message; btn.disabled=false; btn.textContent='🔄 Send Trade Offer'; return; }
+      if (error) { msg.textContent = '❌ ' + error.message; btn.disabled = false; btn.textContent = '🔄 Send Trade Offer'; return; }
       msg.style.color = '#27ae60';
-      msg.textContent = '✅ Trade offer sent! Check your dashboard for updates.';
+      msg.textContent = '✅ Trade offer sent! The seller will see it in their inbox.';
       btn.style.display = 'none';
+    }
+
+    async function checkTradeConfirmation() {
+      if (!currentUser || !art) return;
+      const { data } = await sb.from('trades')
+        .select('*')
+        .eq('status', 'accepted')
+        .or(`target_artwork_id.eq.${art.id},offered_artwork_id.eq.${art.id}`)
+        .or(`owner_id.eq.${currentUser.id},offerer_id.eq.${currentUser.id}`)
+        .maybeSingle();
+      if (!data || data.completed_at) return;
+
+      const isSeller = data.owner_id === currentUser.id;
+      const isBuyer  = data.offerer_id === currentUser.id;
+      if (!isSeller && !isBuyer) return;
+
+      const alreadyConfirmed = (isSeller && data.seller_confirmed) || (isBuyer && data.buyer_confirmed);
+      const otherConfirmed   = (isSeller && data.buyer_confirmed)  || (isBuyer && data.seller_confirmed);
+
+      const div = document.createElement('div');
+      div.style.cssText = 'background:#f4f0ff;border-radius:16px;padding:16px;margin-top:14px;text-align:center;';
+      div.innerHTML = `
+        <p style="font-family:'Fredoka One',cursive;color:#a29bfe;font-size:1rem;margin-bottom:8px;">🔄 Trade Accepted!</p>
+        <p style="font-size:0.82rem;color:#aaa;margin-bottom:12px;">${otherConfirmed ? '✅ They confirmed. ' : ''}Confirm your side to complete the trade.</p>
+        ${alreadyConfirmed
+          ? `<p style="color:#27ae60;font-family:'Fredoka One',cursive;font-size:0.9rem;">✅ You confirmed — waiting for the other person.</p>`
+          : `<button onclick="confirmTrade('${data.id}','${isSeller ? 'seller' : 'buyer'}')" style="background:linear-gradient(135deg,#a29bfe,#ff9ff3);border:none;border-radius:50px;padding:12px 24px;color:white;font-family:'Fredoka One',cursive;font-size:0.95rem;cursor:pointer;">${isSeller ? '📦 I sent my art' : '📬 I got the art'}</button>`
+        }`;
+      document.getElementById('buyCard').appendChild(div);
+    }
+
+    async function confirmTrade(tradeId, role) {
+      const field = role === 'seller' ? 'seller_confirmed' : 'buyer_confirmed';
+      await sb.from('trades').update({ [field]: true }).eq('id', tradeId);
+      const { data } = await sb.from('trades').select('*').eq('id', tradeId).single();
+      if (data.seller_confirmed && data.buyer_confirmed) {
+        await sb.from('trades').update({ completed_at: new Date().toISOString(), status: 'completed' }).eq('id', tradeId);
+      }
+      location.reload();
     }
 
     async function confirmReceived(purchaseId) {
@@ -456,7 +376,7 @@
       const { data } = await sb.from('purchases').select('*').eq('id', purchaseId).single();
       if (data?.seller_confirmed && data?.buyer_confirmed) {
         await sb.from('purchases').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', purchaseId);
-        if (data.artwork_id) await sb.from('artworks').update({ on_hold: false }).eq('id', data.artwork_id);
+        if (data.artwork_id) await sb.from('artworks').update({ status: 'sold', on_hold: false }).eq('id', data.artwork_id);
       }
       window.location.href = 'platform-history.html';
     }
