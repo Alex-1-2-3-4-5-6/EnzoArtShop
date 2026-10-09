@@ -62,6 +62,13 @@
     .btn-purple { background:linear-gradient(135deg,#a29bfe,#ff9ff3); color:white; }
     .btn-gray   { background:#f0f0f0; color:#e74c3c; }
     .btn-view   { background:#f0f0f0; color:#555; }
+    .dismiss-btn {
+      position:absolute; top:12px; right:0;
+      background:none; border:none; font-size:1.1rem; color:#ccc;
+      cursor:pointer; line-height:1; padding:4px;
+    }
+    .dismiss-btn:hover { color:#aaa; }
+    .notif-row { position:relative; }
 
     .empty { color:#ccc; font-family:'Fredoka One',cursive; font-size:1rem; padding:12px 0; text-align:center; }
 
@@ -134,6 +141,17 @@
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let currentUser = null;
 
+    // Dismissed notification IDs stored in localStorage
+    function getDismissed() { return new Set(JSON.parse(localStorage.getItem('inboxDismissed') || '[]')); }
+    function dismiss(id, rowEl, listEl, panelId, emptyMsg) {
+      const d = getDismissed(); d.add(id); localStorage.setItem('inboxDismissed', JSON.stringify([...d]));
+      rowEl.remove();
+      if (!listEl.querySelector('.notif-row')) {
+        if (panelId) document.getElementById(panelId).style.display = 'none';
+        else listEl.innerHTML = `<p class="empty">${emptyMsg}</p>`;
+      }
+    }
+
     async function init() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'platform-login.html'; return; }
@@ -154,11 +172,13 @@
         .eq('status', 'completed')
         .gte('completed_at', cutoff)
         .order('completed_at', { ascending: false });
-      const kidSales = (data || []).filter(p => p.artworks?.kid_id);
+      const dismissed = getDismissed();
+      const kidSales = (data || []).filter(p => p.artworks?.kid_id && !dismissed.has('ks-' + p.id));
       if (!kidSales.length) return;
       document.getElementById('kidSalesPanel').style.display = 'block';
-      document.getElementById('kidSalesList').innerHTML = kidSales.map(p => `
-        <div class="notif-row" style="cursor:pointer;" onclick="location.href='platform-art.html?id=${p.artwork_id}'">
+      const kidSalesList = document.getElementById('kidSalesList');
+      kidSalesList.innerHTML = kidSales.map(p => `
+        <div class="notif-row" id="ks-${p.id}" style="cursor:pointer;" onclick="location.href='platform-art.html?id=${p.artwork_id}'">
           <img class="notif-img" src="${p.artwork_image_url||''}" onerror="this.style.display='none'" />
           <div class="notif-body">
             <p class="notif-title">${p.artwork_name}</p>
@@ -166,6 +186,7 @@
               ${p.artworks?.kids?.name ? `<strong>${p.artworks.kids.name}'s</strong> art was sold` : 'Art sold'} to ${p.buyer_name} for <strong>$${(parseFloat(p.artwork_price||0)+parseFloat(p.donation||0)).toFixed(2)}</strong>
             </p>
           </div>
+          <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('ks-${p.id}',this.closest('.notif-row'),document.getElementById('kidSalesList'),'kidSalesPanel','')">✕</button>
         </div>`).join('');
     }
 
@@ -227,9 +248,11 @@
         .not('artworks.kid_id', 'is', null);
       const panel = document.getElementById('kidRequestsPanel');
       const el    = document.getElementById('kidRequestsList');
-      if (!data || !data.length) return;
+      const dismissed = getDismissed();
+      const visible = (data || []).filter(p => !dismissed.has('kr-' + p.id));
+      if (!visible.length) return;
       panel.style.display = 'block';
-      el.innerHTML = data.map(p => `
+      el.innerHTML = visible.map(p => `
         <div class="notif-row" id="kr-${p.id}" style="cursor:pointer;" onclick="location.href='platform-art.html?id=${p.artwork_id}'">
           <img class="notif-img" src="${p.artworks?.image_url||p.artwork_image_url||''}" onerror="this.style.display='none'" />
           <div class="notif-body">
@@ -240,6 +263,7 @@
               <button class="action-btn btn-gray"  onclick="event.stopPropagation();declinePurchase('${p.id}','${p.artwork_id}')">✕ Decline</button>
             </div>
           </div>
+          <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('kr-${p.id}',this.closest('.notif-row'),document.getElementById('kidRequestsList'),'kidRequestsPanel','')">✕</button>
         </div>`).join('');
     }
 
@@ -250,8 +274,10 @@
         .eq('status', 'pending')
         .order('purchased_at', { ascending: false });
       const el = document.getElementById('purchaseList');
-      if (!data || !data.length) { el.innerHTML = '<p class="empty">No purchase requests yet.</p>'; return; }
-      el.innerHTML = data.map(p => `
+      const dismissed = getDismissed();
+      const visible = (data || []).filter(p => !dismissed.has('pr-' + p.id));
+      if (!visible.length) { el.innerHTML = '<p class="empty">No purchase requests yet.</p>'; return; }
+      el.innerHTML = visible.map(p => `
         <div class="notif-row" id="pr-${p.id}" style="cursor:pointer;" onclick="location.href='platform-art.html?id=${p.artwork_id}'">
           <img class="notif-img" src="${p.artwork_image_url||''}" onerror="this.style.display='none'" />
           <div class="notif-body">
@@ -265,6 +291,7 @@
               <button class="action-btn btn-gray"  onclick="event.stopPropagation();declinePurchase('${p.id}','${p.artwork_id}')">✕ Decline</button>
             </div>
           </div>
+          <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('pr-${p.id}',this.closest('.notif-row'),document.getElementById('purchaseList'),null,'No purchase requests yet.')">✕</button>
         </div>`).join('');
     }
 
@@ -304,7 +331,10 @@
         .order('created_at', { ascending: false });
       const el = document.getElementById('tradeList');
       if (!data || !data.length) { el.innerHTML = '<p class="empty">No trade offers yet.</p>'; return; }
-      el.innerHTML = data.map(t => {
+      const dismissed = getDismissed();
+      const visible = data.filter(t => !dismissed.has('tr-' + t.id));
+      if (!visible.length) { el.innerHTML = '<p class="empty">No trade offers yet.</p>'; return; }
+      el.innerHTML = visible.map(t => {
         const offered = t.offered;
         const target  = t.target;
         return `
@@ -321,6 +351,7 @@
                 <button class="action-btn btn-gray"   onclick="event.stopPropagation();declineTrade('${t.id}')">✕ Decline</button>
               </div>
             </div>
+            <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('tr-${t.id}',this.closest('.notif-row'),document.getElementById('tradeList'),null,'No trade offers yet.')">✕</button>
           </div>`;
       }).join('');
     }
