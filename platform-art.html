@@ -283,12 +283,30 @@
       } else {
         buyCard.innerHTML = `
           <h3 style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#333;margin-bottom:6px;">🛒 Buy This Artwork</h3>
-          <p style="font-size:0.88rem;color:#aaa;margin-bottom:16px;">Send a request to the seller, then arrange payment and pickup in person.</p>
           <div style="background:#fff8ee;border-radius:14px;padding:14px 16px;margin-bottom:16px;">
-            <p style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#ff6b6b;">$${art.price}</p>
+            <p style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#ff6b6b;" id="artPriceDisplay">$${art.price}</p>
             <p style="font-size:0.8rem;color:#bbb;">Payment arranged with the seller in person</p>
           </div>
-          <a href="platform-checkout.html?id=${art.id}" class="big-btn">🛒 Buy This Art</a>`;
+          <div style="margin-bottom:12px;">
+            <label style="display:block;font-weight:700;color:#555;font-size:0.85rem;margin-bottom:6px;">Your email (so the seller can reach you)</label>
+            <input type="email" id="buyerEmail" value="${currentUser.email || ''}" placeholder="your@email.com"
+              style="width:100%;padding:11px 14px;border:2.5px solid #e0e0e0;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.95rem;outline:none;"
+              onfocus="this.style.borderColor='#ff6b6b'" onblur="this.style.borderColor='#e0e0e0'" oninput="updateOrderTotal()" />
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-weight:700;color:#555;font-size:0.85rem;margin-bottom:6px;">Add a tip / donation <span style="color:#bbb;font-weight:400;">(optional)</span></label>
+            <div style="position:relative;">
+              <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#aaa;font-weight:700;">$</span>
+              <input type="number" id="donationAmt" min="0" step="0.01" placeholder="0.00"
+                style="width:100%;padding:11px 14px 11px 26px;border:2.5px solid #e0e0e0;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.95rem;outline:none;"
+                onfocus="this.style.borderColor='#feca57'" onblur="this.style.borderColor='#e0e0e0'" oninput="updateOrderTotal()" />
+            </div>
+          </div>
+          <div id="orderTotalBox" style="background:#f4f0ff;border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:0.88rem;color:#a29bfe;display:none;">
+            <span style="font-family:'Fredoka One',cursive;" id="orderTotalText"></span>
+          </div>
+          <button onclick="submitPurchase()" class="big-btn" id="purchaseBtn">💌 Send Request to Seller</button>
+          <div id="purchaseMsg" style="margin-top:10px;font-size:0.85rem;text-align:center;"></div>`;
       }
 
       await checkTradeConfirmation();
@@ -385,6 +403,90 @@
       await sb.from('purchases').delete().eq('id', purchaseId);
       await sb.from('artworks').update({ on_hold: false }).eq('id', art.id);
       location.reload();
+    }
+
+    function updateOrderTotal() {
+      const donation = parseFloat(document.getElementById('donationAmt')?.value) || 0;
+      const box = document.getElementById('orderTotalBox');
+      const txt = document.getElementById('orderTotalText');
+      if (!box || !txt) return;
+      if (donation > 0) {
+        const total = (parseFloat(art.price) + donation).toFixed(2);
+        txt.textContent = `$${parseFloat(art.price).toFixed(2)} art + $${donation.toFixed(2)} tip = $${total} total 🎉`;
+        box.style.display = 'block';
+      } else {
+        box.style.display = 'none';
+      }
+    }
+
+    async function submitPurchase() {
+      const email    = document.getElementById('buyerEmail')?.value.trim();
+      const donation = parseFloat(document.getElementById('donationAmt')?.value) || 0;
+      const btn      = document.getElementById('purchaseBtn');
+      const msg      = document.getElementById('purchaseMsg');
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        msg.style.color = '#e74c3c';
+        msg.textContent = '❌ Please enter a valid email address.';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      msg.textContent = '';
+
+      const insertData = {
+        artwork_id:     art.id,
+        buyer_email:    email,
+        artwork_name:   art.name,
+        artwork_price:  art.price,
+        status:         'pending',
+        seller_confirmed: false,
+        buyer_confirmed:  false
+      };
+      if (donation > 0) insertData.donation_amount = donation;
+
+      const { error: purchaseErr } = await sb.from('purchases').insert(insertData);
+      if (purchaseErr) {
+        msg.style.color = '#e74c3c';
+        msg.textContent = '❌ ' + purchaseErr.message;
+        btn.disabled = false;
+        btn.textContent = '💌 Send Request to Seller';
+        return;
+      }
+
+      await sb.from('artworks').update({ on_hold: true }).eq('id', art.id);
+
+      // Get seller contact email (parent + kid) via RPC
+      const { data: sellerData } = await sb.rpc('get_seller_email', { p_artwork_id: art.id });
+      const sellerEmail  = sellerData?.parent_email || '';
+      const kidEmail     = sellerData?.kid_email || '';
+
+      const donationLine = donation > 0 ? `\nExtra tip/donation: $${donation.toFixed(2)}` : '';
+      const recipients   = [sellerEmail, kidEmail].filter(Boolean);
+
+      // Send email notification via Web3Forms (once per recipient)
+      for (const to of recipients.length ? recipients : ['']) {
+        try {
+          await fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+              access_key: 'd0c60520-e920-4f5d-90bc-d6b71aa29543',
+              subject:    `New purchase request: "${art.name}"`,
+              from_name:  'Little Heartworks',
+              replyto:    email,
+              message:    `Someone wants to buy "${art.name}"!\n\nArt: ${art.name}\nPrice: $${art.price}${donationLine}\n\nBuyer email: ${email}\n\nLog in at littleheartworks.net to confirm the sale.`
+            })
+          });
+        } catch(_) {}
+      }
+
+      msg.style.color = '#27ae60';
+      msg.innerHTML = `<strong>✅ Request sent!</strong><br><span style="color:#aaa;">The seller has been notified and will reach out at <strong>${email}</strong> to arrange payment and pickup.</span>`;
+      btn.style.display = 'none';
+      document.getElementById('buyerEmail').disabled = true;
+      if (document.getElementById('donationAmt')) document.getElementById('donationAmt').disabled = true;
     }
 
     init();

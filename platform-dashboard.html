@@ -476,7 +476,7 @@
           </div>
 
           <p style="font-size:0.75rem;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Password</p>
-          <div style="background:#fff8ee;border-radius:14px;padding:12px 16px;">
+          <div style="background:#fff8ee;border-radius:14px;padding:12px 16px;margin-bottom:14px;">
             <div style="display:flex;align-items:center;gap:10px;">
               <span style="font-size:0.95rem;color:${k.kid_password ? '#f0932b' : '#ccc'};flex:1;">${k.kid_password ? `🔒 <span style="font-family:monospace;letter-spacing:2px;">${k.kid_password}</span>` : '🔓 No password'}</span>
               <button onclick="togglePasswordEdit('${k.id}')" style="background:#feca57;border:none;border-radius:50px;padding:8px 16px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:white;white-space:nowrap;">${k.kid_password ? 'Change' : 'Set'}</button>
@@ -488,6 +488,18 @@
               <button onclick="saveInlinePassword('${k.id}')" style="background:#feca57;border:none;border-radius:50px;padding:10px 18px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:white;white-space:nowrap;">Save</button>
               <button onclick="togglePasswordEdit('${k.id}')" style="background:#f0f0f0;border:none;border-radius:50px;padding:10px 14px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:#aaa;">Cancel</button>
             </div>
+          </div>
+
+          <p style="font-size:0.75rem;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Notification Email</p>
+          <div style="background:#f0fff4;border-radius:14px;padding:12px 16px;">
+            <p style="font-size:0.8rem;color:#aaa;margin-bottom:10px;">So ${k.name} gets emailed when someone buys their art.</p>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <input type="email" id="kid-email-${k.id}" value="${k.email || ''}" placeholder="kid@example.com"
+                style="flex:1;min-width:160px;padding:10px 14px;border:2px solid #55efc4;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.9rem;outline:none;" />
+              <button onclick="saveKidEmail('${k.id}')" style="background:#55efc4;border:none;border-radius:50px;padding:10px 18px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:white;white-space:nowrap;">Save</button>
+              ${k.email ? `<button onclick="clearKidEmail('${k.id}')" style="background:#ffd6d6;border:none;border-radius:50px;padding:10px 14px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:#c0392b;white-space:nowrap;">Clear</button>` : ''}
+            </div>
+            <div id="kid-email-msg-${k.id}" style="font-size:0.8rem;margin-top:6px;display:none;"></div>
           </div>
 
         </div>
@@ -536,6 +548,23 @@
 
     async function removePassword(kidId) {
       await sb.from('kids').update({ kid_password: null }).eq('id', kidId);
+      loadKids();
+    }
+
+    async function saveKidEmail(kidId) {
+      const val = document.getElementById('kid-email-' + kidId).value.trim();
+      const msgEl = document.getElementById('kid-email-msg-' + kidId);
+      if (val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+        msgEl.style.color = '#c0392b'; msgEl.textContent = '❌ Invalid email address.'; msgEl.style.display = 'block'; return;
+      }
+      const { error } = await sb.from('kids').update({ email: val || null }).eq('id', kidId);
+      if (error) { msgEl.style.color = '#c0392b'; msgEl.textContent = '❌ ' + error.message; msgEl.style.display = 'block'; return; }
+      msgEl.style.color = '#27ae60'; msgEl.textContent = val ? '✅ Email saved!' : '✅ Email cleared.'; msgEl.style.display = 'block';
+      setTimeout(() => { msgEl.style.display = 'none'; loadKids(); }, 1500);
+    }
+
+    async function clearKidEmail(kidId) {
+      await sb.from('kids').update({ email: null }).eq('id', kidId);
       loadKids();
     }
 
