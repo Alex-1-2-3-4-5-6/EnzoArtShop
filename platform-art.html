@@ -459,23 +459,7 @@
 
       await sb.from('artworks').update({ on_hold: true }).eq('id', art.id);
 
-      const donationLine = donation > 0 ? `\nExtra tip/donation: $${donation.toFixed(2)}` : '';
-
-      // Notify the platform (Web3Forms sends to the registered account email)
-      // Kid email is never sent to the client — it stays in the database
-      try {
-        await fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({
-            access_key: 'd0c60520-e920-4f5d-90bc-d6b71aa29543',
-            subject:    `New purchase request: "${art.name}"`,
-            from_name:  'Little Heartworks',
-            replyto:    email,
-            message:    `Someone wants to buy "${art.name}"!\n\nArt: ${art.name}\nPrice: $${art.price}${donationLine}\n\nBuyer email: ${email}\n\nLog in at littleheartworks.net to confirm the sale.`
-          })
-        });
-      } catch(_) {}
+      // Seller is notified via their Supabase inbox (platform-inbox.html)
 
       msg.style.color = '#27ae60';
       msg.innerHTML = `<strong>✅ Request sent!</strong><br><span style="color:#aaa;">The seller has been notified and will reach out at <strong>${email}</strong> to arrange payment and pickup.</span>`;

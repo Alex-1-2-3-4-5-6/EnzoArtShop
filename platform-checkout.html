@@ -161,7 +161,6 @@
   <script>
     const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
-    const WEB3FORMS_KEY = 'd0c60520-e920-4f5d-90bc-d6b71aa29543';
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let art = null;
@@ -232,23 +231,7 @@
           status:           'pending'
         });
 
-        await fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            access_key:  WEB3FORMS_KEY,
-            subject:     `🎨 New Purchase Request: ${art.name}`,
-            from_name:   'Little Heartworks',
-            message:
-              `Someone wants to buy artwork!\n\n` +
-              `Artwork: ${art.name}\n` +
-              `Price: $${art.price}${donateNote}\n` +
-              `Total: $${total}\n\n` +
-              `Buyer: ${name}\nEmail: ${email}\n\n` +
-              `Payment and delivery arranged in person.`
-          })
-        });
-
+        // Seller notified via their Supabase inbox
         await sb.from('artworks').update({ on_hold: true }).eq('id', art.id);
 
         document.getElementById('artPreview').style.display  = 'none';
