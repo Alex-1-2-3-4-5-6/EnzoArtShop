@@ -28,58 +28,102 @@
       font-size:0.82rem; color:white; cursor:pointer; text-decoration:none; flex-shrink:0;
     }
 
-    .container { max-width:900px; margin:0 auto; padding:28px 18px 80px; }
+    .container { max-width:960px; margin:0 auto; padding:26px 18px 80px; }
 
     .kid-banner {
       background:linear-gradient(135deg,#a29bfe,#ff9ff3);
-      border-radius:20px; padding:16px 22px; margin-bottom:24px;
+      border-radius:20px; padding:16px 22px; margin-bottom:22px;
       display:flex; align-items:center; gap:12px;
       box-shadow:0 4px 18px rgba(162,155,254,0.25);
     }
-    .kid-avatar {
-      width:46px; height:46px; border-radius:50%; border:3px solid white;
+    .kid-avatar { width:46px; height:46px; border-radius:50%; border:3px solid white;
       background:rgba(255,255,255,0.3); display:flex; align-items:center;
-      justify-content:center; font-size:1.5rem; flex-shrink:0;
-    }
+      justify-content:center; font-size:1.5rem; flex-shrink:0; }
     .kid-info .name { font-family:'Fredoka One',cursive; font-size:1.05rem; color:white; }
     .kid-info .sub  { font-size:0.8rem; color:rgba(255,255,255,0.8); margin-top:2px; }
 
-    .panel { background:white; border-radius:22px; padding:22px 24px; box-shadow:0 4px 14px rgba(0,0,0,0.06); margin-bottom:20px; }
-    .panel-title { font-family:'Fredoka One',cursive; font-size:1.1rem; color:#333; margin-bottom:16px; }
+    /* Drag tip */
+    .drag-tip {
+      background:#f4f0ff; border-radius:14px; padding:11px 18px;
+      font-size:0.82rem; color:#a29bfe; margin-bottom:20px;
+      display:flex; align-items:center; gap:8px;
+    }
 
-    .art-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:12px; }
-    .art-card { border-radius:16px; overflow:hidden; border:2px solid #eee; background:white; }
-    .art-card img { width:100%; aspect-ratio:1; object-fit:cover; background:#f0f0f0; display:block; }
-    .art-card-info { padding:10px 12px 12px; }
-    .art-card-name  { font-family:'Fredoka One',cursive; font-size:0.88rem; color:#333; margin-bottom:3px; }
-    .art-card-price { font-size:0.8rem; color:#ff6b6b; font-weight:700; margin-bottom:4px; }
-    .art-ref   { font-size:0.68rem; color:#bbb; font-weight:700; display:block; margin-bottom:3px; }
-    .art-date  { font-size:0.67rem; color:#ddd; display:block; margin-bottom:6px; }
+    /* Two-zone workspace */
+    .workspace {
+      display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:22px;
+    }
+    @media(max-width:660px) { .workspace { grid-template-columns:1fr; } }
 
-    .status-badge { display:inline-block; border-radius:50px; padding:3px 10px; font-size:0.7rem; font-weight:700; }
+    .zone {
+      background:white; border-radius:22px; padding:20px 20px 16px;
+      box-shadow:0 4px 14px rgba(0,0,0,0.06); min-height:220px;
+      border:2.5px solid transparent; transition:box-shadow 0.2s, border-color 0.2s;
+    }
+    .zone-draft  { border-top:4px solid #a29bfe; }
+    .zone-posted { border-top:4px solid #27ae60; }
+    .zone.drag-over        { box-shadow:0 0 0 3px #a29bfe44; border-color:#a29bfe; }
+    .zone-posted.drag-over { box-shadow:0 0 0 3px #27ae6044; border-color:#27ae60; }
+
+    .zone-header { display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:12px; gap:8px; flex-wrap:wrap; }
+    .zone-title { font-family:'Fredoka One',cursive; font-size:1.05rem; color:#333; }
+    .zone-hint  { font-size:0.73rem; color:#bbb; }
+
+    /* Art grid */
+    .art-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; }
+
+    .art-card {
+      border-radius:16px; overflow:hidden; border:2px solid #eee; background:white;
+      cursor:grab; user-select:none; transition:transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    }
+    .art-card:active { cursor:grabbing; }
+    .art-card.dragging { opacity:0.45; transform:scale(0.97); box-shadow:0 8px 24px rgba(0,0,0,0.15); }
+    .art-card.no-drag  { cursor:default; }
+    .art-card img { width:100%; aspect-ratio:1; object-fit:cover; background:#f0f0f0; display:block; pointer-events:none; }
+    .art-card-info { padding:8px 10px 10px; }
+    .art-card-name  { font-family:'Fredoka One',cursive; font-size:0.84rem; color:#333; margin-bottom:2px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .art-card-price { font-size:0.77rem; color:#ff6b6b; font-weight:700; margin-bottom:3px; }
+    .art-ref  { font-size:0.63rem; color:#bbb; font-weight:700; display:block; margin-bottom:3px; }
+    .art-date { font-size:0.63rem; color:#ddd; display:block; margin-bottom:5px; }
+
+    .status-badge { display:inline-block; border-radius:50px; padding:2px 9px; font-size:0.67rem; font-weight:700; margin-bottom:6px; }
     .s-approved { background:#d4edda; color:#155724; }
     .s-pending  { background:#fff3cd; color:#856404; }
     .s-rejected { background:#ffd6d6; color:#c0392b; }
-    .s-hold     { background:#fff0e0; color:#e67e22; }
+    .s-recycled { background:#f0f0f0; color:#888; }
 
-    .empty { color:#ccc; font-family:'Fredoka One',cursive; font-size:0.95rem; text-align:center; padding:16px 0; }
-
-    .submit-cta {
-      text-align:center; padding:20px;
+    .drop-hint {
+      color:#ccc; font-family:'Fredoka One',cursive; font-size:0.85rem;
+      text-align:center; padding:24px 10px; border:2px dashed #e8e8e8;
+      border-radius:14px; pointer-events:none; grid-column:1/-1;
     }
+
+    /* Submit CTA */
+    .submit-cta { text-align:center; padding:18px; }
     .submit-cta a {
       display:inline-block; background:linear-gradient(135deg,#a29bfe,#ff9ff3);
-      color:white; border-radius:50px; padding:14px 32px;
+      color:white; border-radius:50px; padding:13px 30px;
       font-family:'Fredoka One',cursive; font-size:1rem; text-decoration:none;
       box-shadow:0 4px 14px rgba(162,155,254,0.35);
     }
+
+    /* Toast */
+    .toast {
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+      background:#333; color:white; padding:11px 24px; border-radius:50px;
+      font-family:'Fredoka One',cursive; font-size:0.95rem;
+      opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:999;
+    }
+    .toast.show { opacity:1; }
 
     @media(max-width:480px) {
       header { padding:10px 14px; gap:8px; }
       .logo  { font-size:1rem; }
       .nav-btn { padding:7px 12px; font-size:0.78rem; }
-      .art-grid { grid-template-columns:repeat(2,1fr); gap:9px; }
-      .container { padding:20px 12px 60px; }
+      .container { padding:18px 12px 60px; }
+      .art-grid { grid-template-columns:repeat(2,1fr); gap:8px; }
     }
   </style>
 </head>
@@ -92,19 +136,48 @@
   </header>
 
   <div class="container">
-    <div class="kid-banner" id="kidBanner">
+    <div class="kid-banner">
       <div class="kid-avatar">🧒</div>
       <div class="kid-info">
         <p class="name" id="kidNameDisplay">Loading...</p>
-        <p class="sub">Your posted artworks</p>
+        <p class="sub" id="kidSubDisplay">Your artworks</p>
       </div>
     </div>
 
-    <div class="panel">
-      <p class="panel-title">🖼️ Your Artworks</p>
-      <div class="art-grid" id="artGrid">
-        <p class="empty" style="grid-column:1/-1;">Loading...</p>
+    <div class="drag-tip">
+      💡 <span>Drag art to <strong>Posted Artworks</strong> to ask your parent to put it in the shop. Drag back to <strong>My Art</strong> to take it down.</span>
+    </div>
+
+    <div class="workspace">
+
+      <!-- My Art (private drafts) -->
+      <div class="zone zone-draft" id="zoneDraft"
+           ondragover="onDragOver(event,'draft')"
+           ondragleave="onDragLeave(event,'draft')"
+           ondrop="onDrop(event,'draft')">
+        <div class="zone-header">
+          <p class="zone-title">🎨 My Art</p>
+          <span class="zone-hint">Private · just yours</span>
+        </div>
+        <div class="art-grid" id="draftGrid">
+          <p class="empty" style="grid-column:1/-1;">Loading...</p>
+        </div>
       </div>
+
+      <!-- Posted Artworks (approved / live) -->
+      <div class="zone zone-posted" id="zonePosted"
+           ondragover="onDragOver(event,'posted')"
+           ondragleave="onDragLeave(event,'posted')"
+           ondrop="onDrop(event,'posted')">
+        <div class="zone-header">
+          <p class="zone-title">✅ Posted Artworks</p>
+          <span class="zone-hint">Live in shop</span>
+        </div>
+        <div class="art-grid" id="postedGrid">
+          <p class="empty" style="grid-column:1/-1;">Loading...</p>
+        </div>
+      </div>
+
     </div>
 
     <div class="submit-cta">
@@ -112,43 +185,134 @@
     </div>
   </div>
 
+  <div class="toast" id="toast"></div>
+
   <script>
     const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    let kidSession = null;
+    let dragId     = null;
+    let dragStatus = null;
+
     async function init() {
       const raw = localStorage.getItem('kidSession');
       if (!raw) { window.location.href = 'platform-index.html'; return; }
-      const kidSession = JSON.parse(raw);
+      kidSession = JSON.parse(raw);
       document.getElementById('kidNameDisplay').textContent = `${kidSession.kid_name}'s Art 🎨`;
+      loadArtworks();
+    }
 
+    async function loadArtworks() {
       const { data } = await sb.from('artworks')
         .select('*')
         .eq('kid_id', kidSession.kid_id)
+        .not('status', 'eq', 'sold')
         .order('created_at', { ascending: false });
 
-      const grid = document.getElementById('artGrid');
-      if (!data || !data.length) {
-        grid.innerHTML = '<p class="empty" style="grid-column:1/-1;">No art posted yet — submit your first piece! 🎨</p>';
+      const artworks = data || [];
+      const draft  = artworks.filter(a => a.status !== 'approved');
+      const posted = artworks.filter(a => a.status === 'approved');
+
+      const total = artworks.length;
+      const live  = posted.length;
+      document.getElementById('kidSubDisplay').textContent =
+        `${total} piece${total !== 1 ? 's' : ''} · ${live} live in shop`;
+
+      renderZone('draftGrid',  draft,  'draft');
+      renderZone('postedGrid', posted, 'posted');
+    }
+
+    function renderZone(gridId, items, zone) {
+      const grid = document.getElementById(gridId);
+      if (!items.length) {
+        const hint = zone === 'draft'
+          ? '📁 Submit art to see it here'
+          : '⬅️ Drag art here to submit for the shop';
+        grid.innerHTML = `<div class="drop-hint">${hint}</div>`;
         return;
       }
 
-      grid.innerHTML = data.map(a => {
-        const statusClass = a.status === 'approved' ? (a.on_hold ? 's-hold' : 's-approved') : a.status === 'pending' ? 's-pending' : 's-rejected';
-        const statusText  = a.status === 'approved' ? (a.on_hold ? '👀 On Hold' : '✅ Live') : a.status === 'pending' ? '⏳ Waiting for parent' : '❌ Not approved';
+      grid.innerHTML = items.map(a => {
+        const badgeClass = a.status === 'pending'  ? 's-pending'
+                         : a.status === 'rejected' ? 's-rejected'
+                         : a.status === 'recycled' ? 's-recycled'
+                         : 's-approved';
+        const badgeText  = a.status === 'pending'  ? '⏳ Waiting for parent'
+                         : a.status === 'rejected' ? '❌ Not approved'
+                         : a.status === 'recycled' ? '📁 Taken down'
+                         : (a.on_hold ? '👀 On Hold' : '✅ Live');
+        // Pending cards can't be dragged (already in review)
+        const noDrag = a.status === 'pending';
         return `
-          <div class="art-card">
+          <div class="art-card${noDrag ? ' no-drag' : ''}" id="card-${a.id}"
+               draggable="${!noDrag}"
+               ${!noDrag ? `ondragstart="onDragStart(event,'${a.id}','${a.status}')" ondragend="onDragEnd(event)"` : ''}>
             <img src="${a.image_url}" alt="${a.name}" />
             <div class="art-card-info">
               <p class="art-card-name">${a.name}</p>
               <p class="art-card-price">$${a.price}</p>
               <span class="art-ref">📌 #${a.id.slice(0,6).toUpperCase()}</span>
               <span class="art-date">📅 ${new Date(a.created_at).toLocaleDateString()}</span>
-              <span class="status-badge ${statusClass}">${statusText}</span>
+              <span class="status-badge ${badgeClass}">${badgeText}</span>
             </div>
           </div>`;
       }).join('');
+    }
+
+    /* ── Drag & Drop ── */
+    function onDragStart(e, id, status) {
+      dragId     = id;
+      dragStatus = status;
+      const card = document.getElementById('card-' + id);
+      setTimeout(() => card && card.classList.add('dragging'), 0);
+    }
+
+    function onDragEnd(e) {
+      if (dragId) {
+        const card = document.getElementById('card-' + dragId);
+        if (card) card.classList.remove('dragging');
+      }
+    }
+
+    function onDragOver(e, zone) {
+      e.preventDefault();
+      document.getElementById(zone === 'draft' ? 'zoneDraft' : 'zonePosted').classList.add('drag-over');
+    }
+
+    function onDragLeave(e, zone) {
+      const el = document.getElementById(zone === 'draft' ? 'zoneDraft' : 'zonePosted');
+      if (!el.contains(e.relatedTarget)) el.classList.remove('drag-over');
+    }
+
+    async function onDrop(e, zone) {
+      e.preventDefault();
+      document.getElementById('zoneDraft').classList.remove('drag-over');
+      document.getElementById('zonePosted').classList.remove('drag-over');
+      if (!dragId) return;
+
+      if (zone === 'posted' && dragStatus !== 'approved') {
+        // Re-submit for parent approval
+        const { error } = await sb.from('artworks').update({ status: 'pending' }).eq('id', dragId);
+        if (!error) { toast('⏳ Sent to parent for approval!'); loadArtworks(); }
+        else toast('❌ Could not submit: ' + error.message);
+
+      } else if (zone === 'draft' && dragStatus === 'approved') {
+        // Take down from shop
+        const { error } = await sb.from('artworks').update({ status: 'recycled', on_hold: false }).eq('id', dragId);
+        if (!error) { toast('📁 Art moved to My Art'); loadArtworks(); }
+        else toast('❌ Could not take down: ' + error.message);
+      }
+
+      dragId     = null;
+      dragStatus = null;
+    }
+
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg; el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2800);
     }
 
     init();

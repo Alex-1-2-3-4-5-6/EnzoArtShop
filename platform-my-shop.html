@@ -17,11 +17,6 @@
     }
     .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:#ff6b6b; flex:1; }
     .logo span { color:#a29bfe; }
-    @media(max-width:480px) {
-      header { padding:12px 16px; gap:8px; }
-      .logo  { font-size:1rem; }
-      .hbtn  { padding:7px 13px; font-size:0.8rem; }
-    }
     .hbtn {
       border:none; border-radius:50px; padding:9px 20px;
       font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer;
@@ -29,83 +24,115 @@
       display:inline-flex; align-items:center; gap:6px;
     }
     .hbtn:hover { transform:scale(1.04); }
-    .hbtn-gray   { background:#f0f0f0; color:#888; }
-    .hbtn-green  { background:linear-gradient(135deg,#ff6b6b,#feca57); color:white; }
+    .hbtn-gray  { background:#f0f0f0; color:#888; }
+    .hbtn-green { background:linear-gradient(135deg,#ff6b6b,#feca57); color:white; }
 
-    .container { max-width:900px; margin:0 auto; padding:32px 20px 80px; }
+    .container { max-width:1100px; margin:0 auto; padding:32px 20px 80px; }
 
     .page-title { font-family:'Fredoka One',cursive; font-size:2rem; color:#333; margin-bottom:4px; }
     .page-sub   { color:#aaa; font-size:0.9rem; margin-bottom:28px; }
 
-    /* Section panels */
-    .panel {
-      background:white; border-radius:22px; padding:24px 26px;
-      box-shadow:0 4px 16px rgba(0,0,0,0.06); margin-bottom:22px;
+    /* Two column art workspace */
+    .workspace {
+      display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:22px;
     }
-    .panel-header {
-      display:flex; align-items:center; justify-content:space-between;
-      margin-bottom:18px; gap:12px; flex-wrap:wrap;
-    }
-    .panel-title { font-family:'Fredoka One',cursive; font-size:1.15rem; color:#333; }
+    @media(max-width:720px) { .workspace { grid-template-columns:1fr; } }
 
-    /* Art grid */
-    .art-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:14px; }
-    .art-card { border-radius:16px; overflow:hidden; border:2px solid #eee; background:white; }
-    .art-card img { width:100%; aspect-ratio:1; object-fit:cover; background:#f0f0f0; display:block; }
-    .art-card-info { padding:10px 12px 12px; }
-    .art-card-name  { font-family:'Fredoka One',cursive; font-size:0.92rem; color:#333; margin-bottom:2px; }
-    .art-card-price { font-size:0.82rem; color:#ff6b6b; font-weight:700; margin-bottom:6px; }
+    .zone {
+      background:white; border-radius:22px; padding:22px 22px 18px;
+      box-shadow:0 4px 16px rgba(0,0,0,0.06);
+      min-height:260px; transition:box-shadow 0.2s, border-color 0.2s;
+      border:2.5px solid transparent;
+    }
+    .zone.drag-over {
+      box-shadow:0 0 0 3px #a29bfe44;
+      border-color:#a29bfe;
+    }
+    .zone-posted.drag-over {
+      box-shadow:0 0 0 3px #27ae6044;
+      border-color:#27ae60;
+    }
+
+    .zone-header {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:14px; flex-wrap:wrap; gap:8px;
+    }
+    .zone-title { font-family:'Fredoka One',cursive; font-size:1.1rem; color:#333; }
+    .zone-hint  { font-size:0.74rem; color:#bbb; }
+
+    /* Draft zone accent */
+    .zone-draft  { border-top:4px solid #a29bfe; }
+    .zone-posted { border-top:4px solid #27ae60; }
+
+    /* Art grid inside zone */
+    .art-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; }
+
+    .art-card {
+      border-radius:16px; overflow:hidden; border:2px solid #eee; background:white;
+      cursor:grab; transition:transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      user-select:none;
+    }
+    .art-card:active { cursor:grabbing; }
+    .art-card.dragging { opacity:0.45; transform:scale(0.97); box-shadow:0 8px 24px rgba(0,0,0,0.15); }
+    .art-card img { width:100%; aspect-ratio:1; object-fit:cover; background:#f0f0f0; display:block; pointer-events:none; }
+    .art-card-info { padding:9px 10px 10px; }
+    .art-card-name  { font-family:'Fredoka One',cursive; font-size:0.88rem; color:#333; margin-bottom:2px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .art-card-price { font-size:0.8rem; color:#ff6b6b; font-weight:700; margin-bottom:4px; }
+    .art-ref   { font-size:0.65rem; color:#bbb; font-weight:700; letter-spacing:0.3px; margin-bottom:4px; display:block; }
+    .art-posted{ font-size:0.65rem; color:#ccc; margin-bottom:5px; display:block; }
 
     .status-badge {
-      display:inline-block; border-radius:50px; padding:3px 10px;
-      font-size:0.72rem; font-weight:700; margin-bottom:8px;
+      display:inline-block; border-radius:50px; padding:2px 9px;
+      font-size:0.68rem; font-weight:700; margin-bottom:7px;
     }
     .s-approved { background:#d4edda; color:#155724; }
     .s-pending  { background:#fff3cd; color:#856404; }
     .s-rejected { background:#ffd6d6; color:#c0392b; }
-    .s-hold     { background:#fff0e0; color:#e67e22; }
+    .s-recycled { background:#f0f0f0; color:#888; }
 
-    .take-down-btn {
-      display:block; width:100%; border:none; border-radius:50px; padding:7px;
+    .delete-btn {
+      display:block; width:100%; border:none; border-radius:50px; padding:6px;
       background:#ffd6d6; color:#c0392b; font-family:'Fredoka One',cursive;
-      font-size:0.8rem; cursor:pointer; transition:background 0.15s;
+      font-size:0.75rem; cursor:pointer; transition:background 0.15s;
     }
-    .take-down-btn:hover { background:#ffbcbc; }
+    .delete-btn:hover { background:#ffbcbc; }
 
-    /* Sale history rows */
+    /* Drop hint shown when zone is empty */
+    .drop-hint {
+      color:#ccc; font-family:'Fredoka One',cursive; font-size:0.9rem;
+      text-align:center; padding:28px 12px; border:2px dashed #e8e8e8;
+      border-radius:16px; pointer-events:none;
+      grid-column:1/-1;
+    }
+
+    /* Drag instruction banner */
+    .drag-tip {
+      background:#f0f0ff; border-radius:14px; padding:11px 18px;
+      font-size:0.82rem; color:#a29bfe; margin-bottom:20px;
+      display:flex; align-items:center; gap:8px;
+    }
+
+    /* Sales panel */
+    .panel {
+      background:white; border-radius:22px; padding:24px 26px;
+      box-shadow:0 4px 16px rgba(0,0,0,0.06); margin-bottom:22px;
+    }
+    .panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+    .panel-title  { font-family:'Fredoka One',cursive; font-size:1.15rem; color:#333; }
+
     .sale-row {
       display:flex; align-items:center; gap:14px;
       padding:14px 0; border-bottom:1px solid #f0f0f0;
     }
     .sale-row:last-child { border-bottom:none; padding-bottom:0; }
-    .sale-row img {
-      width:54px; height:54px; border-radius:12px; object-fit:cover;
-      background:#f0f0f0; flex-shrink:0;
-    }
-    .sale-info { flex:1; min-width:0; }
-    .sale-name { font-family:'Fredoka One',cursive; font-size:0.95rem; color:#333; }
-    .sale-meta { font-size:0.8rem; color:#aaa; margin-top:2px; }
+    .sale-row img { width:54px; height:54px; border-radius:12px; object-fit:cover; background:#f0f0f0; flex-shrink:0; }
+    .sale-info   { flex:1; min-width:0; }
+    .sale-name   { font-family:'Fredoka One',cursive; font-size:0.95rem; color:#333; }
+    .sale-meta   { font-size:0.8rem; color:#aaa; margin-top:2px; }
     .sale-amount { font-family:'Fredoka One',cursive; font-size:1.05rem; color:#27ae60; white-space:nowrap; }
 
-    .empty { color:#ccc; font-family:'Fredoka One',cursive; font-size:0.95rem; padding:12px 0; text-align:center; }
-
-    .art-ref {
-      font-size:0.68rem; color:#bbb; font-weight:700; letter-spacing:0.4px;
-      margin-bottom:6px; display:block;
-    }
-    .art-posted { font-size:0.68rem; color:#ccc; margin-bottom:6px; display:block; }
-
-    /* ── Mobile ── */
-    @media(max-width:600px) {
-      header { padding:12px 16px; gap:8px; }
-      .hbtn  { padding:7px 13px; font-size:0.8rem; }
-      .container { padding:20px 14px 60px; }
-      .art-grid { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
-      .panel { padding:18px 16px; }
-    }
-    @media(max-width:380px) {
-      .art-grid { grid-template-columns:repeat(2,1fr); }
-    }
+    .empty { color:#ccc; font-family:'Fredoka One',cursive; font-size:0.9rem; padding:10px 0; text-align:center; }
 
     /* Toast */
     .toast {
@@ -115,28 +142,66 @@
       opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:999;
     }
     .toast.show { opacity:1; }
+
+    @media(max-width:600px) {
+      header { padding:12px 16px; gap:8px; }
+      .hbtn  { padding:7px 13px; font-size:0.8rem; }
+      .container { padding:20px 14px 60px; }
+      .panel { padding:18px 16px; }
+      .art-grid { grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:9px; }
+    }
+    @media(max-width:380px) {
+      .art-grid { grid-template-columns:repeat(2,1fr); }
+    }
   </style>
 </head>
 <body>
 
   <header>
     <div class="logo">Little He<span>art</span>works</div>
-    <a href="platform-submit.html" class="hbtn hbtn-green">🎨 Post New Art</a>
+    <a href="platform-submit.html" class="hbtn hbtn-green">🎨 Upload Art</a>
     <a href="platform-shop.html"   class="hbtn hbtn-gray">← Back to Shop</a>
   </header>
 
   <div class="container">
     <p class="page-title" id="pageTitle">🖼️ My Shop</p>
-    <p class="page-sub">Your posted artworks and sales history</p>
+    <p class="page-sub">Manage your artworks and see your sales</p>
 
-    <!-- Posted artworks -->
-    <div class="panel">
-      <div class="panel-header">
-        <p class="panel-title">🖼️ Posted Artworks</p>
+    <div class="drag-tip">
+      💡 <span>Drag art into <strong>Posted Artworks</strong> to publish it to the shop, or drag it back to <strong>My Art</strong> to unpublish.</span>
+    </div>
+
+    <!-- Two-zone workspace -->
+    <div class="workspace">
+
+      <!-- My Art (drafts / unpublished) -->
+      <div class="zone zone-draft" id="zoneDraft"
+           ondragover="onDragOver(event,'draft')"
+           ondragleave="onDragLeave(event,'draft')"
+           ondrop="onDrop(event,'draft')">
+        <div class="zone-header">
+          <p class="zone-title">🎨 My Art</p>
+          <span class="zone-hint">Private · not in shop</span>
+        </div>
+        <div class="art-grid" id="draftGrid">
+          <p class="empty" style="grid-column:1/-1;">Loading...</p>
+        </div>
       </div>
-      <div class="art-grid" id="artGrid">
-        <p class="empty" style="grid-column:1/-1;">Loading...</p>
+
+      <!-- Posted Artworks (approved / live) -->
+      <div class="zone zone-posted" id="zonePosted"
+           ondragover="onDragOver(event,'posted')"
+           ondragleave="onDragLeave(event,'posted')"
+           ondrop="onDrop(event,'posted')">
+        <div class="zone-header">
+          <p class="zone-title">✅ Posted Artworks</p>
+          <span class="zone-hint">Live in shop</span>
+        </div>
+        <div class="art-grid" id="postedGrid">
+          <p class="empty" style="grid-column:1/-1;">Loading...</p>
+        </div>
       </div>
+
     </div>
 
     <!-- Sale history -->
@@ -156,12 +221,15 @@
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let currentUser = null;
 
+    // Drag state
+    let dragId     = null;
+    let dragStatus = null;
+
     async function init() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'platform-login.html'; return; }
       currentUser = user;
-      const meta = user.user_metadata || {};
-      const first = (meta.full_name || 'My').split(' ')[0];
+      const first = ((user.user_metadata || {}).full_name || 'My').split(' ')[0];
       document.getElementById('pageTitle').textContent = `🖼️ ${first}'s Shop`;
       loadArtworks();
       loadSales();
@@ -171,50 +239,117 @@
       const { data } = await sb.from('artworks')
         .select('*, kids(name)')
         .eq('parent_id', currentUser.id)
+        .not('status', 'eq', 'sold')
         .order('created_at', { ascending: false });
       const artworks = data || [];
-      const grid = document.getElementById('artGrid');
-      if (!artworks.length) {
-        grid.innerHTML = '<p class="empty" style="grid-column:1/-1;">No artworks posted yet. Post your first one!</p>';
+
+      const draft  = artworks.filter(a => a.status !== 'approved');
+      const posted = artworks.filter(a => a.status === 'approved');
+
+      renderZone('draftGrid',  draft,  'draft');
+      renderZone('postedGrid', posted, 'posted');
+    }
+
+    function renderZone(gridId, items, zone) {
+      const grid = document.getElementById(gridId);
+      if (!items.length) {
+        const hint = zone === 'draft'
+          ? '📁 Upload art to see it here'
+          : '⬅️ Drag art here to publish it';
+        grid.innerHTML = `<div class="drop-hint">${hint}</div>`;
         return;
       }
-      grid.innerHTML = artworks.map(a => {
-        const statusClass = a.status === 'approved' ? 's-approved' : a.status === 'pending' ? 's-pending' : 's-rejected';
-        const statusText  = a.status === 'approved' ? (a.on_hold ? '👀 On Hold' : '✅ Live') : a.status === 'pending' ? '⏳ Pending' : '❌ Rejected';
-        const holdClass   = a.on_hold ? 's-hold' : statusClass;
+      grid.innerHTML = items.map(a => {
+        const badgeClass = a.status === 'pending'  ? 's-pending'
+                         : a.status === 'rejected' ? 's-rejected'
+                         : a.status === 'recycled' ? 's-recycled'
+                         : 's-approved';
+        const badgeText  = a.status === 'pending'  ? '⏳ Pending Review'
+                         : a.status === 'rejected' ? '❌ Rejected'
+                         : a.status === 'recycled' ? '📁 Unpublished'
+                         : (a.on_hold ? '👀 On Hold' : '✅ Live');
+        const kidLabel   = a.kids?.name ? `<p style="font-size:0.68rem;color:#a29bfe;margin-bottom:2px;">🧒 ${a.kids.name}</p>` : '';
+        const deleteBtn  = zone === 'draft'
+          ? `<button class="delete-btn" onclick="event.stopPropagation();deleteArt('${a.id}','${a.name.replace(/'/g,"\\'")}')">🗑️ Delete</button>`
+          : '';
         return `
-          <div class="art-card">
+          <div class="art-card" id="card-${a.id}"
+               draggable="true"
+               ondragstart="onDragStart(event,'${a.id}','${a.status}')"
+               ondragend="onDragEnd(event)">
             <img src="${a.image_url}" alt="${a.name}" onclick="location.href='platform-art.html?id=${a.id}'" style="cursor:pointer;" />
             <div class="art-card-info">
               <p class="art-card-name">${a.name}</p>
-              ${a.kids?.name ? `<p style="font-size:0.72rem;color:#a29bfe;margin-bottom:3px;">🧒 ${a.kids.name}</p>` : ''}
+              ${kidLabel}
               <p class="art-card-price">$${a.price}</p>
               <span class="art-ref">📌 #${a.id.slice(0,6).toUpperCase()}</span>
               <span class="art-posted">📅 ${new Date(a.created_at).toLocaleDateString()}</span>
-              <span class="status-badge ${holdClass}">${statusText}</span>
-              ${a.status === 'rejected'
-                ? `<button class="take-down-btn" style="background:#ffd6d6;color:#c0392b;" onclick="deleteArt('${a.id}','${a.name}')">🗑️ Delete</button>`
-                : `<button class="take-down-btn" onclick="takeDown('${a.id}','${a.name}')">Take Down</button>`
-              }
+              <span class="status-badge ${badgeClass}">${badgeText}</span>
+              ${deleteBtn}
             </div>
           </div>`;
       }).join('');
     }
 
-    async function takeDown(id, name) {
-      if (!confirm(`Remove "${name}" from the shop? This can't be undone.`)) return;
-      await sb.from('artworks').update({ status: 'recycled' }).eq('id', id);
-      toast(`"${name}" taken down`);
-      loadArtworks();
+    /* ── Drag & Drop ── */
+    function onDragStart(e, id, status) {
+      dragId     = id;
+      dragStatus = status;
+      const card = document.getElementById('card-' + id);
+      setTimeout(() => card && card.classList.add('dragging'), 0);
     }
 
+    function onDragEnd(e) {
+      if (dragId) {
+        const card = document.getElementById('card-' + dragId);
+        if (card) card.classList.remove('dragging');
+      }
+    }
+
+    function onDragOver(e, zone) {
+      e.preventDefault();
+      const el = document.getElementById(zone === 'draft' ? 'zoneDraft' : 'zonePosted');
+      el.classList.add('drag-over');
+    }
+
+    function onDragLeave(e, zone) {
+      const el = document.getElementById(zone === 'draft' ? 'zoneDraft' : 'zonePosted');
+      // Only remove if we left the zone itself (not a child)
+      if (!el.contains(e.relatedTarget)) el.classList.remove('drag-over');
+    }
+
+    async function onDrop(e, zone) {
+      e.preventDefault();
+      const draftZone  = document.getElementById('zoneDraft');
+      const postedZone = document.getElementById('zonePosted');
+      draftZone.classList.remove('drag-over');
+      postedZone.classList.remove('drag-over');
+
+      if (!dragId) return;
+
+      if (zone === 'posted' && dragStatus !== 'approved') {
+        const { error } = await sb.from('artworks').update({ status: 'approved' }).eq('id', dragId);
+        if (!error) { toast('🎉 Art published to shop!'); loadArtworks(); }
+        else toast('❌ Could not publish: ' + error.message);
+      } else if (zone === 'draft' && dragStatus === 'approved') {
+        const { error } = await sb.from('artworks').update({ status: 'recycled', on_hold: false }).eq('id', dragId);
+        if (!error) { toast('📁 Art moved to My Art'); loadArtworks(); }
+        else toast('❌ Could not unpublish: ' + error.message);
+      }
+
+      dragId     = null;
+      dragStatus = null;
+    }
+
+    /* ── Delete ── */
     async function deleteArt(id, name) {
       if (!confirm(`Permanently delete "${name}"? This can't be undone.`)) return;
-      await sb.from('artworks').delete().eq('id', id);
-      toast(`"${name}" deleted`);
-      loadArtworks();
+      const { error } = await sb.from('artworks').delete().eq('id', id);
+      if (!error) { toast(`"${name}" deleted`); loadArtworks(); }
+      else toast('❌ Delete failed: ' + error.message);
     }
 
+    /* ── Sales History ── */
     async function loadSales() {
       const { data } = await sb.from('purchases')
         .select('*')
@@ -240,7 +375,7 @@
               <img src="${p.artwork_image_url||''}" onerror="this.style.display='none'" />
               <div class="sale-info">
                 <p class="sale-name">${p.artwork_name}</p>
-                <p class="sale-meta">Bought by ${p.buyer_name}</p>
+                <p class="sale-meta">Bought by ${p.buyer_name || 'someone'}</p>
                 <p class="sale-meta">${date}${parseFloat(p.donation||0) > 0 ? ` · +$${parseFloat(p.donation).toFixed(2)} donation` : ''}</p>
               </div>
               <p class="sale-amount">$${amount}</p>
