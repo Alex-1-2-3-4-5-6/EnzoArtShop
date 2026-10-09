@@ -435,37 +435,29 @@
       btn.textContent = 'Sending...';
       msg.textContent = '';
 
-      const insertData = {
-        artwork_id:     art.id,
-        buyer_email:    email,
-        artwork_name:   art.name,
-        artwork_price:  art.price,
-        status:         'pending',
-        seller_confirmed: false,
-        buyer_confirmed:  false
-      };
-      if (donation > 0) insertData.donation_amount = donation;
+      const { data, error } = await sb.rpc('submit_purchase', {
+        p_artwork_id:  art.id,
+        p_buyer_email: email,
+        p_buyer_name:  currentUser?.user_metadata?.full_name || '',
+        p_donation:    donation
+      });
 
-      const { error: purchaseErr } = await sb.from('purchases').insert(insertData);
-      // Ignore trigger-related errors (e.g. pg_net not enabled) — the row still saved
-      const isTriggerErr = purchaseErr && (purchaseErr.message.includes('net') || purchaseErr.code === 'P0001');
-      if (purchaseErr && !isTriggerErr) {
+      if (error || data?.error) {
         msg.style.color = '#e74c3c';
-        msg.textContent = '❌ ' + purchaseErr.message;
+        msg.textContent = '❌ ' + (data?.error || error?.message);
         btn.disabled = false;
         btn.textContent = '💌 Send Request to Seller';
         return;
       }
 
-      await sb.from('artworks').update({ on_hold: true }).eq('id', art.id);
-
-      // Seller is notified via their Supabase inbox (platform-inbox.html)
-
       msg.style.color = '#27ae60';
-      msg.innerHTML = `<strong>✅ Request sent!</strong><br><span style="color:#aaa;">The seller has been notified and will reach out at <strong>${email}</strong> to arrange payment and pickup.</span>`;
+      msg.innerHTML = `<strong>✅ Sent!</strong><br><span style="color:#aaa;">The seller has been notified and will reach out at <strong>${email}</strong>.</span>`;
       btn.style.display = 'none';
       document.getElementById('buyerEmail').disabled = true;
       if (document.getElementById('donationAmt')) document.getElementById('donationAmt').disabled = true;
+
+      // Art is sold — reload after short delay so it disappears
+      setTimeout(() => window.location.href = 'platform-shop.html', 3000);
     }
 
     init();
