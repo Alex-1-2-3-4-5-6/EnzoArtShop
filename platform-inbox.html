@@ -241,46 +241,52 @@
     }
 
     async function loadKidRequests() {
-      // Purchases where the artwork belongs to this parent but the buyer is a kid request
-      // These are identified by purchases where seller_id = currentUser.id and buyer_name contains a kid reference
-      // or we look for kid_request flag (using on_hold artworks with pending purchases from kids)
-      // Simplest: show purchases where seller_id = user.id and status = 'pending' that were created by the request_art_as_kid flow
-      // We check if the artwork has a kid_id set (kid's own art bought by someone is different)
-      const { data } = await sb.from('purchases')
-        .select('*, artworks!artwork_id(kid_id,name,image_url)')
-        .eq('seller_id', currentUser.id)
+      // art_requests where kid asked parent to buy something
+      const { data } = await sb.from('art_requests')
+        .select('*, artworks(id,name,image_url,price)')
+        .eq('parent_id', currentUser.id)
         .eq('status', 'pending')
-        .not('artworks.kid_id', 'is', null);
+        .order('requested_at', { ascending: false });
       const panel = document.getElementById('kidRequestsPanel');
       const el    = document.getElementById('kidRequestsList');
       const dismissed = getDismissed();
-      const visible = (data || []).filter(p => !dismissed.has('kr-' + p.id));
+      const visible = (data || []).filter(r => !dismissed.has('kr-' + r.id));
       if (!visible.length) return;
       panel.style.display = 'block';
-      el.innerHTML = visible.map(p => `
-        <div class="notif-row" id="kr-${p.id}" style="cursor:pointer;" onclick="location.href='platform-art.html?id=${p.artwork_id}'">
-          <img class="notif-img" src="${p.artworks?.image_url||p.artwork_image_url||''}" onerror="this.style.display='none'" />
+      el.innerHTML = visible.map(r => `
+        <div class="notif-row" id="kr-${r.id}" style="cursor:pointer;" onclick="location.href='platform-art.html?id=${r.artwork_id}'">
+          <img class="notif-img" src="${r.artworks?.image_url||''}" onerror="this.style.display='none'" />
           <div class="notif-body">
-            <p class="notif-title">${p.artwork_name}</p>
-            <p class="notif-meta">A kid wants to buy this for <strong>$${(parseFloat(p.artwork_price||0)+parseFloat(p.donation||0)).toFixed(2)}</strong></p>
+            <p class="notif-title">${r.artworks?.name || 'Artwork'}</p>
+            <p class="notif-meta">A kid wants to buy this for <strong>$${r.artworks?.price || '?'}</strong></p>
             <div class="btn-row">
-              <button class="action-btn btn-green" onclick="event.stopPropagation();confirmSent('${p.id}')">📦 Approved — Sent!</button>
-              <button class="action-btn btn-gray"  onclick="event.stopPropagation();declinePurchase('${p.id}','${p.artwork_id}')">✕ Decline</button>
+              <a class="action-btn btn-green" href="platform-art.html?id=${r.artwork_id}" onclick="event.stopPropagation()">🛒 Go Buy It</a>
+              <button class="action-btn btn-gray" onclick="event.stopPropagation();declineKidRequest('${r.id}')">✕ Decline</button>
             </div>
           </div>
-          <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('kr-${p.id}',this.closest('.notif-row'),document.getElementById('kidRequestsList'),'kidRequestsPanel','')">✕</button>
+          <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('kr-${r.id}',this.closest('.notif-row'),document.getElementById('kidRequestsList'),'kidRequestsPanel','')">✕</button>
         </div>`).join('');
+    }
+
+    async function declineKidRequest(requestId) {
+      await sb.from('art_requests').update({ status: 'rejected' }).eq('id', requestId);
+      toast('Request declined.');
+      document.getElementById(`kr-${requestId}`)?.remove();
+      if (!document.querySelector('#kidRequestsList .notif-row')) {
+        document.getElementById('kidRequestsPanel').style.display = 'none';
+      }
     }
 
     async function loadPurchases() {
       const { data } = await sb.from('purchases')
-        .select('*')
+        .select('*, artworks!artwork_id(kid_id)')
         .eq('seller_id', currentUser.id)
         .eq('status', 'pending')
         .order('purchased_at', { ascending: false });
       const el = document.getElementById('purchaseList');
       const dismissed = getDismissed();
-      const visible = (data || []).filter(p => !dismissed.has('pr-' + p.id));
+      // Exclude kid-art purchases — those show in the Kid's Buy Requests panel
+      const visible = (data || []).filter(p => !p.artworks?.kid_id && !dismissed.has('pr-' + p.id));
       if (!visible.length) { el.innerHTML = '<p class="empty">No purchase requests yet.</p>'; return; }
       el.innerHTML = visible.map(p => `
         <div class="notif-row" id="pr-${p.id}" style="cursor:pointer;" onclick="location.href='platform-art.html?id=${p.artwork_id}'">
