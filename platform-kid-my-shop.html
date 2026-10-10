@@ -93,6 +93,17 @@
     .s-pending  { background:#fff3cd; color:#856404; }
     .s-rejected { background:#ffd6d6; color:#c0392b; }
     .s-recycled { background:#f0f0f0; color:#888; }
+    .s-hold     { background:#fff3cd; color:#b7791f; }
+
+    .delete-btn {
+      display:block; width:100%; border:none; border-radius:50px; padding:5px;
+      background:#ffd6d6; color:#c0392b; font-family:'Fredoka One',cursive;
+      font-size:0.72rem; cursor:pointer; transition:background 0.15s; margin-top:4px;
+    }
+    .delete-btn:hover { background:#ffbcbc; }
+
+    .zone-requested { border-top:4px solid #feca57; background:white; border-radius:22px;
+      padding:20px 20px 16px; box-shadow:0 4px 14px rgba(0,0,0,0.06); margin-bottom:22px; }
 
     .drop-hint {
       color:#ccc; font-family:'Fredoka One',cursive; font-size:0.85rem;
@@ -180,6 +191,15 @@
 
     </div>
 
+    <!-- Requested Art (on_hold) — full width, no drop target -->
+    <div class="zone-requested" id="zoneRequested" style="display:none;">
+      <div class="zone-header">
+        <p class="zone-title">🛒 Requested Art</p>
+        <span class="zone-hint">Someone wants to buy this · drag to relist or remove</span>
+      </div>
+      <div class="art-grid" id="requestedGrid"></div>
+    </div>
+
     <div class="submit-cta">
       <a href="platform-kid-submit.html">✏️ Submit New Art</a>
     </div>
@@ -211,26 +231,27 @@
         .not('status', 'eq', 'sold')
         .order('created_at', { ascending: false });
 
-      const artworks = data || [];
-      const draft  = artworks.filter(a => a.status !== 'approved');
-      const posted = artworks.filter(a => a.status === 'approved');
+      const artworks  = data || [];
+      const requested = artworks.filter(a => a.status === 'approved' && a.on_hold);
+      const posted    = artworks.filter(a => a.status === 'approved' && !a.on_hold);
+      const draft     = artworks.filter(a => a.status !== 'approved');
 
       const total = artworks.length;
       const live  = posted.length;
       document.getElementById('kidSubDisplay').textContent =
         `${total} piece${total !== 1 ? 's' : ''} · ${live} live in shop`;
 
-      renderZone('draftGrid',  draft,  'draft');
-      renderZone('postedGrid', posted, 'posted');
+      renderZone('draftGrid',     draft,     'draft');
+      renderZone('postedGrid',    posted,    'posted');
+      renderZone('requestedGrid', requested, 'requested');
+      document.getElementById('zoneRequested').style.display = requested.length ? 'block' : 'none';
     }
 
     function renderZone(gridId, items, zone) {
       const grid = document.getElementById(gridId);
       if (!items.length) {
-        const hint = zone === 'draft'
-          ? '📁 Submit art to see it here'
-          : '⬅️ Drag art here to submit for the shop';
-        grid.innerHTML = `<div class="drop-hint">${hint}</div>`;
+        const hints = { draft:'📁 Submit art to see it here', posted:'⬅️ Drag art here to submit for the shop', requested:'' };
+        grid.innerHTML = `<div class="drop-hint">${hints[zone]}</div>`;
         return;
       }
 
@@ -242,23 +263,35 @@
         const badgeText  = a.status === 'pending'  ? '⏳ Waiting for parent'
                          : a.status === 'rejected' ? '❌ Not approved'
                          : a.status === 'recycled' ? '📁 Taken down'
-                         : (a.on_hold ? '👀 On Hold' : '✅ Live');
-        // Pending cards can't be dragged (already in review)
-        const noDrag = a.status === 'pending';
+                         : '✅ Live';
+        // Pending cards can't be dragged; requested use 'on_hold' as drag status
+        const noDrag     = a.status === 'pending';
+        const dragSt     = zone === 'requested' ? 'on_hold' : a.status;
+        const deleteBtn  = zone === 'requested'
+          ? `<button class="delete-btn" onclick="event.stopPropagation();deleteArt('${a.id}','${a.name.replace(/'/g,"\\'")}')">🗑️ Delete</button>`
+          : '';
         return `
           <div class="art-card${noDrag ? ' no-drag' : ''}" id="card-${a.id}"
                draggable="${!noDrag}"
-               ${!noDrag ? `ondragstart="onDragStart(event,'${a.id}','${a.status}')" ondragend="onDragEnd(event)"` : ''}>
+               ${!noDrag ? `ondragstart="onDragStart(event,'${a.id}','${dragSt}')" ondragend="onDragEnd(event)"` : ''}>
             <img src="${a.image_url}" alt="${a.name}" />
             <div class="art-card-info">
               <p class="art-card-name">${a.name}</p>
               <p class="art-card-price">$${a.price}</p>
               <span class="art-ref">📌 #${a.id.slice(0,6).toUpperCase()}</span>
               <span class="art-date">📅 ${new Date(a.created_at).toLocaleDateString()}</span>
-              <span class="status-badge ${badgeClass}">${badgeText}</span>
+              <span class="status-badge ${zone === 'requested' ? 's-hold' : badgeClass}">${zone === 'requested' ? '🛒 Requested' : badgeText}</span>
+              ${deleteBtn}
             </div>
           </div>`;
       }).join('');
+    }
+
+    async function deleteArt(id, name) {
+      if (!confirm(`Permanently delete "${name}"? This can't be undone.`)) return;
+      const { error } = await sb.from('artworks').delete().eq('id', id);
+      if (!error) { toast(`"${name}" deleted`); loadArtworks(); }
+      else toast('❌ Delete failed: ' + error.message);
     }
 
     /* ── Drag & Drop ── */
@@ -278,11 +311,14 @@
 
     function onDragOver(e, zone) {
       e.preventDefault();
-      document.getElementById(zone === 'draft' ? 'zoneDraft' : 'zonePosted').classList.add('drag-over');
+      const elId = zone === 'draft' ? 'zoneDraft' : zone === 'posted' ? 'zonePosted' : null;
+      if (elId) document.getElementById(elId).classList.add('drag-over');
     }
 
     function onDragLeave(e, zone) {
-      const el = document.getElementById(zone === 'draft' ? 'zoneDraft' : 'zonePosted');
+      const elId = zone === 'draft' ? 'zoneDraft' : zone === 'posted' ? 'zonePosted' : null;
+      if (!elId) return;
+      const el = document.getElementById(elId);
       if (!el.contains(e.relatedTarget)) el.classList.remove('drag-over');
     }
 
@@ -292,17 +328,28 @@
       document.getElementById('zonePosted').classList.remove('drag-over');
       if (!dragId) return;
 
-      if (zone === 'posted' && dragStatus !== 'approved') {
-        // Re-submit for parent approval
-        const { error } = await sb.from('artworks').update({ status: 'pending' }).eq('id', dragId);
-        if (!error) { toast('⏳ Sent to parent for approval!'); loadArtworks(); }
-        else toast('❌ Could not submit: ' + error.message);
+      let update = null, msg = null;
 
-      } else if (zone === 'draft' && dragStatus === 'approved') {
-        // Take down from shop
-        const { error } = await sb.from('artworks').update({ status: 'recycled', on_hold: false }).eq('id', dragId);
-        if (!error) { toast('📁 Art moved to My Art'); loadArtworks(); }
-        else toast('❌ Could not take down: ' + error.message);
+      if (zone === 'posted') {
+        if (dragStatus === 'on_hold') {
+          update = { on_hold: false };
+          msg = '✅ Art re-listed in shop!';
+        } else if (dragStatus !== 'approved') {
+          update = { status: 'pending' };
+          msg = '⏳ Sent to parent for approval!';
+        }
+      } else if (zone === 'draft') {
+        if (dragStatus === 'approved' || dragStatus === 'on_hold') {
+          update = { status: 'recycled', on_hold: false };
+          msg = '📁 Art moved to My Art';
+        }
+      }
+      // zone === 'requested' is not a drop target — ignore
+
+      if (update) {
+        const { error } = await sb.from('artworks').update(update).eq('id', dragId);
+        if (!error) { toast(msg); loadArtworks(); }
+        else toast('❌ ' + error.message);
       }
 
       dragId     = null;
