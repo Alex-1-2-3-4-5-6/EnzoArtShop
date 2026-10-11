@@ -101,6 +101,16 @@
     }
     .delete-btn:hover { background:#ffbcbc; }
 
+    .move-btn {
+      display:block; width:100%; border:none; border-radius:50px; padding:6px;
+      font-family:'Fredoka One',cursive; font-size:0.75rem; cursor:pointer;
+      transition:background 0.15s; margin-bottom:5px;
+    }
+    .move-btn-post   { background:#d4edda; color:#155724; }
+    .move-btn-post:hover { background:#c3e6cb; }
+    .move-btn-unpost { background:#f0f0f0; color:#555; }
+    .move-btn-unpost:hover { background:#e0e0e0; }
+
     /* Drop hint shown when zone is empty */
     .drop-hint {
       color:#ccc; font-family:'Fredoka One',cursive; font-size:0.9rem;
@@ -171,7 +181,7 @@
     <p class="page-sub">Manage your artworks and see your sales</p>
 
     <div class="drag-tip">
-      💡 <span>Drag art into <strong>Posted Artworks</strong> to publish it to the shop, or drag it back to <strong>My Art</strong> to unpublish.</span>
+      💡 <span>Drag art between sections, or use the buttons on each card to move them.</span>
     </div>
 
     <!-- Two-zone workspace -->
@@ -285,16 +295,25 @@
                          : a.status === 'rejected' ? '❌ Rejected'
                          : a.status === 'recycled' ? '📁 Unpublished'
                          : '✅ Live';
-        const kidLabel   = a.kids?.name ? `<p style="font-size:0.68rem;color:#a29bfe;margin-bottom:2px;">🧒 ${a.kids.name}</p>` : '';
-        const deleteBtn  = (zone === 'draft' || zone === 'requested')
-          ? `<button class="delete-btn" onclick="event.stopPropagation();deleteArt('${a.id}','${a.name.replace(/'/g,"\\'")}')">🗑️ Delete</button>`
+        const kidLabel  = a.kids?.name ? `<p style="font-size:0.68rem;color:#a29bfe;margin-bottom:2px;">🧒 ${a.kids.name}</p>` : '';
+        const dragSt    = zone === 'requested' ? 'on_hold' : a.status;
+        const safeId    = a.id;
+        const safeName  = a.name.replace(/'/g,"\\'");
+        const moveBtn   = zone === 'draft'
+          ? `<button class="move-btn move-btn-post" onclick="event.stopPropagation();moveArt('${safeId}','posted')">✅ Post to Shop</button>`
+          : zone === 'posted'
+          ? `<button class="move-btn move-btn-unpost" onclick="event.stopPropagation();moveArt('${safeId}','draft')">📁 Move to My Art</button>`
+          : zone === 'requested'
+          ? `<button class="move-btn move-btn-post" onclick="event.stopPropagation();moveArt('${safeId}','posted')">✅ Re-list</button>
+             <button class="move-btn move-btn-unpost" onclick="event.stopPropagation();moveArt('${safeId}','draft')">📁 Move to My Art</button>`
           : '';
-        // Encode status: requested items are 'approved+on_hold'
-        const dragStatus = zone === 'requested' ? 'on_hold' : a.status;
+        const deleteBtn = (zone === 'draft' || zone === 'requested')
+          ? `<button class="delete-btn" onclick="event.stopPropagation();deleteArt('${safeId}','${safeName}')">🗑️ Delete</button>`
+          : '';
         return `
           <div class="art-card" id="card-${a.id}"
                draggable="true"
-               ondragstart="onDragStart(event,'${a.id}','${dragStatus}')"
+               ondragstart="onDragStart(event,'${a.id}','${dragSt}')"
                ondragend="onDragEnd(event)">
             <img src="${a.image_url}" alt="${a.name}" onclick="location.href='platform-art.html?id=${a.id}'" style="cursor:pointer;" />
             <div class="art-card-info">
@@ -304,6 +323,7 @@
               <span class="art-ref">📌 #${a.id.slice(0,6).toUpperCase()}</span>
               <span class="art-posted">📅 ${new Date(a.created_at).toLocaleDateString()}</span>
               <span class="status-badge ${zone === 'requested' ? 's-hold' : badgeClass}">${zone === 'requested' ? '🛒 Requested' : badgeText}</span>
+              ${moveBtn}
               ${deleteBtn}
             </div>
           </div>`;
@@ -371,6 +391,24 @@
 
       dragId     = null;
       dragStatus = null;
+    }
+
+    /* ── Move (button-based, works on mobile) ── */
+    async function moveArt(id, target) {
+      let update = null, msg = null;
+      const card = document.getElementById('card-' + id);
+      const isOnHold = card?.dataset.onhold === 'true';
+      if (target === 'posted') {
+        update = { status: 'approved', on_hold: false };
+        msg = '✅ Art published to shop!';
+      } else if (target === 'draft') {
+        update = { status: 'recycled', on_hold: false };
+        msg = '📁 Art moved to My Art';
+      }
+      if (!update) return;
+      const { error } = await sb.from('artworks').update(update).eq('id', id);
+      if (!error) { toast(msg); loadArtworks(); }
+      else toast('❌ ' + error.message);
     }
 
     /* ── Delete ── */
