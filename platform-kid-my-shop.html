@@ -267,7 +267,7 @@
         // Pending cards can't be dragged; requested use 'on_hold' as drag status
         const noDrag     = a.status === 'pending';
         const dragSt     = zone === 'requested' ? 'on_hold' : a.status;
-        const deleteBtn  = zone === 'requested'
+        const deleteBtn  = (zone === 'draft' || zone === 'requested')
           ? `<button class="delete-btn" onclick="event.stopPropagation();deleteArt('${a.id}','${a.name.replace(/'/g,"\\'")}')">🗑️ Delete</button>`
           : '';
         return `
