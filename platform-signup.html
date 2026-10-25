@@ -193,7 +193,7 @@
 
     function showMsg(type, text) {
       const el = document.getElementById('msg');
-      el.className = 'msg ' + type; el.textContent = text; el.style.display = 'block';
+      el.className = 'msg ' + type; el.innerHTML = text; el.style.display = 'block';
     }
 
     async function signup() {
@@ -223,13 +223,21 @@
 
       btn.disabled = true; btn.textContent = 'Creating account...';
 
-      const { error } = await sb.auth.signUp({
+      const { data, error } = await sb.auth.signUp({
         email, password,
         options: { data: { full_name: name, date_of_birth: dob } }
       });
 
-      if (error) {
-        showMsg('error', '❌ ' + error.message);
+      // Supabase sometimes silently "succeeds" for existing emails — identities will be empty
+      const alreadyExists = !error && data?.user?.identities?.length === 0;
+
+      if (error || alreadyExists) {
+        const isDupe = alreadyExists
+          || (error?.message || '').toLowerCase().includes('already')
+          || (error?.message || '').toLowerCase().includes('registered');
+        showMsg('error', isDupe
+          ? '❌ An account with this email already exists. <a href="platform-login.html" style="color:#c0392b;">Log in instead →</a>'
+          : '❌ ' + error.message);
         btn.disabled = false; btn.textContent = 'Create Account';
       } else {
         showMsg('success', '✅ Account created! Redirecting to log in...');
