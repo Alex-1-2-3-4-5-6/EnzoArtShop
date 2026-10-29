@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Art Requests – Little Heartworks</title>
+  <title>Art Requests â€“ Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -56,42 +57,42 @@
 <body>
   <header>
     <div class="logo">Little He<span>art</span>works</div>
-    <a href="platform-history.html" class="hdr-btn">📜 History</a>
-    <a href="platform-shop.html" class="hdr-btn">← Shop</a>
+    <a href="platform-history.html" class="hdr-btn">ðŸ“œ History</a>
+    <a href="platform-shop.html" class="hdr-btn">â† Shop</a>
   </header>
 
   <div class="container">
-    <p class="page-title">📋 Art Requests</p>
+    <p class="page-title">ðŸ“‹ Art Requests</p>
     <p class="page-sub">Active purchase requests and trade offers</p>
 
     <!-- BUYER: purchases I requested -->
     <div class="section">
-      <p class="section-title">🛒 Purchases I Requested</p>
+      <p class="section-title">ðŸ›’ Purchases I Requested</p>
       <p style="font-size:0.82rem;color:#aaa;margin-bottom:14px;">Once the seller sends your art and you both confirm, it moves to History.</p>
       <div id="myPurchases"><p class="empty">Loading...</p></div>
     </div>
 
     <!-- SELLER: purchase requests for my art -->
     <div class="section">
-      <p class="section-title">📬 People Requesting My Art</p>
+      <p class="section-title">ðŸ“¬ People Requesting My Art</p>
       <div id="sellerPurchases"><p class="empty">Loading...</p></div>
     </div>
 
     <!-- Trade offers received -->
     <div class="section">
-      <p class="section-title">🔄 Trade Offers I Received</p>
+      <p class="section-title">ðŸ”„ Trade Offers I Received</p>
       <div id="receivedTrades"><p class="empty">Loading...</p></div>
     </div>
 
     <!-- Trade offers sent -->
     <div class="section">
-      <p class="section-title">📤 Trade Offers I Sent</p>
+      <p class="section-title">ðŸ“¤ Trade Offers I Sent</p>
       <div id="sentTrades"><p class="empty">Loading...</p></div>
     </div>
 
     <!-- Accepted trades awaiting confirmation -->
     <div class="section">
-      <p class="section-title">📦 Accepted Trades — Awaiting Confirmation</p>
+      <p class="section-title">ðŸ“¦ Accepted Trades â€” Awaiting Confirmation</p>
       <div id="pendingTrades"><p class="empty">Loading...</p></div>
     </div>
   </div>
@@ -117,7 +118,7 @@
       loadTrades();
     }
 
-    // ── BUYER: purchases I made that are still pending ──
+    // â”€â”€ BUYER: purchases I made that are still pending â”€â”€
     async function loadMyPurchases() {
       const el = document.getElementById('myPurchases');
       const { data } = await sb.from('purchases')
@@ -136,22 +137,22 @@
             <a href="${artLink}"><img src="${p.artworks?.image_url||''}" onerror="this.style.display='none'" style="display:block;" /></a>
             <div class="row-info">
               <a href="${artLink}" style="text-decoration:none;"><p class="row-name" style="color:#333;">${p.artworks?.name || p.artwork_name}</p></a>
-              <p class="row-meta">$${p.artwork_price} · ${new Date(p.purchased_at).toLocaleDateString()}</p>
+              <p class="row-meta">$${p.artwork_price} Â· ${new Date(p.purchased_at).toLocaleDateString()}</p>
               <p class="status-label ${waitingSeller ? 'status-onway' : 'status-waiting'}">
-                ${waitingSeller ? '⏳ On the way...' : '⚡ Seller sent it — confirm you got it!'}
+                ${waitingSeller ? 'â³ On the way...' : 'âš¡ Seller sent it â€” confirm you got it!'}
               </p>
             </div>
             <div class="row-actions">
               ${sellerDone
-                ? `<button class="btn btn-got" onclick="confirmPurchase('${p.id}','buyer')">📬 I got my art!</button>`
-                : `<button class="btn btn-cancel" onclick="cancelPurchase('${p.id}','${p.artworks?.id}')">✕ Cancel</button>`
+                ? `<button class="btn btn-got" onclick="confirmPurchase('${p.id}','buyer')">ðŸ“¬ I got my art!</button>`
+                : `<button class="btn btn-cancel" onclick="cancelPurchase('${p.id}','${p.artworks?.id}')">âœ• Cancel</button>`
               }
             </div>
           </div>`;
       }).join('');
     }
 
-    // ── SELLER: purchase requests for art I own ──
+    // â”€â”€ SELLER: purchase requests for art I own â”€â”€
     async function loadSellerPurchases() {
       const el = document.getElementById('sellerPurchases');
       const { data } = await sb.from('purchases')
@@ -168,16 +169,16 @@
           <a href="${artLink}"><img src="${p.artworks?.image_url||''}" onerror="this.style.display='none'" style="display:block;" /></a>
           <div class="row-info">
             <a href="${artLink}" style="text-decoration:none;"><p class="row-name" style="color:#333;">${p.artworks?.name || p.artwork_name}</p></a>
-            <p class="row-meta">Buyer: ${p.buyer_name} · ${p.buyer_email}</p>
-            <p class="row-meta">$${p.artwork_price} · ${new Date(p.purchased_at).toLocaleDateString()}</p>
+            <p class="row-meta">Buyer: ${p.buyer_name} Â· ${p.buyer_email}</p>
+            <p class="row-meta">$${p.artwork_price} Â· ${new Date(p.purchased_at).toLocaleDateString()}</p>
             <p class="status-label ${p.seller_confirmed ? 'status-confirmed' : 'status-waiting'}">
-              ${p.seller_confirmed ? '✅ You confirmed — waiting for buyer' : '⏳ Waiting for you to send the art'}
+              ${p.seller_confirmed ? 'âœ… You confirmed â€” waiting for buyer' : 'â³ Waiting for you to send the art'}
             </p>
           </div>
           <div class="row-actions">
             ${!p.seller_confirmed
-              ? `<button class="btn btn-sent" onclick="confirmPurchase('${p.id}','seller')">📦 I sent my art</button>`
-              : `<span class="status-label status-confirmed">✅ Sent</span>`
+              ? `<button class="btn btn-sent" onclick="confirmPurchase('${p.id}','seller')">ðŸ“¦ I sent my art</button>`
+              : `<span class="status-label status-confirmed">âœ… Sent</span>`
             }
           </div>
         </div>`;
@@ -187,7 +188,7 @@
     async function cancelPurchase(purchaseId, artworkId) {
       await sb.from('purchases').delete().eq('id', purchaseId);
       if (artworkId) await sb.from('artworks').update({ on_hold: false }).eq('id', artworkId);
-      toast('✕ Request cancelled');
+      toast('âœ• Request cancelled');
       loadMyPurchases();
       loadSellerPurchases();
     }
@@ -200,15 +201,15 @@
       if (data?.seller_confirmed && data?.buyer_confirmed) {
         await sb.from('purchases').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', id);
         if (data.artwork_id) await sb.from('artworks').update({ on_hold: false }).eq('id', data.artwork_id);
-        toast('🎉 Purchase complete! Check History.');
+        toast('ðŸŽ‰ Purchase complete! Check History.');
       } else {
-        toast(role === 'seller' ? '✅ Confirmed! Waiting for the buyer.' : '✅ Confirmed! Waiting for the seller.');
+        toast(role === 'seller' ? 'âœ… Confirmed! Waiting for the buyer.' : 'âœ… Confirmed! Waiting for the seller.');
       }
       loadMyPurchases();
       loadSellerPurchases();
     }
 
-    // ── TRADES ──
+    // â”€â”€ TRADES â”€â”€
     async function loadTrades() {
       const { data } = await sb.from('trades')
         .select('*, target:target_artwork_id(id,name,image_url), offered:offered_artwork_id(id,name,image_url)')
@@ -233,7 +234,7 @@
         <div class="row">
           <div class="trade-imgs">
             <img src="${t.offered?.image_url||''}" title="${t.offered?.name||''}" onerror="this.style.display='none'" />
-            <div class="trade-arrow">→</div>
+            <div class="trade-arrow">â†’</div>
             <img src="${t.target?.image_url||''}" title="${t.target?.name||''}" onerror="this.style.display='none'" />
           </div>
           <div class="row-info">
@@ -241,8 +242,8 @@
             <p class="row-meta">For your: ${t.target?.name}</p>
           </div>
           <div class="row-actions">
-            <button class="btn btn-accept" onclick="respondTrade('${t.id}','accepted')">✅ Accept</button>
-            <button class="btn btn-reject" onclick="respondTrade('${t.id}','rejected')">❌ Reject</button>
+            <button class="btn btn-accept" onclick="respondTrade('${t.id}','accepted')">âœ… Accept</button>
+            <button class="btn btn-reject" onclick="respondTrade('${t.id}','rejected')">âŒ Reject</button>
           </div>
         </div>`).join('');
     }
@@ -254,7 +255,7 @@
         <div class="row">
           <div class="trade-imgs">
             <img src="${t.offered?.image_url||''}" title="${t.offered?.name||''}" onerror="this.style.display='none'" />
-            <div class="trade-arrow">→</div>
+            <div class="trade-arrow">â†’</div>
             <img src="${t.target?.image_url||''}" title="${t.target?.name||''}" onerror="this.style.display='none'" />
           </div>
           <div class="row-info">
@@ -262,7 +263,7 @@
             <p class="row-meta">For: ${t.target?.name}</p>
           </div>
           <div class="row-actions">
-            <button class="btn btn-cancel-trade" onclick="cancelTrade('${t.id}')">✕ Cancel</button>
+            <button class="btn btn-cancel-trade" onclick="cancelTrade('${t.id}')">âœ• Cancel</button>
           </div>
         </div>`).join('');
     }
@@ -278,18 +279,18 @@
           <div class="row">
             <div class="trade-imgs">
               <img src="${t.offered?.image_url||''}" title="${t.offered?.name||''}" onerror="this.style.display='none'" />
-              <div class="trade-arrow">⇄</div>
+              <div class="trade-arrow">â‡„</div>
               <img src="${t.target?.image_url||''}" title="${t.target?.name||''}" onerror="this.style.display='none'" />
             </div>
             <div class="row-info">
-              <p class="row-name">${t.offered?.name} ⇄ ${t.target?.name}</p>
-              ${otherConfirmed && !myConfirmed ? '<p class="status-label status-waiting">⚡ They confirmed — your turn!</p>' : ''}
-              ${myConfirmed ? '<p class="status-label status-confirmed">✅ You confirmed — waiting for them</p>' : ''}
+              <p class="row-name">${t.offered?.name} â‡„ ${t.target?.name}</p>
+              ${otherConfirmed && !myConfirmed ? '<p class="status-label status-waiting">âš¡ They confirmed â€” your turn!</p>' : ''}
+              ${myConfirmed ? '<p class="status-label status-confirmed">âœ… You confirmed â€” waiting for them</p>' : ''}
             </div>
             <div class="row-actions">
               ${!myConfirmed
                 ? `<button class="btn ${isSeller ? 'btn-sent' : 'btn-got'}" onclick="confirmTrade('${t.id}','${isSeller?'seller':'buyer'}')">
-                    ${isSeller ? '📦 I sent my art' : '📬 I got the art'}
+                    ${isSeller ? 'ðŸ“¦ I sent my art' : 'ðŸ“¬ I got the art'}
                   </button>`
                 : ''
               }
@@ -300,14 +301,14 @@
 
     async function respondTrade(id, status) {
       await sb.from('trades').update({ status }).eq('id', id);
-      toast(status === 'accepted' ? '✅ Trade accepted!' : '❌ Trade rejected');
+      toast(status === 'accepted' ? 'âœ… Trade accepted!' : 'âŒ Trade rejected');
       loadTrades();
     }
 
     async function cancelTrade(id) {
       if (!confirm('Cancel this trade offer?')) return;
       await sb.from('trades').delete().eq('id', id);
-      toast('✕ Offer cancelled');
+      toast('âœ• Offer cancelled');
       loadTrades();
     }
 
@@ -317,9 +318,9 @@
       const { data } = await sb.from('trades').select('seller_confirmed,buyer_confirmed').eq('id', id).single();
       if (data?.seller_confirmed && data?.buyer_confirmed) {
         await sb.from('trades').update({ completed_at: new Date().toISOString(), status: 'completed' }).eq('id', id);
-        toast('🎉 Trade complete! Check History.');
+        toast('ðŸŽ‰ Trade complete! Check History.');
       } else {
-        toast('✅ Confirmed! Waiting for the other person.');
+        toast('âœ… Confirmed! Waiting for the other person.');
       }
       loadTrades();
     }

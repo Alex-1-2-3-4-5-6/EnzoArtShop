@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chat – Little Heartworks</title>
+  <title>Chat â€“ Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -80,30 +81,30 @@
 
   <header>
     <div class="logo">Little He<span>art</span>works</div>
-    <a href="platform-shop.html" class="back-btn">← Shop</a>
+    <a href="platform-shop.html" class="back-btn">â† Shop</a>
   </header>
 
   <div class="chat-header">
-    <div class="chat-avatar" id="chatAvatar">💬</div>
+    <div class="chat-avatar" id="chatAvatar">ðŸ’¬</div>
     <div>
       <p class="chat-with-name" id="chatWithName">Loading...</p>
       <p class="chat-status">Direct message</p>
     </div>
   </div>
 
-  <div class="filter-notice" id="filterNotice">⚠️ Some words were removed from your message.</div>
+  <div class="filter-notice" id="filterNotice">âš ï¸ Some words were removed from your message.</div>
 
   <div class="messages-wrap" id="messagesWrap">
     <div class="empty-chat" id="emptyChat">
-      <div class="icon">💬</div>
-      <p>No messages yet — say hi!</p>
+      <div class="icon">ðŸ’¬</div>
+      <p>No messages yet â€” say hi!</p>
     </div>
   </div>
 
   <div class="input-bar">
     <input class="chat-input" id="chatInput" placeholder="Type a message..." maxlength="500"
       onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}" />
-    <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">âž¤</button>
   </div>
 
   <script>

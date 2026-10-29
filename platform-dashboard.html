@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard – KidsArt Platform</title>
+  <title>Dashboard â€“ KidsArt Platform</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -220,7 +221,7 @@
   <header>
     <div class="logo">Little He<span style="color:#ff9ff3;">art</span>works</div>
     <button onclick="openInfo()" style="background:#f0f0f0;border:none;border-radius:50%;width:32px;height:32px;font-size:0.95rem;cursor:pointer;color:#aaa;flex-shrink:0;font-weight:700;">?</button>
-    <a href="platform-shop.html" class="shop-btn">🛍️ Shop</a>
+    <a href="platform-shop.html" class="shop-btn">ðŸ›ï¸ Shop</a>
     <a href="platform-privacy.html" style="color:#aaa;font-size:0.78rem;font-weight:700;text-decoration:none;background:#f0f0f0;border-radius:50px;padding:5px 12px;white-space:nowrap;">Privacy</a>
     <a href="platform-terms.html" style="color:#aaa;font-size:0.78rem;font-weight:700;text-decoration:none;background:#f0f0f0;border-radius:50px;padding:5px 12px;white-space:nowrap;">Terms</a>
     <span class="user-info" id="userInfo"></span>
@@ -228,15 +229,15 @@
   </header>
 
   <div class="container">
-    <p class="welcome" id="welcome">👋 Welcome back!</p>
+    <p class="welcome" id="welcome">ðŸ‘‹ Welcome back!</p>
 
     <!-- Profile panel -->
     <div class="panel">
-      <p class="panel-title">👤 My Profile</p>
+      <p class="panel-title">ðŸ‘¤ My Profile</p>
       <div class="profile-header">
         <div class="avatar-wrap">
           <img class="avatar-img" id="avatarImg" src="" alt="avatar" onerror="this.src=''" />
-          <button class="avatar-upload-btn" onclick="document.getElementById('avatarFileInput').click()" title="Change photo">✏️</button>
+          <button class="avatar-upload-btn" onclick="document.getElementById('avatarFileInput').click()" title="Change photo">âœï¸</button>
           <input type="file" id="avatarFileInput" accept="image/*" onchange="uploadAvatar(this.files[0])" />
         </div>
         <div class="profile-fields">
@@ -260,8 +261,8 @@
 
     <!-- Kids panel -->
     <div class="panel">
-      <p class="panel-title">👧 Your Kids</p>
-      <p style="font-size:0.85rem;color:#aaa;margin-bottom:14px;">Each kid gets a 10-digit code — share it with your child so they can submit artwork from the home page.</p>
+      <p class="panel-title">ðŸ‘§ Your Kids</p>
+      <p style="font-size:0.85rem;color:#aaa;margin-bottom:14px;">Each kid gets a 10-digit code â€” share it with your child so they can submit artwork from the home page.</p>
       <div class="kid-list" id="kidList"></div>
       <div class="add-kid-form">
         <input type="text" id="kidName" placeholder="Child's first name" />
@@ -276,37 +277,37 @@
       <div class="add-kid-form">
         <input type="text" id="linkCode" placeholder="10-digit code" maxlength="10" style="font-family:monospace;letter-spacing:2px;" oninput="this.value=this.value.replace(/\D/g,'')" />
         <input type="text" id="linkPassword" placeholder="Password (if set)" />
-        <button class="add-kid-btn" style="background:linear-gradient(135deg,#48dbfb,#a29bfe);" onclick="linkKid()">🔗 Link Kid</button>
+        <button class="add-kid-btn" style="background:linear-gradient(135deg,#48dbfb,#a29bfe);" onclick="linkKid()">ðŸ”— Link Kid</button>
       </div>
       <div class="status-msg" id="kidStatus"></div>
     </div>
 
     <!-- Kid art requests -->
     <div class="panel">
-      <p class="panel-title">🛒 Art Requests from Kids</p>
+      <p class="panel-title">ðŸ›’ Art Requests from Kids</p>
       <div id="requestsList"><p class="empty">Loading...</p></div>
       <div class="status-msg" id="requestsStatus"></div>
     </div>
 
     <!-- Pending approval -->
     <div class="panel">
-      <p class="panel-title">⏳ Pending Your Approval</p>
+      <p class="panel-title">â³ Pending Your Approval</p>
       <div id="pendingList"><p class="empty">Loading...</p></div>
       <div class="status-msg" id="pendingStatus"></div>
     </div>
 
     <!-- Approved art -->
     <div class="panel">
-      <p class="panel-title">✅ Live in the Shop</p>
+      <p class="panel-title">âœ… Live in the Shop</p>
       <div id="approvedList"><p class="empty">Loading...</p></div>
     </div>
 
     <!-- Danger zone -->
     <div class="panel">
-      <p class="panel-title" style="color:#c0392b;">⚠️ Danger Zone</p>
+      <p class="panel-title" style="color:#c0392b;">âš ï¸ Danger Zone</p>
       <div class="danger-zone">
         <p>Permanently delete your account. This will remove your account, all your kids, and all artwork you have submitted. <strong>This cannot be undone.</strong></p>
-        <button class="delete-account-btn" onclick="deleteAccount()">🗑️ Delete My Account</button>
+        <button class="delete-account-btn" onclick="deleteAccount()">ðŸ—‘ï¸ Delete My Account</button>
       </div>
     </div>
 
@@ -325,7 +326,7 @@
       currentUser = user;
       const name = user.user_metadata?.full_name || user.email;
       document.getElementById('userInfo').textContent = user.email;
-      document.getElementById('welcome').textContent = `👋 Welcome back, ${name.split(' ')[0]}!`;
+      document.getElementById('welcome').textContent = `ðŸ‘‹ Welcome back, ${name.split(' ')[0]}!`;
       // Populate day/year dropdowns
       const daySelect = document.getElementById('dobDay');
       const yearSelect = document.getElementById('dobYear');
@@ -356,14 +357,14 @@
       } else {
         img.src = '';
         img.style.fontSize = '2.2rem';
-        img.alt = '🧑';
+        img.alt = 'ðŸ§‘';
       }
     }
 
     async function uploadAvatar(file) {
       if (!file) return;
       const st = document.getElementById('profileStatus');
-      showStatus(st, 'loading' , '⏳ Uploading photo...');
+      showStatus(st, 'loading' , 'â³ Uploading photo...');
       const ext = file.name.split('.').pop();
       const filename = `avatar-${currentUser.id}-${Date.now()}.${ext}`;
       const { error: upErr } = await sb.storage.from('avatars').upload(filename, file, { upsert: true, contentType: file.type });
@@ -374,7 +375,7 @@
       if (error) { showStatus(st, 'error', error.message); return; }
       currentUser = (await sb.auth.getUser()).data.user;
       loadProfile();
-      showStatus(st, 'success', '✅ Photo updated!');
+      showStatus(st, 'success', 'âœ… Photo updated!');
     }
 
     async function saveProfile() {
@@ -396,8 +397,8 @@
       else {
         currentUser = (await sb.auth.getUser()).data.user;
         const firstName = name.split(' ')[0];
-        document.getElementById('welcome').textContent = `👋 Welcome back, ${firstName}!`;
-        showStatus(st, 'success', '✅ Profile saved!');
+        document.getElementById('welcome').textContent = `ðŸ‘‹ Welcome back, ${firstName}!`;
+        showStatus(st, 'success', 'âœ… Profile saved!');
       }
       btn.disabled = false;
     }
@@ -409,7 +410,7 @@
 
     async function deleteAccount() {
       if (!confirm('Are you sure you want to delete your account?\n\nThis will permanently delete your account, all your kids, and all artwork. This cannot be undone.')) return;
-      if (!confirm('Last chance — are you absolutely sure?')) return;
+      if (!confirm('Last chance â€” are you absolutely sure?')) return;
 
       const { error } = await sb.rpc('delete_own_account');
       if (error) {
@@ -420,7 +421,7 @@
       window.location.href = 'platform-index.html';
     }
 
-    // ── Kids ──
+    // â”€â”€ Kids â”€â”€
     function genKidCode() {
       return String(Math.floor(Math.random() * 9000000000) + 1000000000);
     }
@@ -444,12 +445,12 @@
                   style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:3px solid #a29bfe;background:#f4f0ff;font-size:1.6rem;"
                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
                   ${k.avatar_url ? '' : 'style="display:none"'} />
-                <div style="width:52px;height:52px;border-radius:50%;background:#f4f0ff;border:3px solid #a29bfe;display:${k.avatar_url ? 'none' : 'flex'};align-items:center;justify-content:center;font-size:1.6rem;">🧒</div>
+                <div style="width:52px;height:52px;border-radius:50%;background:#f4f0ff;border:3px solid #a29bfe;display:${k.avatar_url ? 'none' : 'flex'};align-items:center;justify-content:center;font-size:1.6rem;">ðŸ§’</div>
                 <label title="Change photo" style="position:absolute;bottom:0;right:0;background:#feca57;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.65rem;box-shadow:0 2px 6px rgba(0,0,0,0.15);">
-                  ✏️<input type="file" accept="image/*" style="display:none" onchange="uploadKidAvatar('${k.id}',this.files[0])" />
+                  âœï¸<input type="file" accept="image/*" style="display:none" onchange="uploadKidAvatar('${k.id}',this.files[0])" />
                 </label>
               </div>
-              <span style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#333;">${k.name} ${k._linked ? '<span style="background:#e0f7ff;color:#48dbfb;font-size:0.7rem;border-radius:50px;padding:3px 10px;margin-left:6px;">🔗 Linked</span>' : ''}</span>
+              <span style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#333;">${k.name} ${k._linked ? '<span style="background:#e0f7ff;color:#48dbfb;font-size:0.7rem;border-radius:50px;padding:3px 10px;margin-left:6px;">ðŸ”— Linked</span>' : ''}</span>
             </div>
             ${k._linked
               ? `<button onclick="unlinkKid('${k.id}')" style="background:#e0f7ff;border:none;border-radius:50px;padding:5px 12px;cursor:pointer;color:#48dbfb;font-size:0.8rem;font-family:'Fredoka One',cursive;">Unlink</button>`
@@ -458,7 +459,7 @@
 
           <p style="font-size:0.75rem;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Daily Request Limit</p>
           <div style="display:flex;align-items:center;gap:10px;background:#f0fff4;border-radius:14px;padding:12px 16px;margin-bottom:14px;">
-            <span style="font-size:0.9rem;color:#27ae60;flex:1;">🛒 ${k.daily_request_limit ?? 3} requests per day</span>
+            <span style="font-size:0.9rem;color:#27ae60;flex:1;">ðŸ›’ ${k.daily_request_limit ?? 3} requests per day</span>
             <button onclick="toggleLimitEdit('${k.id}')" style="background:#55efc4;border:none;border-radius:50px;padding:8px 16px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:white;">Change</button>
           </div>
           <div id="limit-edit-${k.id}" style="display:none;gap:8px;align-items:center;margin-bottom:14px;">
@@ -471,14 +472,14 @@
 
           <p style="font-size:0.75rem;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">10-Digit Code</p>
           <div style="display:flex;align-items:center;gap:10px;background:#f4f0ff;border-radius:14px;padding:12px 16px;margin-bottom:14px;">
-            <span style="font-family:monospace;font-size:1.2rem;letter-spacing:4px;color:#a29bfe;font-weight:700;flex:1;">${k.code || '—'}</span>
-            <button onclick="navigator.clipboard.writeText('${k.code}').then(()=>alert('Copied!'))" style="background:#a29bfe;border:none;border-radius:50px;padding:8px 16px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:white;white-space:nowrap;">📋 Copy</button>
+            <span style="font-family:monospace;font-size:1.2rem;letter-spacing:4px;color:#a29bfe;font-weight:700;flex:1;">${k.code || 'â€”'}</span>
+            <button onclick="navigator.clipboard.writeText('${k.code}').then(()=>alert('Copied!'))" style="background:#a29bfe;border:none;border-radius:50px;padding:8px 16px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:white;white-space:nowrap;">ðŸ“‹ Copy</button>
           </div>
 
           <p style="font-size:0.75rem;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Password</p>
           <div style="background:#fff8ee;border-radius:14px;padding:12px 16px;margin-bottom:14px;">
             <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:0.95rem;color:${k.kid_password ? '#f0932b' : '#ccc'};flex:1;">${k.kid_password ? `🔒 <span style="font-family:monospace;letter-spacing:2px;">${k.kid_password}</span>` : '🔓 No password'}</span>
+              <span style="font-size:0.95rem;color:${k.kid_password ? '#f0932b' : '#ccc'};flex:1;">${k.kid_password ? `ðŸ”’ <span style="font-family:monospace;letter-spacing:2px;">${k.kid_password}</span>` : 'ðŸ”“ No password'}</span>
               <button onclick="togglePasswordEdit('${k.id}')" style="background:#feca57;border:none;border-radius:50px;padding:8px 16px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:white;white-space:nowrap;">${k.kid_password ? 'Change' : 'Set'}</button>
               ${k.kid_password ? `<button onclick="removePassword('${k.id}')" style="background:#ffd6d6;border:none;border-radius:50px;padding:8px 16px;cursor:pointer;font-family:'Fredoka One',cursive;font-size:0.85rem;color:#c0392b;white-space:nowrap;">Remove</button>` : ''}
             </div>
@@ -516,7 +517,7 @@
       if (error) { showStatus(st,'error',error.message); return; }
       document.getElementById('kidName').value = '';
       document.getElementById('kidPassword').value = '';
-      showStatus(st,'success',`✅ ${name} added! Share their code with them.`);
+      showStatus(st,'success',`âœ… ${name} added! Share their code with them.`);
       loadKids();
     }
 
@@ -555,11 +556,11 @@
       const val = document.getElementById('kid-email-' + kidId).value.trim();
       const msgEl = document.getElementById('kid-email-msg-' + kidId);
       if (val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
-        msgEl.style.color = '#c0392b'; msgEl.textContent = '❌ Invalid email address.'; msgEl.style.display = 'block'; return;
+        msgEl.style.color = '#c0392b'; msgEl.textContent = 'âŒ Invalid email address.'; msgEl.style.display = 'block'; return;
       }
       const { error } = await sb.from('kids').update({ email: val || null }).eq('id', kidId);
-      if (error) { msgEl.style.color = '#c0392b'; msgEl.textContent = '❌ ' + error.message; msgEl.style.display = 'block'; return; }
-      msgEl.style.color = '#27ae60'; msgEl.textContent = val ? '✅ Email saved!' : '✅ Email cleared.'; msgEl.style.display = 'block';
+      if (error) { msgEl.style.color = '#c0392b'; msgEl.textContent = 'âŒ ' + error.message; msgEl.style.display = 'block'; return; }
+      msgEl.style.color = '#27ae60'; msgEl.textContent = val ? 'âœ… Email saved!' : 'âœ… Email cleared.'; msgEl.style.display = 'block';
       setTimeout(() => { msgEl.style.display = 'none'; loadKids(); }, 1500);
     }
 
@@ -590,31 +591,27 @@
         .order('requested_at', { ascending: false });
 
       const el = document.getElementById('requestsList');
-      if (!data || data.length === 0) { el.innerHTML = '<p class="empty">No pending requests 🎉</p>'; return; }
+      if (!data || data.length === 0) { el.innerHTML = '<p class="empty">No pending requests ðŸŽ‰</p>'; return; }
 
       el.innerHTML = data.map(r => `
-        <div class="pending-item">
+        <div class="pending-item" style="cursor:pointer;" onclick="window.location.href='platform-art.html?id=${r.artwork_id}'">
           <img src="${r.artworks?.image_url}" alt="${r.artworks?.name}" />
           <div class="pending-info">
             <p class="pending-name">${r.artworks?.name || 'Unknown'}</p>
-            <p class="pending-meta">$${r.artworks?.price} &nbsp;·&nbsp; Requested by ${r.kids?.name} &nbsp;·&nbsp; ${new Date(r.requested_at).toLocaleDateString()}</p>
+            <p class="pending-meta">$${r.artworks?.price} &nbsp;Â·&nbsp; ${r.kids?.name} wants this &nbsp;Â·&nbsp; ${new Date(r.requested_at).toLocaleDateString()}</p>
             <div class="pending-actions">
-              <button class="approve-btn" onclick="resolveRequest('${r.id}','approved','${r.artwork_id}')">✅ Approve</button>
-              <button class="reject-btn" onclick="resolveRequest('${r.id}','rejected')">❌ Decline</button>
+              <a href="platform-art.html?id=${r.artwork_id}" class="approve-btn" onclick="event.stopPropagation()" style="text-decoration:none;display:inline-flex;align-items:center;">ðŸ›’ Go Buy It</a>
+              <button class="reject-btn" onclick="event.stopPropagation();resolveRequest('${r.id}','rejected')">âŒ Decline</button>
             </div>
           </div>
         </div>
       `).join('');
     }
 
-    async function resolveRequest(id, status, artworkId) {
+    async function resolveRequest(id, status) {
       const { error } = await sb.from('art_requests').update({ status }).eq('id', id);
       if (error) { alert('Error: ' + error.message); return; }
-      if (status === 'approved' && artworkId) {
-        window.location.href = `platform-shop.html?preview=${artworkId}`;
-      } else {
-        loadRequests();
-      }
+      loadRequests();
     }
 
     async function loadMyPurchases() {
@@ -629,10 +626,10 @@
           <img src="${p.artworks?.image_url||''}" style="width:52px;height:52px;border-radius:10px;object-fit:cover;background:#f0f0f0;flex-shrink:0;" onerror="this.style.display='none'" />
           <div style="flex:1;">
             <p style="font-family:'Fredoka One',cursive;font-size:0.95rem;color:#333;">${p.artworks?.name||p.artwork_name}</p>
-            <p style="font-size:0.8rem;color:#aaa;">$${p.artwork_price} · ${new Date(p.purchased_at).toLocaleDateString()}</p>
-            <p style="font-size:0.78rem;color:${p.artworks?.on_hold?'#e67e22':'#27ae60'};">${p.artworks?.on_hold?'⏳ On Hold':'✅ Available'}</p>
+            <p style="font-size:0.8rem;color:#aaa;">$${p.artwork_price} Â· ${new Date(p.purchased_at).toLocaleDateString()}</p>
+            <p style="font-size:0.78rem;color:${p.artworks?.on_hold?'#e67e22':'#27ae60'};">${p.artworks?.on_hold?'â³ On Hold':'âœ… Available'}</p>
           </div>
-          ${p.artworks?.on_hold ? `<button onclick="cancelMyRequest('${p.id}','${p.artworks?.id}')" style="background:#ffd6d6;border:none;border-radius:50px;padding:7px 14px;color:#c0392b;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;white-space:nowrap;">✕ Cancel</button>` : ''}
+          ${p.artworks?.on_hold ? `<button onclick="cancelMyRequest('${p.id}','${p.artworks?.id}')" style="background:#ffd6d6;border:none;border-radius:50px;padding:7px 14px;color:#c0392b;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;white-space:nowrap;">âœ• Cancel</button>` : ''}
         </div>`).join('');
     }
 
@@ -653,13 +650,13 @@
       el.innerHTML = data.map(t => `
         <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f0;">
           <img src="${t.offered?.image_url||''}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;background:#f0f0f0;" />
-          <div style="font-size:1.2rem;color:#aaa;">→</div>
+          <div style="font-size:1.2rem;color:#aaa;">â†’</div>
           <img src="${t.target?.image_url||''}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;background:#f0f0f0;" />
           <div style="flex:1;">
-            <p style="font-family:'Fredoka One',cursive;font-size:0.88rem;color:#333;">${t.offered?.name} → ${t.target?.name}</p>
-            <p style="font-size:0.78rem;color:${t.status==='pending'?'#e67e22':t.status==='accepted'?'#27ae60':'#c0392b'};">${t.status==='pending'?'⏳ Pending':t.status==='accepted'?'✅ Accepted':'❌ Rejected'}</p>
+            <p style="font-family:'Fredoka One',cursive;font-size:0.88rem;color:#333;">${t.offered?.name} â†’ ${t.target?.name}</p>
+            <p style="font-size:0.78rem;color:${t.status==='pending'?'#e67e22':t.status==='accepted'?'#27ae60':'#c0392b'};">${t.status==='pending'?'â³ Pending':t.status==='accepted'?'âœ… Accepted':'âŒ Rejected'}</p>
           </div>
-          ${t.status==='pending'?`<button onclick="cancelTrade('${t.id}')" style="background:#f0f0f0;border:none;border-radius:50px;padding:6px 12px;color:#999;font-family:'Fredoka One',cursive;font-size:0.78rem;cursor:pointer;">✕ Cancel</button>`:''}
+          ${t.status==='pending'?`<button onclick="cancelTrade('${t.id}')" style="background:#f0f0f0;border:none;border-radius:50px;padding:6px 12px;color:#999;font-family:'Fredoka One',cursive;font-size:0.78rem;cursor:pointer;">âœ• Cancel</button>`:''}
         </div>`).join('');
     }
 
@@ -685,8 +682,8 @@
             <p style="font-size:0.8rem;color:#aaa;">for your: ${t.target?.name}</p>
           </div>
           <div style="display:flex;gap:6px;">
-            <button onclick="respondTrade('${t.id}','accepted')" style="background:#d4edda;border:none;border-radius:50px;padding:7px 14px;color:#155724;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">✅ Accept</button>
-            <button onclick="respondTrade('${t.id}','rejected')" style="background:#ffd6d6;border:none;border-radius:50px;padding:7px 14px;color:#c0392b;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">❌ Reject</button>
+            <button onclick="respondTrade('${t.id}','accepted')" style="background:#d4edda;border:none;border-radius:50px;padding:7px 14px;color:#155724;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">âœ… Accept</button>
+            <button onclick="respondTrade('${t.id}','rejected')" style="background:#ffd6d6;border:none;border-radius:50px;padding:7px 14px;color:#c0392b;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">âŒ Reject</button>
           </div>
         </div>`).join('');
     }
@@ -704,11 +701,11 @@
       const { data, error } = await sb.rpc('link_kid_by_code', { p_code: code, p_password: pw });
       if (error || data?.error) {
         const msgs = { 'Invalid code': 'Invalid code.', 'Wrong password': 'Wrong password.', 'This is already your kid': 'That kid is already on your account.' };
-        showStatus(st, 'error', '❌ ' + (msgs[data?.error] || 'Something went wrong.')); return;
+        showStatus(st, 'error', 'âŒ ' + (msgs[data?.error] || 'Something went wrong.')); return;
       }
       document.getElementById('linkCode').value = '';
       document.getElementById('linkPassword').value = '';
-      showStatus(st, 'success', `✅ Linked to ${data.kid_name}!`);
+      showStatus(st, 'success', `âœ… Linked to ${data.kid_name}!`);
       loadKids();
     }
 
@@ -724,7 +721,7 @@
       loadKids();
     }
 
-    // ── Artworks ──
+    // â”€â”€ Artworks â”€â”€
     async function loadArtworks() {
       const { data } = await sb.from('artworks').select('*').eq('parent_id', currentUser.id).order('created_at', { ascending: false });
 
@@ -737,16 +734,16 @@
 
     function renderPending(items) {
       const el = document.getElementById('pendingList');
-      if (items.length === 0) { el.innerHTML = '<p class="empty">No artwork waiting for approval 🎉</p>'; return; }
+      if (items.length === 0) { el.innerHTML = '<p class="empty">No artwork waiting for approval ðŸŽ‰</p>'; return; }
       el.innerHTML = items.map(a => `
         <div class="pending-item">
           <img src="${a.image_url}" alt="${a.name}" />
           <div class="pending-info">
             <p class="pending-name">${a.name}</p>
-            <p class="pending-meta">$${a.price} &nbsp;·&nbsp; Submitted ${new Date(a.created_at).toLocaleDateString()}</p>
+            <p class="pending-meta">$${a.price} &nbsp;Â·&nbsp; Submitted ${new Date(a.created_at).toLocaleDateString()}</p>
             <div class="pending-actions">
-              <button class="approve-btn" onclick="updateStatus('${a.id}','approved')">✅ Approve</button>
-              <button class="reject-btn" onclick="updateStatus('${a.id}','rejected')">❌ Reject</button>
+              <button class="approve-btn" onclick="updateStatus('${a.id}','approved')">âœ… Approve</button>
+              <button class="reject-btn" onclick="updateStatus('${a.id}','rejected')">âŒ Reject</button>
             </div>
           </div>
         </div>
@@ -788,27 +785,27 @@
   </script>
   <div id="infoOverlay" onclick="closeInfo(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:center;justify-content:center;padding:20px;">
     <div style="background:white;border-radius:28px;max-width:480px;width:100%;padding:36px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;" onclick="event.stopPropagation()">
-      <h2 style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#333;margin-bottom:6px;">How It Works 🎨</h2>
-      <p style="color:#aaa;font-size:0.88rem;margin-bottom:24px;">Little Heartworks — a kids art marketplace</p>
+      <h2 style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#333;margin-bottom:6px;">How It Works ðŸŽ¨</h2>
+      <p style="color:#aaa;font-size:0.88rem;margin-bottom:24px;">Little Heartworks â€” a kids art marketplace</p>
       <div style="display:flex;flex-direction:column;gap:16px;">
         <div style="background:#f4f0ff;border-radius:16px;padding:16px 18px;">
-          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#a29bfe;margin-bottom:4px;">👨‍👩‍👧 Parents</p>
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#a29bfe;margin-bottom:4px;">ðŸ‘¨â€ðŸ‘©â€ðŸ‘§ Parents</p>
           <p style="font-size:0.88rem;color:#555;line-height:1.6;">Create a free account, add your kids by name, and each kid gets a unique 10-digit code. You can submit artwork on their behalf, set daily request limits, and approve or reject anything before it goes live in the shop.</p>
         </div>
         <div style="background:#fff8ee;border-radius:16px;padding:16px 18px;">
-          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#feca57;margin-bottom:4px;">🧒 Kids</p>
-          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Ask your parent for your 10-digit code, then click "I'm a Kid" on the home page. You can browse all the art in the shop and request pieces you like — your parent will see the requests. You can also submit your own artwork for your parent to approve!</p>
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#feca57;margin-bottom:4px;">ðŸ§’ Kids</p>
+          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Ask your parent for your 10-digit code, then click "I'm a Kid" on the home page. You can browse all the art in the shop and request pieces you like â€” your parent will see the requests. You can also submit your own artwork for your parent to approve!</p>
         </div>
         <div style="background:#fff0f9;border-radius:16px;padding:16px 18px;">
-          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#ff9ff3;margin-bottom:4px;">🛍️ Buying Art</p>
-          <p style="font-size:0.88rem;color:#555;line-height:1.6;">See something you love? Click "Preview & Buy", sign in with your parent account, and send a purchase request. Payment and delivery are arranged in person — we'll send an email to the seller to get things sorted.</p>
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#ff9ff3;margin-bottom:4px;">ðŸ›ï¸ Buying Art</p>
+          <p style="font-size:0.88rem;color:#555;line-height:1.6;">See something you love? Click "Preview & Buy", sign in with your parent account, and send a purchase request. Payment and delivery are arranged in person â€” we'll send an email to the seller to get things sorted.</p>
         </div>
         <div style="background:#f0fff4;border-radius:16px;padding:16px 18px;">
-          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#55efc4;margin-bottom:4px;">🔍 Finding Art</p>
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#55efc4;margin-bottom:4px;">ðŸ” Finding Art</p>
           <p style="font-size:0.88rem;color:#555;line-height:1.6;">Use the search bar to find art by title, description, kid name, or parent. Smart search learns what you like and shows recommendations based on art you've viewed before.</p>
         </div>
       </div>
-      <button onclick="closeInfo()" style="width:100%;margin-top:24px;background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;">Got it! 🎉</button>
+      <button onclick="closeInfo()" style="width:100%;margin-top:24px;background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;">Got it! ðŸŽ‰</button>
     </div>
   </div>
 </body>

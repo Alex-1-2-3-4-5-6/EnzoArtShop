@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Artwork – Little Heartworks</title>
+  <title>Artwork â€“ Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -127,12 +128,12 @@
 <body>
 
   <header>
-    <div class="logo">🎨 Little He<span>art</span>works</div>
-    <a href="platform-shop.html" class="hbtn hbtn-ghost">← Shop</a>
-    <a href="platform-shop.html?tab=trade" class="hbtn hbtn-ghost" id="tradingBtn">🔄 Trading</a>
-    <a href="platform-my-shop.html" class="hbtn hbtn-white" id="myShopBtn" style="display:none;">🖼️ My Shop</a>
+    <div class="logo">ðŸŽ¨ Little He<span>art</span>works</div>
+    <a href="platform-shop.html" class="hbtn hbtn-ghost">â† Shop</a>
+    <a href="platform-shop.html?tab=trade" class="hbtn hbtn-ghost" id="tradingBtn">ðŸ”„ Trading</a>
+    <a href="platform-my-shop.html" class="hbtn hbtn-white" id="myShopBtn" style="display:none;">ðŸ–¼ï¸ My Shop</a>
     <a href="#" class="account-btn" id="accountBtn" onclick="handleAccount(event)">
-      <div class="account-pfp" id="accountPfp">👤</div>
+      <div class="account-pfp" id="accountPfp">ðŸ‘¤</div>
       <span id="accountLabel">Sign In</span>
     </a>
   </header>
@@ -142,8 +143,8 @@
   </div>
 
   <div id="notFound" class="not-found" style="display:none">
-    🖼️ Artwork not found.<br>
-    <a href="platform-shop.html">← Back to Shop</a>
+    ðŸ–¼ï¸ Artwork not found.<br>
+    <a href="platform-shop.html">â† Back to Shop</a>
   </div>
 
   <div class="page" id="pageContent" style="display:none">
@@ -205,7 +206,7 @@
       if (!data) { document.getElementById('notFound').style.display = 'block'; return; }
       art = data;
 
-      document.title = art.name + ' – Little Heartworks';
+      document.title = art.name + ' â€“ Little Heartworks';
       document.getElementById('artImg').src = art.image_url;
       document.getElementById('artImg').alt = art.name;
       document.getElementById('artTitle').textContent = art.name;
@@ -219,12 +220,12 @@
 
       const badges = document.getElementById('artBadges');
       badges.innerHTML = `<span class="art-ref">Art #${art.id.slice(0,6).toUpperCase()}</span>`;
-      if (art.kids?.name) badges.innerHTML += `<span class="badge">🧒 ${art.kids.name}</span>`;
+      if (art.kids?.name) badges.innerHTML += `<span class="badge">ðŸ§’ ${art.kids.name}</span>`;
 
       const creators = document.getElementById('creatorRow');
-      if (art.kids?.name) creators.innerHTML += `<span class="creator-chip">🧒 ${art.kids.name}</span>`;
+      if (art.kids?.name) creators.innerHTML += `<span class="creator-chip">ðŸ§’ ${art.kids.name}</span>`;
       if (art.parent_id && user && art.parent_id !== user.id) {
-        creators.innerHTML += `<a href="platform-chat.html?with=${art.parent_id}" style="display:inline-flex;align-items:center;gap:6px;background:#f4f0ff;border-radius:50px;padding:6px 14px;color:#a29bfe;font-family:'Fredoka One',cursive;font-size:0.85rem;text-decoration:none;">💬 Chat with seller</a>`;
+        creators.innerHTML += `<a href="platform-chat.html?with=${art.parent_id}" style="display:inline-flex;align-items:center;gap:6px;background:#f4f0ff;border-radius:50px;padding:6px 14px;color:#a29bfe;font-family:'Fredoka One',cursive;font-size:0.85rem;text-decoration:none;">ðŸ’¬ Chat with seller</a>`;
       }
 
       await buildBuyCard();
@@ -238,18 +239,18 @@
 
       if (tradeMode) {
         buyCard.innerHTML = `
-          <h3 style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#a29bfe;margin-bottom:8px;">🔄 Offer a Trade</h3>
+          <h3 style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#a29bfe;margin-bottom:8px;">ðŸ”„ Offer a Trade</h3>
           <p style="font-size:0.88rem;color:#aaa;margin-bottom:16px;">Pick one of your artworks to offer in exchange.</p>
           <div id="myArtPicker" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-bottom:16px;"></div>
           <p id="tradePickLabel" style="font-size:0.82rem;color:#a29bfe;margin-bottom:10px;display:none;">Selected: <strong id="tradePickName"></strong></p>
-          <button id="sendTradeBtn" onclick="sendTrade()" class="big-btn purple" style="display:none;">🔄 Send Trade Offer</button>
+          <button id="sendTradeBtn" onclick="sendTrade()" class="big-btn purple" style="display:none;">ðŸ”„ Send Trade Offer</button>
           <div id="tradeMsgEl" style="margin-top:10px;font-size:0.85rem;text-align:center;color:#aaa;"></div>
-          ${!currentUser ? `<div style="text-align:center;margin-top:12px;"><a href="platform-login.html" style="color:#a29bfe;font-family:'Fredoka One',cursive;">Sign in to trade →</a></div>` : ''}`;
+          ${!currentUser ? `<div style="text-align:center;margin-top:12px;"><a href="platform-login.html" style="color:#a29bfe;font-family:'Fredoka One',cursive;">Sign in to trade â†’</a></div>` : ''}`;
         if (currentUser) loadMyArtForTrade(currentUser.id);
 
       } else if (art.on_hold) {
         buyCard.innerHTML = `
-          <p style="font-family:'Fredoka One',cursive;color:#e67e22;font-size:1.1rem;margin-bottom:6px;">⏳ On Hold</p>
+          <p style="font-family:'Fredoka One',cursive;color:#e67e22;font-size:1.1rem;margin-bottom:6px;">â³ On Hold</p>
           <p style="font-size:0.88rem;color:#aaa;margin-bottom:14px;">Someone is already purchasing this artwork.</p>`;
 
         if (currentUser) {
@@ -260,29 +261,29 @@
             .maybeSingle();
           if (myPurchase) {
             if (myPurchase.seller_confirmed && !myPurchase.buyer_confirmed) {
-              buyCard.innerHTML += `<button class="big-btn purple" onclick="confirmReceived('${myPurchase.id}')">📬 I got my art!</button>`;
+              buyCard.innerHTML += `<button class="big-btn purple" onclick="confirmReceived('${myPurchase.id}')">ðŸ“¬ I got my art!</button>`;
             } else if (!myPurchase.seller_confirmed) {
-              buyCard.innerHTML += `<button class="big-btn red" onclick="cancelPurchase('${myPurchase.id}')">✕ Cancel My Request</button>`;
+              buyCard.innerHTML += `<button class="big-btn red" onclick="cancelPurchase('${myPurchase.id}')">âœ• Cancel My Request</button>`;
             }
           }
         }
 
       } else if (art.status === 'sold') {
         buyCard.innerHTML = `
-          <p style="font-family:'Fredoka One',cursive;color:#27ae60;font-size:1.1rem;margin-bottom:6px;">✅ Sold!</p>
+          <p style="font-family:'Fredoka One',cursive;color:#27ae60;font-size:1.1rem;margin-bottom:6px;">âœ… Sold!</p>
           <p style="font-size:0.88rem;color:#aaa;">This artwork has already been sold.</p>`;
 
       } else if (!currentUser) {
         buyCard.innerHTML = `
-          <h3 style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#333;margin-bottom:14px;">🛒 Buy This Artwork</h3>
+          <h3 style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#333;margin-bottom:14px;">ðŸ›’ Buy This Artwork</h3>
           <div class="login-prompt">
             <p>Sign in to purchase this artwork</p>
-            <a href="platform-login.html">Sign In →</a>
+            <a href="platform-login.html">Sign In â†’</a>
           </div>`;
 
       } else {
         buyCard.innerHTML = `
-          <h3 style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#333;margin-bottom:6px;">🛒 Buy This Artwork</h3>
+          <h3 style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#333;margin-bottom:6px;">ðŸ›’ Buy This Artwork</h3>
           <div style="background:#fff8ee;border-radius:14px;padding:14px 16px;margin-bottom:16px;">
             <p style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#ff6b6b;" id="artPriceDisplay">$${art.price}</p>
             <p style="font-size:0.8rem;color:#bbb;">Payment arranged with the seller in person</p>
@@ -305,7 +306,7 @@
           <div id="orderTotalBox" style="background:#f4f0ff;border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:0.88rem;color:#a29bfe;display:none;">
             <span style="font-family:'Fredoka One',cursive;" id="orderTotalText"></span>
           </div>
-          <button onclick="submitPurchase()" class="big-btn" id="purchaseBtn">💌 Send Request to Seller</button>
+          <button onclick="submitPurchase()" class="big-btn" id="purchaseBtn">ðŸ’Œ Send Request to Seller</button>
           <div id="purchaseMsg" style="margin-top:10px;font-size:0.85rem;text-align:center;"></div>`;
       }
 
@@ -344,9 +345,9 @@
         owner_id: art.parent_id
       });
       const msg = document.getElementById('tradeMsgEl');
-      if (error) { msg.textContent = '❌ ' + error.message; btn.disabled = false; btn.textContent = '🔄 Send Trade Offer'; return; }
+      if (error) { msg.textContent = 'âŒ ' + error.message; btn.disabled = false; btn.textContent = 'ðŸ”„ Send Trade Offer'; return; }
       msg.style.color = '#27ae60';
-      msg.textContent = '✅ Trade offer sent! The seller will see it in their inbox.';
+      msg.textContent = 'âœ… Trade offer sent! The seller will see it in their inbox.';
       btn.style.display = 'none';
     }
 
@@ -370,11 +371,11 @@
       const div = document.createElement('div');
       div.style.cssText = 'background:#f4f0ff;border-radius:16px;padding:16px;margin-top:14px;text-align:center;';
       div.innerHTML = `
-        <p style="font-family:'Fredoka One',cursive;color:#a29bfe;font-size:1rem;margin-bottom:8px;">🔄 Trade Accepted!</p>
-        <p style="font-size:0.82rem;color:#aaa;margin-bottom:12px;">${otherConfirmed ? '✅ They confirmed. ' : ''}Confirm your side to complete the trade.</p>
+        <p style="font-family:'Fredoka One',cursive;color:#a29bfe;font-size:1rem;margin-bottom:8px;">ðŸ”„ Trade Accepted!</p>
+        <p style="font-size:0.82rem;color:#aaa;margin-bottom:12px;">${otherConfirmed ? 'âœ… They confirmed. ' : ''}Confirm your side to complete the trade.</p>
         ${alreadyConfirmed
-          ? `<p style="color:#27ae60;font-family:'Fredoka One',cursive;font-size:0.9rem;">✅ You confirmed — waiting for the other person.</p>`
-          : `<button onclick="confirmTrade('${data.id}','${isSeller ? 'seller' : 'buyer'}')" style="background:linear-gradient(135deg,#a29bfe,#ff9ff3);border:none;border-radius:50px;padding:12px 24px;color:white;font-family:'Fredoka One',cursive;font-size:0.95rem;cursor:pointer;">${isSeller ? '📦 I sent my art' : '📬 I got the art'}</button>`
+          ? `<p style="color:#27ae60;font-family:'Fredoka One',cursive;font-size:0.9rem;">âœ… You confirmed â€” waiting for the other person.</p>`
+          : `<button onclick="confirmTrade('${data.id}','${isSeller ? 'seller' : 'buyer'}')" style="background:linear-gradient(135deg,#a29bfe,#ff9ff3);border:none;border-radius:50px;padding:12px 24px;color:white;font-family:'Fredoka One',cursive;font-size:0.95rem;cursor:pointer;">${isSeller ? 'ðŸ“¦ I sent my art' : 'ðŸ“¬ I got the art'}</button>`
         }`;
       document.getElementById('buyCard').appendChild(div);
     }
@@ -412,7 +413,7 @@
       if (!box || !txt) return;
       if (donation > 0) {
         const total = (parseFloat(art.price) + donation).toFixed(2);
-        txt.textContent = `$${parseFloat(art.price).toFixed(2)} art + $${donation.toFixed(2)} tip = $${total} total 🎉`;
+        txt.textContent = `$${parseFloat(art.price).toFixed(2)} art + $${donation.toFixed(2)} tip = $${total} total ðŸŽ‰`;
         box.style.display = 'block';
       } else {
         box.style.display = 'none';
@@ -427,7 +428,7 @@
 
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         msg.style.color = '#e74c3c';
-        msg.textContent = '❌ Please enter a valid email address.';
+        msg.textContent = 'âŒ Please enter a valid email address.';
         return;
       }
 
@@ -444,19 +445,19 @@
 
       if (error || data?.error) {
         msg.style.color = '#e74c3c';
-        msg.textContent = '❌ ' + (data?.error || error?.message);
+        msg.textContent = 'âŒ ' + (data?.error || error?.message);
         btn.disabled = false;
-        btn.textContent = '💌 Send Request to Seller';
+        btn.textContent = 'ðŸ’Œ Send Request to Seller';
         return;
       }
 
       msg.style.color = '#27ae60';
-      msg.innerHTML = `<strong>✅ Sent!</strong><br><span style="color:#aaa;">The seller has been notified and will reach out at <strong>${email}</strong>.</span>`;
+      msg.innerHTML = `<strong>âœ… Sent!</strong><br><span style="color:#aaa;">The seller has been notified and will reach out at <strong>${email}</strong>.</span>`;
       btn.style.display = 'none';
       document.getElementById('buyerEmail').disabled = true;
       if (document.getElementById('donationAmt')) document.getElementById('donationAmt').disabled = true;
 
-      // Art is sold — reload after short delay so it disappears
+      // Art is sold â€” reload after short delay so it disappears
       setTimeout(() => window.location.href = 'platform-shop.html', 3000);
     }
 

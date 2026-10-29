@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Dashboard – KidsArt</title>
+  <title>My Dashboard â€“ KidsArt</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -119,16 +120,16 @@
 
   <header>
     <div class="logo">Kids<span>Art</span></div>
-    <a href="platform-shop.html" class="shop-btn">🛍️ Shop</a>
+    <a href="platform-shop.html" class="shop-btn">ðŸ›ï¸ Shop</a>
     <button class="logout-btn" onclick="logout()">Log out</button>
   </header>
 
   <div class="container">
-    <p class="welcome" id="welcome">👋 Hey there!</p>
+    <p class="welcome" id="welcome">ðŸ‘‹ Hey there!</p>
 
     <!-- Pending approval banner -->
     <div class="pending-banner" id="pendingBanner" style="display:none">
-      <div class="icon">⏳</div>
+      <div class="icon">â³</div>
       <h3>Waiting for Parent Approval</h3>
       <p>Your parent hasn't approved your account yet. Ask them to check their dashboard!</p>
     </div>
@@ -138,14 +139,14 @@
 
       <!-- Profile panel -->
       <div class="panel">
-        <p class="panel-title">👤 My Profile</p>
+        <p class="panel-title">ðŸ‘¤ My Profile</p>
         <div class="profile-header">
           <div class="avatar-wrap">
             <div class="avatar-img" id="avatarEl">
-              <span id="avatarEmoji">🧒</span>
+              <span id="avatarEmoji">ðŸ§’</span>
               <img id="avatarImg" src="" alt="" />
             </div>
-            <button class="avatar-upload-btn" onclick="document.getElementById('avatarFileInput').click()">✏️</button>
+            <button class="avatar-upload-btn" onclick="document.getElementById('avatarFileInput').click()">âœï¸</button>
             <input type="file" id="avatarFileInput" accept="image/*" onchange="uploadAvatar(this.files[0])" />
           </div>
           <div class="profile-fields">
@@ -159,14 +160,14 @@
 
       <!-- Submit art -->
       <div class="panel">
-        <p class="panel-title">🎨 Submit Artwork</p>
+        <p class="panel-title">ðŸŽ¨ Submit Artwork</p>
         <p style="color:#aaa;font-size:0.9rem;margin-bottom:16px;">Submit your art for your parent to review and approve for the shop!</p>
-        <a href="platform-submit.html" class="submit-art-btn">🖼️ Submit New Artwork</a>
+        <a href="platform-submit.html" class="submit-art-btn">ðŸ–¼ï¸ Submit New Artwork</a>
       </div>
 
       <!-- My artworks -->
       <div class="panel">
-        <p class="panel-title">📚 My Artworks</p>
+        <p class="panel-title">ðŸ“š My Artworks</p>
         <div id="artworksList"><p class="empty">Loading...</p></div>
       </div>
 
@@ -186,7 +187,7 @@
 
       const meta = user.user_metadata || {};
       const name = meta.full_name || user.email;
-      document.getElementById('welcome').textContent = `👋 Hey, ${name.split(' ')[0]}!`;
+      document.getElementById('welcome').textContent = `ðŸ‘‹ Hey, ${name.split(' ')[0]}!`;
       loadProfile();
 
       // Check if this kid is approved
@@ -213,7 +214,7 @@
     async function uploadAvatar(file) {
       if (!file) return;
       const msg = document.getElementById('profileMsg');
-      showMsg(msg, 'loading', '⏳ Uploading...');
+      showMsg(msg, 'loading', 'â³ Uploading...');
       const ext = file.name.split('.').pop();
       const filename = `avatar-${currentUser.id}-${Date.now()}.${ext}`;
       const { error: upErr } = await sb.storage.from('avatars').upload(filename, file, { upsert: true, contentType: file.type });
@@ -223,7 +224,7 @@
       if (error) { showMsg(msg, 'error', error.message); return; }
       currentUser = (await sb.auth.getUser()).data.user;
       loadProfile();
-      showMsg(msg, 'success', '✅ Photo updated!');
+      showMsg(msg, 'success', 'âœ… Photo updated!');
     }
 
     async function saveProfile() {
@@ -234,8 +235,8 @@
       const { error } = await sb.auth.updateUser({ data: { ...currentUser.user_metadata, full_name: name, date_of_birth: dob } });
       if (error) { showMsg(msg, 'error', error.message); return; }
       currentUser = (await sb.auth.getUser()).data.user;
-      document.getElementById('welcome').textContent = `👋 Hey, ${name.split(' ')[0]}!`;
-      showMsg(msg, 'success', '✅ Profile saved!');
+      document.getElementById('welcome').textContent = `ðŸ‘‹ Hey, ${name.split(' ')[0]}!`;
+      showMsg(msg, 'success', 'âœ… Profile saved!');
     }
 
     async function loadArtworks() {
@@ -246,7 +247,7 @@
       if (!kidRec) { document.getElementById('artworksList').innerHTML = '<p class="empty">No artworks yet</p>'; return; }
       const { data: arts } = await sb.from('artworks').select('*').eq('kid_id', kidRec.id).order('created_at', { ascending: false });
       const el = document.getElementById('artworksList');
-      if (!arts || arts.length === 0) { el.innerHTML = '<p class="empty">No artworks yet — submit your first one! 🎨</p>'; return; }
+      if (!arts || arts.length === 0) { el.innerHTML = '<p class="empty">No artworks yet â€” submit your first one! ðŸŽ¨</p>'; return; }
       el.innerHTML = arts.map(a => `
         <div class="art-item">
           <img src="${a.image_url}" alt="${a.name}" />
@@ -254,7 +255,7 @@
             <p class="art-name">${a.name}</p>
             <p class="art-meta">$${a.price}</p>
           </div>
-          <span class="status-badge badge-${a.status}">${a.status === 'approved' ? '✅ Live' : a.status === 'rejected' ? '❌ Not approved' : '⏳ Pending'}</span>
+          <span class="status-badge badge-${a.status}">${a.status === 'approved' ? 'âœ… Live' : a.status === 'rejected' ? 'âŒ Not approved' : 'â³ Pending'}</span>
         </div>
       `).join('');
     }

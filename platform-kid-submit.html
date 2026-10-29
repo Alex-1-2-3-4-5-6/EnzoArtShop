@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Submit Art – Little Heartworks</title>
+  <title>Submit Art â€“ Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -101,27 +102,27 @@
   <header>
     <div class="logo">Little He<span>art</span>works</div>
     <button onclick="openInfo()" style="background:#f0f0f0;border:none;border-radius:50%;width:32px;height:32px;font-size:0.95rem;cursor:pointer;color:#aaa;flex-shrink:0;font-weight:700;">?</button>
-    <a href="platform-kid-shop.html" class="home-btn">← Browse Art</a>
+    <a href="platform-kid-shop.html" class="home-btn">â† Browse Art</a>
     <button class="switch-btn" onclick="switchKid()">Switch Kid</button>
   </header>
 
   <div class="container">
 
     <div class="kid-banner" id="kidBanner">
-      <div class="kid-avatar">🧒</div>
+      <div class="kid-avatar">ðŸ§’</div>
       <div class="kid-info">
         <p class="name" id="kidNameDisplay">Loading...</p>
-        <p class="sub">Your art will go to your parent for approval 🎨</p>
+        <p class="sub">Your art will go to your parent for approval ðŸŽ¨</p>
       </div>
     </div>
 
     <div class="panel">
-      <h2>🖼️ Submit Your Art</h2>
+      <h2>ðŸ–¼ï¸ Submit Your Art</h2>
       <p class="sub">Take a photo of your artwork and fill in the details!</p>
 
       <div class="drop-zone" id="dropZone">
         <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])" />
-        <div class="dz-icon">📸</div>
+        <div class="dz-icon">ðŸ“¸</div>
         <p><span>Click or tap</span> to add your photo</p>
       </div>
       <img id="imgPreview" src="" alt="preview" />
@@ -141,7 +142,7 @@
         <input type="number" id="artPrice" placeholder="e.g. 5.00" min="0" step="0.01" oninput="checkReady()" />
       </div>
 
-      <button class="submit-btn" id="submitBtn" onclick="submitArt()" disabled>Submit for Approval 🚀</button>
+      <button class="submit-btn" id="submitBtn" onclick="submitArt()" disabled>Submit for Approval ðŸš€</button>
       <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
       <div class="msg" id="msg"></div>
     </div>
@@ -159,7 +160,7 @@
       const raw = localStorage.getItem('kidSession');
       if (!raw) { window.location.href = 'platform-index.html'; return; }
       kidSession = JSON.parse(raw);
-      document.getElementById('kidNameDisplay').textContent = `Hey, ${kidSession.kid_name}! 👋`;
+      document.getElementById('kidNameDisplay').textContent = `Hey, ${kidSession.kid_name}! ðŸ‘‹`;
     }
 
     function switchKid() {
@@ -211,12 +212,12 @@
       const btn   = document.getElementById('submitBtn');
 
       const flagged = contentFilter(name) || contentFilter(desc);
-      if (flagged) { showMsg('error', '⚠️ Please remove inappropriate language before submitting.'); return; }
+      if (flagged) { showMsg('error', 'âš ï¸ Please remove inappropriate language before submitting.'); return; }
 
       btn.disabled = true;
       document.getElementById('progressBar').style.display = 'block';
       document.getElementById('progressFill').style.width = '20%';
-      showMsg('loading', '⏳ Uploading your artwork...');
+      showMsg('loading', 'â³ Uploading your artwork...');
 
       try {
         const ext = selectedFile.name.split('.').pop();
@@ -227,7 +228,7 @@
         if (upErr) throw upErr;
 
         document.getElementById('progressFill').style.width = '65%';
-        showMsg('loading', '⏳ Saving details...');
+        showMsg('loading', 'â³ Saving details...');
 
         const { data: urlData } = sb.storage.from('artwork-images').getPublicUrl(filename);
 
@@ -246,7 +247,7 @@
         if (data?.error) throw new Error(data.error);
 
         document.getElementById('progressFill').style.width = '100%';
-        showMsg('success', '🎉 Submitted! Your parent will review it soon.');
+        showMsg('success', 'ðŸŽ‰ Submitted! Your parent will review it soon.');
         btn.textContent = 'Submitted!';
 
         document.getElementById('artName').value = '';
@@ -255,7 +256,7 @@
         document.getElementById('imgPreview').style.display = 'none';
         selectedFile = null;
         setTimeout(() => {
-          btn.textContent = 'Submit for Approval 🚀';
+          btn.textContent = 'Submit for Approval ðŸš€';
           btn.disabled = true;
           document.getElementById('progressBar').style.display = 'none';
           document.getElementById('progressFill').style.width = '0%';
@@ -263,10 +264,10 @@
         }, 3000);
 
       } catch(e) {
-        showMsg('error', '❌ ' + e.message);
+        showMsg('error', 'âŒ ' + e.message);
         document.getElementById('progressBar').style.display = 'none';
         btn.disabled = false;
-        btn.textContent = 'Submit for Approval 🚀';
+        btn.textContent = 'Submit for Approval ðŸš€';
       }
     }
 
@@ -276,19 +277,19 @@
   </script>
   <div id="infoOverlay" onclick="closeInfo(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:center;justify-content:center;padding:20px;">
     <div style="background:white;border-radius:28px;max-width:480px;width:100%;padding:36px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;" onclick="event.stopPropagation()">
-      <h2 style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#333;margin-bottom:6px;">How It Works 🎨</h2>
-      <p style="color:#aaa;font-size:0.88rem;margin-bottom:24px;">Little Heartworks — a kids art marketplace</p>
+      <h2 style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#333;margin-bottom:6px;">How It Works ðŸŽ¨</h2>
+      <p style="color:#aaa;font-size:0.88rem;margin-bottom:24px;">Little Heartworks â€” a kids art marketplace</p>
       <div style="display:flex;flex-direction:column;gap:16px;">
         <div style="background:#f4f0ff;border-radius:16px;padding:16px 18px;">
-          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#a29bfe;margin-bottom:4px;">✏️ Submitting Art</p>
-          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Take a photo of your artwork, give it a title, description, and price. When you hit submit it goes to your parent for approval — once they approve it, it shows up in the shop for everyone to see!</p>
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#a29bfe;margin-bottom:4px;">âœï¸ Submitting Art</p>
+          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Take a photo of your artwork, give it a title, description, and price. When you hit submit it goes to your parent for approval â€” once they approve it, it shows up in the shop for everyone to see!</p>
         </div>
         <div style="background:#fff8ee;border-radius:16px;padding:16px 18px;">
-          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#feca57;margin-bottom:4px;">🛒 Browsing & Requesting</p>
-          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Want to browse the shop and request art? Click "← Browse Art" at the top to go back to the shop.</p>
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#feca57;margin-bottom:4px;">ðŸ›’ Browsing & Requesting</p>
+          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Want to browse the shop and request art? Click "â† Browse Art" at the top to go back to the shop.</p>
         </div>
       </div>
-      <button onclick="closeInfo()" style="width:100%;margin-top:24px;background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;">Got it! 🎉</button>
+      <button onclick="closeInfo()" style="width:100%;margin-top:24px;background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;">Got it! ðŸŽ‰</button>
     </div>
   </div>
 </body>

@@ -1,16 +1,17 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shop – Little Heartworks</title>
+  <title>Shop â€“ Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
 
-    /* ── Header ── */
+    /* â”€â”€ Header â”€â”€ */
     header {
       background:linear-gradient(135deg,#ff6b6b,#feca57,#48dbfb,#a29bfe);
       background-size:300% 300%; animation:gradientShift 8s ease infinite;
@@ -59,7 +60,7 @@
       background:#ff6b6b; border-radius:50%; border:2px solid white; display:none;
     }
 
-    /* ── Tabs ── */
+    /* â”€â”€ Tabs â”€â”€ */
     .tabs { display:flex; justify-content:center; gap:8px; padding:20px 20px 0; }
     .tab {
       border:none; border-radius:50px; padding:10px 28px;
@@ -69,7 +70,7 @@
     .tab.active-trade { background:linear-gradient(135deg,#a29bfe,#ff9ff3); color:white; box-shadow:0 4px 14px rgba(162,155,254,0.35); }
     .tab.inactive { background:white; color:#aaa; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
 
-    /* ── Search ── */
+    /* â”€â”€ Search â”€â”€ */
     .search-section { max-width:700px; margin:20px auto 0; padding:0 20px; }
     .search-wrap { position:relative; }
     .search-wrap input {
@@ -89,7 +90,7 @@
     .filter-btn.off { background:white; color:#aaa; }
     .ai-status { font-size:0.75rem; color:#aaa; }
 
-    /* ── Content ── */
+    /* â”€â”€ Content â”€â”€ */
     .content { max-width:1000px; margin:0 auto; padding:24px 20px 80px; }
     .section-label {
       font-family:'Fredoka One',cursive; font-size:1.3rem; color:#444;
@@ -97,7 +98,7 @@
     }
     .section-label .count { font-size:0.9rem; color:#bbb; font-family:'Nunito',sans-serif; font-weight:700; }
 
-    /* ── Art Grid ── */
+    /* â”€â”€ Art Grid â”€â”€ */
     .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:22px; margin-bottom:36px; }
 
     .card {
@@ -124,13 +125,13 @@
     /* Rec strip */
     .rec-strip { margin-bottom:36px; }
 
-    /* ── Empty ── */
+    /* â”€â”€ Empty â”€â”€ */
     .empty { text-align:center; padding:60px 20px; }
     .empty .icon { font-size:4rem; margin-bottom:14px; }
     .empty h3 { font-family:'Fredoka One',cursive; font-size:1.5rem; color:#ccc; margin-bottom:8px; }
     .empty p { color:#bbb; font-size:0.95rem; }
 
-    /* ── Help modal ── */
+    /* â”€â”€ Help modal â”€â”€ */
     .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:200; align-items:center; justify-content:center; padding:20px; }
     .modal-bg.open { display:flex; }
     .modal-box { background:white; border-radius:28px; max-width:480px; width:100%; padding:36px; box-shadow:0 20px 60px rgba(0,0,0,0.3); max-height:90vh; overflow-y:auto; }
@@ -145,11 +146,11 @@
     footer a { color:#888; text-decoration:none; font-size:0.82rem; margin:0 10px; }
     footer a:hover { color:#ccc; }
 
-    /* ── Mobile ── */
+    /* â”€â”€ Mobile â”€â”€ */
     @media(max-width:600px) {
       header { padding:12px 16px; gap:8px; }
       .logo  { font-size:1.1rem; }
-      /* Hide Help and Post Art on mobile — accessible from My Shop / Dashboard */
+      /* Hide Help and Post Art on mobile â€” accessible from My Shop / Dashboard */
       #postArtBtn, .hbtn-ghost.help-btn { display:none !important; }
       .hbtn  { padding:7px 13px; font-size:0.8rem; }
       .account-btn { padding:6px 12px 6px 6px; font-size:0.8rem; }
@@ -168,41 +169,41 @@
 
   <!-- Header -->
   <header>
-    <div class="logo">🎨 Little He<span>art</span>works</div>
+    <div class="logo">ðŸŽ¨ Little He<span>art</span>works</div>
 
     <button class="hbtn hbtn-ghost help-btn" onclick="openInfo()">Help?</button>
 
-    <a href="platform-my-shop.html" class="hbtn hbtn-white" id="myShopBtn" style="display:none;">🖼️ My Shop</a>
-    <a href="platform-submit.html" class="hbtn hbtn-ghost" id="postArtBtn" style="display:none;">🎨 Post Art</a>
+    <a href="platform-my-shop.html" class="hbtn hbtn-white" id="myShopBtn" style="display:none;">ðŸ–¼ï¸ My Shop</a>
+    <a href="platform-submit.html" class="hbtn hbtn-ghost" id="postArtBtn" style="display:none;">ðŸŽ¨ Post Art</a>
 
     <a href="platform-inbox.html" class="inbox-btn" id="inboxBtn">
-      📬 Inbox
+      ðŸ“¬ Inbox
       <span class="inbox-dot" id="inboxDot"></span>
     </a>
 
     <a href="#" class="account-btn" id="accountBtn" onclick="handleAccount(event)">
-      <div class="account-pfp" id="accountPfp">👤</div>
+      <div class="account-pfp" id="accountPfp">ðŸ‘¤</div>
       <span id="accountLabel">Sign In</span>
     </a>
   </header>
 
   <!-- Tabs -->
   <div class="tabs">
-    <button class="tab active-shop" id="tabShop" onclick="switchTab('shop')">🛍️ Art Shop</button>
-    <button class="tab inactive"    id="tabTrade" onclick="switchTab('trade')">🔄 Art Trading</button>
+    <button class="tab active-shop" id="tabShop" onclick="switchTab('shop')">ðŸ›ï¸ Art Shop</button>
+    <button class="tab inactive"    id="tabTrade" onclick="switchTab('trade')">ðŸ”„ Art Trading</button>
   </div>
 
   <!-- Search (shop only) -->
   <div class="search-section" id="searchSection">
     <div class="search-wrap">
-      <span class="search-icon">🔍</span>
+      <span class="search-icon">ðŸ”</span>
       <input id="searchInput" type="text" placeholder="Search for art..." oninput="onSearch()" />
     </div>
     <div class="filter-row">
-      <button class="filter-btn on"  id="fArt"     onclick="setFilter('art')">🖼️ Art</button>
-      <button class="filter-btn off" id="fKid"     onclick="setFilter('kid')">🧒 Kid</button>
-      <button class="filter-btn off" id="fParent"  onclick="setFilter('parent')">👨‍👩‍👧 Parent</button>
-      <span class="ai-status" id="aiStatus">🤖 Loading smart search...</span>
+      <button class="filter-btn on"  id="fArt"     onclick="setFilter('art')">ðŸ–¼ï¸ Art</button>
+      <button class="filter-btn off" id="fKid"     onclick="setFilter('kid')">ðŸ§’ Kid</button>
+      <button class="filter-btn off" id="fParent"  onclick="setFilter('parent')">ðŸ‘¨â€ðŸ‘©â€ðŸ‘§ Parent</button>
+      <span class="ai-status" id="aiStatus">ðŸ¤– Loading smart search...</span>
     </div>
   </div>
 
@@ -211,7 +212,7 @@
 
     <!-- Recommendations -->
     <div id="recSection" style="display:none;" class="rec-strip">
-      <p class="section-label">✨ Recommended for You</p>
+      <p class="section-label">âœ¨ Recommended for You</p>
       <div class="grid" id="recGrid"></div>
     </div>
 
@@ -223,15 +224,15 @@
 
     <!-- Trade grid -->
     <div id="tradeSection" style="display:none;">
-      <p style="text-align:center;color:#aaa;font-size:0.88rem;margin-bottom:20px;">Offer your own art in exchange — no money needed. Click any piece to propose a trade.</p>
+      <p style="text-align:center;color:#aaa;font-size:0.88rem;margin-bottom:20px;">Offer your own art in exchange â€” no money needed. Click any piece to propose a trade.</p>
       <div class="grid" id="tradeGrid"></div>
     </div>
 
     <!-- Empty -->
     <div class="empty" id="emptyState" style="display:none;">
-      <div class="icon">🖌️</div>
+      <div class="icon">ðŸ–Œï¸</div>
       <h3>No art here yet!</h3>
-      <p>Check back soon — kids are creating.</p>
+      <p>Check back soon â€” kids are creating.</p>
     </div>
 
   </div>
@@ -239,40 +240,40 @@
   <!-- Help modal -->
   <div class="modal-bg" id="helpModal" onclick="if(event.target===this)closeInfo()">
     <div class="modal-box">
-      <h2>❓ Help &amp; Info</h2>
-      <p class="sub">Little Heartworks — a kids art marketplace</p>
+      <h2>â“ Help &amp; Info</h2>
+      <p class="sub">Little Heartworks â€” a kids art marketplace</p>
 
       <div class="info-block" style="background:#f4f0ff;">
-        <p class="title" style="color:#a29bfe;">👨‍👩‍👧 For Parents</p>
+        <p class="title" style="color:#a29bfe;">ðŸ‘¨â€ðŸ‘©â€ðŸ‘§ For Parents</p>
         <p>Create a free account, add your kids by name, and each gets a unique 10-digit code. You approve every artwork before it goes live, set daily request limits, and handle all purchases from your inbox.</p>
       </div>
       <div class="info-block" style="background:#fff8ee;">
-        <p class="title" style="color:#f0932b;">🧒 For Kids</p>
+        <p class="title" style="color:#f0932b;">ðŸ§’ For Kids</p>
         <p>Ask your parent for your 10-digit code, then tap <strong>"I'm a Kid"</strong> on the home page. Enter your code and name to browse the shop, request art you like (your parent sees it in their inbox), and submit your own artwork for approval!</p>
       </div>
       <div class="info-block" style="background:#fff0f9;">
-        <p class="title" style="color:#e84393;">🛍️ Buying Art</p>
+        <p class="title" style="color:#e84393;">ðŸ›ï¸ Buying Art</p>
         <p>Click any artwork to open it. Fill in your email and an optional tip, then hit <strong>"Send Request to Seller"</strong>. The seller gets notified and will reach out to arrange payment and pickup in person. Once both sides confirm, the art is marked sold and disappears from the shop.</p>
       </div>
       <div class="info-block" style="background:#f0fff4;">
-        <p class="title" style="color:#27ae60;">🔄 Trading Art</p>
-        <p>Click <strong>"Trading"</strong> at the top to see art listed for trade. Open a piece you want and pick one of your own artworks to offer as a swap — no money involved! Accept or decline trades from your inbox.</p>
+        <p class="title" style="color:#27ae60;">ðŸ”„ Trading Art</p>
+        <p>Click <strong>"Trading"</strong> at the top to see art listed for trade. Open a piece you want and pick one of your own artworks to offer as a swap â€” no money involved! Accept or decline trades from your inbox.</p>
       </div>
       <div class="info-block" style="background:#f0f8ff;">
-        <p class="title" style="color:#3498db;">🔍 Search & Filter</p>
-        <p>Type anything in the search bar — smart search understands what you mean even with rough descriptions. Use the <strong>All / Drawing / Painting / Digital / Other</strong> buttons to filter by type. Recommendations at the top are based on art you've looked at before.</p>
+        <p class="title" style="color:#3498db;">ðŸ” Search & Filter</p>
+        <p>Type anything in the search bar â€” smart search understands what you mean even with rough descriptions. Use the <strong>All / Drawing / Painting / Digital / Other</strong> buttons to filter by type. Recommendations at the top are based on art you've looked at before.</p>
       </div>
       <div class="info-block" style="background:#fffbf0;">
-        <p class="title" style="color:#f0932b;">📬 Inbox</p>
-        <p>The <strong>Inbox</strong> button (with a red dot when something's new) shows all your notifications: kid art buy requests, purchase requests from buyers, trade offers, and art waiting for your approval. Dismiss any notification with the ✕ button.</p>
+        <p class="title" style="color:#f0932b;">ðŸ“¬ Inbox</p>
+        <p>The <strong>Inbox</strong> button (with a red dot when something's new) shows all your notifications: kid art buy requests, purchase requests from buyers, trade offers, and art waiting for your approval. Dismiss any notification with the âœ• button.</p>
       </div>
       <div class="info-block" style="background:#fff5f5;">
-        <p class="title" style="color:#e74c3c;">💬 Questions?</p>
+        <p class="title" style="color:#e74c3c;">ðŸ’¬ Questions?</p>
         <p style="margin-bottom:10px;">Have a question or concern? We're here to help.</p>
-        <a href="mailto:pilotal2020@gmail.com" style="display:inline-block;background:linear-gradient(135deg,#ff6b6b,#feca57);color:white;text-decoration:none;border-radius:50px;padding:8px 20px;font-family:'Fredoka One',cursive;font-size:0.85rem;">✉️ Email Us</a>
+        <a href="mailto:pilotal2020@gmail.com" style="display:inline-block;background:linear-gradient(135deg,#ff6b6b,#feca57);color:white;text-decoration:none;border-radius:50px;padding:8px 20px;font-family:'Fredoka One',cursive;font-size:0.85rem;">âœ‰ï¸ Email Us</a>
       </div>
 
-      <button class="modal-close" onclick="closeInfo()">Got it! 🎉</button>
+      <button class="modal-close" onclick="closeInfo()">Got it! ðŸŽ‰</button>
     </div>
   </div>
 
@@ -292,7 +293,7 @@
     let activeFilter = 'art';
     let activeTab    = 'shop';
 
-    // ── AI ──
+    // â”€â”€ AI â”€â”€
     let embPipeline  = null;
     let artEmbs      = {};
 
@@ -300,7 +301,7 @@
       try {
         const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2');
         embPipeline = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
-        document.getElementById('aiStatus').textContent = '✨ Smart search ready';
+        document.getElementById('aiStatus').textContent = 'âœ¨ Smart search ready';
         for (const a of allArtworks) {
           const text = [a.name, a.description || '', a.kids?.name || ''].join(' ');
           artEmbs[a.id] = Array.from((await embPipeline(text, { pooling:'mean', normalize:true })).data);
@@ -318,7 +319,7 @@
       return Array.from(out.data);
     }
 
-    // ── Init ──
+    // â”€â”€ Init â”€â”€
     async function init() {
       const { data: { user } } = await sb.auth.getUser();
       currentUser = user;
@@ -358,7 +359,7 @@
       window.location.href = currentUser ? 'platform-dashboard.html' : 'platform-login.html';
     }
 
-    // ── Data ──
+    // â”€â”€ Data â”€â”€
     async function loadArtworks() {
       const { data } = await sb.from('artworks').select('*, kids(name)').eq('status','approved').order('created_at', { ascending:false });
       allArtworks   = (data || []).filter(a => !a.for_trade);
@@ -369,7 +370,7 @@
       if (preview) window.location.href = `platform-art.html?id=${preview}`;
     }
 
-    // ── Tabs ──
+    // â”€â”€ Tabs â”€â”€
     function switchTab(tab) {
       activeTab = tab;
       const isShop = tab === 'shop';
@@ -384,7 +385,7 @@
       if (!isShop) renderTrade();
     }
 
-    // ── Search / filter ──
+    // â”€â”€ Search / filter â”€â”€
     function setFilter(f) {
       activeFilter = f;
       ['art','kid','parent'].forEach(k => {
@@ -433,7 +434,7 @@
       empty.style.display = 'none';
 
       if (q && activeFilter === 'art' && embPipeline) {
-        label.textContent = 'Searching... 🤖';
+        label.textContent = 'Searching... ðŸ¤–';
         renderShopAI(q, filtered, grid, label);
         return;
       }
@@ -461,7 +462,7 @@
       }
     }
 
-    // ── Recommendations ──
+    // â”€â”€ Recommendations â”€â”€
     async function getHistory() {
       if (currentUser) {
         const { data } = await sb.from('artwork_views').select('artwork_id').eq('user_id', currentUser.id).order('viewed_at', { ascending:false }).limit(20);
@@ -512,7 +513,7 @@
       return ((a.name||'') + ' ' + (a.description||'')).toLowerCase().split(/\W+/).filter(w=>w.length>2);
     }
 
-    // ── Trade ──
+    // â”€â”€ Trade â”€â”€
     function renderTrade() {
       const grid  = document.getElementById('tradeGrid');
       const empty = document.getElementById('emptyState');
@@ -523,14 +524,14 @@
           <img src="${a.image_url}" alt="${a.name}" loading="lazy" />
           <div class="card-body">
             <p class="card-title">${a.name}</p>
-            ${a.kids?.name ? `<p class="card-by">🎨 by ${a.kids.name}</p>` : ''}
-            <p class="card-price trade-price">🔄 Trade</p>
-            <button class="card-btn trade">🔄 Offer a Trade</button>
+            ${a.kids?.name ? `<p class="card-by">ðŸŽ¨ by ${a.kids.name}</p>` : ''}
+            <p class="card-price trade-price">ðŸ”„ Trade</p>
+            <button class="card-btn trade">ðŸ”„ Offer a Trade</button>
           </div>
         </div>`).join('');
     }
 
-    // ── Card template ──
+    // â”€â”€ Card template â”€â”€
     function artCard(a) {
       const hold = a.on_hold;
       return `
@@ -538,14 +539,14 @@
           <img src="${a.image_url}" alt="${a.name}" loading="lazy" />
           <div class="card-body">
             <p class="card-title">${a.name}</p>
-            ${a.kids?.name ? `<p class="card-by">🎨 by ${a.kids.name}</p>` : ''}
+            ${a.kids?.name ? `<p class="card-by">ðŸŽ¨ by ${a.kids.name}</p>` : ''}
             <p class="card-price">$${a.price}</p>
-            <button class="card-btn${hold?' hold':''}">${hold ? '👀 Preview (On Hold)' : '👀 Preview &amp; Buy'}</button>
+            <button class="card-btn${hold?' hold':''}">${hold ? 'ðŸ‘€ Preview (On Hold)' : 'ðŸ‘€ Preview &amp; Buy'}</button>
           </div>
         </div>`;
     }
 
-    // ── Help modal ──
+    // â”€â”€ Help modal â”€â”€
     function openInfo()  { document.getElementById('helpModal').classList.add('open'); }
     function closeInfo() { document.getElementById('helpModal').classList.remove('open'); }
     document.addEventListener('keydown', e => { if (e.key==='Escape') closeInfo(); });

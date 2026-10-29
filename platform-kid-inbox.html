@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Notifications – Little Heartworks</title>
+  <title>My Notifications â€“ Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -90,12 +91,12 @@
 <body>
 
   <header>
-    <div class="logo">📬 My Notifications</div>
-    <a href="platform-kid-shop.html" class="nav-btn">← Shop</a>
+    <div class="logo">ðŸ“¬ My Notifications</div>
+    <a href="platform-kid-shop.html" class="nav-btn">â† Shop</a>
   </header>
 
   <div class="container">
-    <p class="page-title">📬 My Notifications</p>
+    <p class="page-title">ðŸ“¬ My Notifications</p>
     <p class="page-sub" id="kidNameSub">Here's what's happening with your art</p>
 
     <div id="mainContent">
@@ -120,7 +121,7 @@
     function checkEmpty() {
       const main = document.getElementById('mainContent');
       if (!main.querySelector('.panel') && !main.querySelector('.celebration')) {
-        main.innerHTML = `<div class="empty-state"><div class="icon">🎨</div>No new notifications yet.<br><span style="font-size:0.85rem;font-family:'Nunito',sans-serif;font-weight:700;">Your art sales and requests will show up here!</span></div>`;
+        main.innerHTML = `<div class="empty-state"><div class="icon">ðŸŽ¨</div>No new notifications yet.<br><span style="font-size:0.85rem;font-family:'Nunito',sans-serif;font-weight:700;">Your art sales and requests will show up here!</span></div>`;
       }
     }
 
@@ -128,7 +129,7 @@
       const raw = localStorage.getItem('kidSession');
       if (!raw) { window.location.href = 'platform-index.html'; return; }
       kidSession = JSON.parse(raw);
-      document.getElementById('kidNameSub').textContent = `Hey ${kidSession.kid_name}! Here's what's happening with your art 🎨`;
+      document.getElementById('kidNameSub').textContent = `Hey ${kidSession.kid_name}! Here's what's happening with your art ðŸŽ¨`;
 
       const dismissed = getDismissed();
       const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -167,14 +168,14 @@
       const main = document.getElementById('mainContent');
       let html = '';
 
-      // 🎉 Sales celebration panel
+      // ðŸŽ‰ Sales celebration panel
       if (kidSales.length) {
         html += `<div class="celebration">
-          <div class="big">🎉 Your art sold!</div>
-          <div class="sub">You're a real artist — people are buying your work!</div>
+          <div class="big">ðŸŽ‰ Your art sold!</div>
+          <div class="sub">You're a real artist â€” people are buying your work!</div>
         </div>`;
         html += `<div class="panel" id="salesPanel">
-          <p class="panel-title">💰 Sold Artwork</p>
+          <p class="panel-title">ðŸ’° Sold Artwork</p>
           <div id="salesList">` +
           kidSales.map(p => `
             <div class="notif-row" id="ks-${p.id}" onclick="location.href='platform-art.html?id=${p.artworks?.id}'" style="cursor:pointer;">
@@ -183,17 +184,17 @@
                 <p class="notif-title">${p.artworks?.name || p.artwork_name}</p>
                 <p class="notif-meta">Sold for <strong>$${p.artwork_price}</strong>${p.donation_amount > 0 ? ` + $${p.donation_amount} tip` : ''}<br>
                   ${new Date(p.completed_at).toLocaleDateString('en-US', { month:'long', day:'numeric' })}</p>
-                <span class="notif-badge badge-sold">✅ Sold!</span>
+                <span class="notif-badge badge-sold">âœ… Sold!</span>
               </div>
-              <button class="dismiss-btn" onclick="event.stopPropagation();dismissItem('ks-${p.id}',this.closest('.notif-row'),document.getElementById('salesList'),document.getElementById('salesPanel'))">✕</button>
+              <button class="dismiss-btn" onclick="event.stopPropagation();dismissItem('ks-${p.id}',this.closest('.notif-row'),document.getElementById('salesList'),document.getElementById('salesPanel'))">âœ•</button>
             </div>`).join('') +
           `</div></div>`;
       }
 
-      // ⏳ Pending sales (someone wants to buy but waiting on parent to confirm)
+      // â³ Pending sales (someone wants to buy but waiting on parent to confirm)
       if (kidPending.length) {
         html += `<div class="panel" id="pendingPanel">
-          <p class="panel-title">⏳ Someone Wants to Buy Your Art!</p>
+          <p class="panel-title">â³ Someone Wants to Buy Your Art!</p>
           <div id="pendingList">` +
           kidPending.map(p => `
             <div class="notif-row" id="kp-${p.id}" onclick="location.href='platform-art.html?id=${p.artworks?.id}'" style="cursor:pointer;">
@@ -202,17 +203,17 @@
                 <p class="notif-title">${p.artworks?.name || p.artwork_name}</p>
                 <p class="notif-meta">Someone sent a request to buy this for <strong>$${p.artwork_price}</strong>.<br>
                   Your parent will arrange the sale!</p>
-                <span class="notif-badge badge-pending">⏳ In Progress</span>
+                <span class="notif-badge badge-pending">â³ In Progress</span>
               </div>
-              <button class="dismiss-btn" onclick="event.stopPropagation();dismissItem('kp-${p.id}',this.closest('.notif-row'),document.getElementById('pendingList'),document.getElementById('pendingPanel'))">✕</button>
+              <button class="dismiss-btn" onclick="event.stopPropagation();dismissItem('kp-${p.id}',this.closest('.notif-row'),document.getElementById('pendingList'),document.getElementById('pendingPanel'))">âœ•</button>
             </div>`).join('') +
           `</div></div>`;
       }
 
-      // ✅ Approved art requests (parent said yes to buying something for the kid)
+      // âœ… Approved art requests (parent said yes to buying something for the kid)
       if (approvedRequests.length) {
         html += `<div class="panel" id="approvedPanel">
-          <p class="panel-title">✅ Your Parent Said Yes!</p>
+          <p class="panel-title">âœ… Your Parent Said Yes!</p>
           <div id="approvedList">` +
           approvedRequests.map(r => `
             <div class="notif-row" id="ar-${r.id}" onclick="location.href='platform-art.html?id=${r.artwork_id}'" style="cursor:pointer;">
@@ -221,17 +222,17 @@
                 <p class="notif-title">${r.artworks?.name || 'Artwork'}</p>
                 <p class="notif-meta">Your parent approved your request for <strong>$${r.artworks?.price}</strong>.<br>
                   They'll arrange the purchase!</p>
-                <span class="notif-badge badge-request">✅ Approved!</span>
+                <span class="notif-badge badge-request">âœ… Approved!</span>
               </div>
-              <button class="dismiss-btn" onclick="event.stopPropagation();dismissItem('ar-${r.id}',this.closest('.notif-row'),document.getElementById('approvedList'),document.getElementById('approvedPanel'))">✕</button>
+              <button class="dismiss-btn" onclick="event.stopPropagation();dismissItem('ar-${r.id}',this.closest('.notif-row'),document.getElementById('approvedList'),document.getElementById('approvedPanel'))">âœ•</button>
             </div>`).join('') +
           `</div></div>`;
       }
 
-      // ❌ Rejected art requests
+      // âŒ Rejected art requests
       if (rejectedRequests.length) {
         html += `<div class="panel" id="rejectedPanel">
-          <p class="panel-title">❌ Request Not Approved</p>
+          <p class="panel-title">âŒ Request Not Approved</p>
           <div id="rejectedList">` +
           rejectedRequests.map(r => `
             <div class="notif-row" id="rr-${r.id}">
@@ -239,9 +240,9 @@
               <div class="notif-body">
                 <p class="notif-title">${r.artworks?.name || 'Artwork'}</p>
                 <p class="notif-meta">Your parent declined this request.<br>Maybe ask them about it!</p>
-                <span class="notif-badge" style="background:#ffd6d6;color:#c0392b;">❌ Not this time</span>
+                <span class="notif-badge" style="background:#ffd6d6;color:#c0392b;">âŒ Not this time</span>
               </div>
-              <button class="dismiss-btn" onclick="event.stopPropagation();dismissItem('rr-${r.id}',this.closest('.notif-row'),document.getElementById('rejectedList'),document.getElementById('rejectedPanel'))">✕</button>
+              <button class="dismiss-btn" onclick="event.stopPropagation();dismissItem('rr-${r.id}',this.closest('.notif-row'),document.getElementById('rejectedList'),document.getElementById('rejectedPanel'))">âœ•</button>
             </div>`).join('') +
           `</div></div>`;
       }

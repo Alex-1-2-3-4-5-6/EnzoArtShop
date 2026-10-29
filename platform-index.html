@@ -1,7 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
@@ -46,8 +47,8 @@
     .btn-login:hover { background:rgba(255,255,255,0.35); box-shadow:none; transform:translateY(-2px); }
     .btn-signup { background:rgba(255,255,255,0.22); color:white; border:2.5px solid rgba(255,255,255,0.65); backdrop-filter:blur(8px); box-shadow:none; }
     .btn-signup:hover { background:rgba(255,255,255,0.35); box-shadow:none; transform:translateY(-2px); }
-    .btn-kid   { background:rgba(255,255,255,0.15); color:rgba(255,255,255,0.85); border:2px solid rgba(255,255,255,0.4); backdrop-filter:blur(8px); font-size:1rem; padding:13px 28px; box-shadow:none; }
-    .btn-kid:hover { background:rgba(255,255,255,0.28); box-shadow:none; transform:translateY(-2px); }
+    .btn-kid   { background:white; color:#a29bfe; border:none; font-size:1.05rem; padding:15px 28px; }
+    .btn-kid:hover { background:#f0eeff; box-shadow:0 8px 28px rgba(162,155,254,0.3); transform:translateY(-3px) scale(1.02); }
 
     .divider {
       width:100%; max-width:320px; display:flex; align-items:center; gap:10px;
@@ -127,12 +128,12 @@
 </head>
 <body>
 
-  <div class="logo">Little He<span>art</span>works 🎨</div>
+  <div class="logo">Little He<span>art</span>works ðŸŽ¨</div>
   <p class="tagline">A safe art marketplace for kids</p>
 
   <!-- Guest buttons -->
   <div class="btn-stack" id="guestSection">
-    <a href="platform-shop.html" class="btn btn-shop">🛍️ Browse the Shop</a>
+    <a href="platform-shop.html" class="btn btn-shop">ðŸ›ï¸ Browse the Shop</a>
 
     <div class="divider">account</div>
 
@@ -141,23 +142,23 @@
 
     <div class="divider">kids</div>
 
-    <button class="btn btn-kid" onclick="openKidModal()">🧒 I'm a Kid</button>
+    <button class="btn btn-kid" onclick="openKidModal()">ðŸ§’ I'm a Kid</button>
   </div>
 
   <!-- Logged-in card -->
   <div class="logged-card" id="loggedCard">
-    <div class="pfp" id="pfp"><span id="pfpEmoji">🧑</span></div>
+    <div class="pfp" id="pfp"><span id="pfpEmoji">ðŸ§‘</span></div>
     <p class="logged-name" id="loggedName"></p>
     <p class="logged-email" id="loggedEmail"></p>
-    <a href="platform-shop.html" class="btn btn-shop" style="margin-top:4px;">🛍️ Browse the Shop</a>
-    <a href="platform-dashboard.html" class="btn btn-login" style="font-size:1rem;padding:14px 28px;">🎨 My Dashboard</a>
+    <a href="platform-shop.html" class="btn btn-shop" style="margin-top:4px;">ðŸ›ï¸ Browse the Shop</a>
+    <a href="platform-dashboard.html" class="btn btn-login" style="font-size:1rem;padding:14px 28px;">ðŸŽ¨ My Dashboard</a>
     <button class="logout-txt" onclick="logout()">Log out</button>
   </div>
 
   <!-- Kid code modal -->
   <div class="modal-bg" id="kidModal" onclick="if(event.target===this)closeKidModal()">
     <div class="modal">
-      <div style="font-size:2.8rem;">🧒</div>
+      <div style="font-size:2.8rem;">ðŸ§’</div>
       <h3>Enter Your Code</h3>
       <p>Ask your parent for your code and info</p>
       <input type="text" id="kidFirstName" placeholder="Your first name"
@@ -169,10 +170,10 @@
       <div class="modal-pw">
         <input type="password" id="kidPw" placeholder="Password (if you have one)"
           onkeydown="if(event.key==='Enter')goKid()" />
-        <button type="button" onclick="togglePw('kidPw',this)">👁</button>
+        <button type="button" onclick="togglePw('kidPw',this)">ðŸ‘</button>
       </div>
       <div class="modal-msg" id="kidMsg"></div>
-      <button class="modal-go" onclick="goKid()">Let's Go! 🎨</button>
+      <button class="modal-go" onclick="goKid()">Let's Go! ðŸŽ¨</button>
       <button class="modal-cancel" onclick="closeKidModal()">Cancel</button>
     </div>
   </div>
@@ -224,7 +225,7 @@
     function togglePw(id, btn) {
       const el = document.getElementById(id);
       el.type = el.type === 'password' ? 'text' : 'password';
-      btn.textContent = el.type === 'password' ? '👁' : '🙈';
+      btn.textContent = el.type === 'password' ? 'ðŸ‘' : 'ðŸ™ˆ';
     }
 
     async function goKid() {
@@ -239,18 +240,18 @@
       if (code.length !== 10) {
         msg.className = 'modal-msg error'; msg.textContent = 'Please enter your 10-digit code.'; msg.style.display = 'block'; return;
       }
-      msg.className = 'modal-msg loading'; msg.textContent = '⏳ Checking code...'; msg.style.display = 'block';
+      msg.className = 'modal-msg loading'; msg.textContent = 'â³ Checking code...'; msg.style.display = 'block';
       const { data, error } = await sb.rpc('validate_kid_code', { p_code: code, p_password: pw });
       if (error || data?.error) {
         msg.className = 'modal-msg error';
-        msg.textContent = data?.error === 'Wrong password' ? '❌ Wrong password.' : '❌ Invalid code. Ask your parent to check their dashboard.';
+        msg.textContent = data?.error === 'Wrong password' ? 'âŒ Wrong password.' : 'âŒ Invalid code. Ask your parent to check their dashboard.';
         return;
       }
       // Validate first name matches
       const storedFirst = (data.kid_name || '').split(' ')[0].toLowerCase();
       if (storedFirst && firstName.toLowerCase() !== storedFirst) {
         msg.className = 'modal-msg error';
-        msg.textContent = '❌ That name doesn\'t match the code. Ask your parent if your name is set correctly.';
+        msg.textContent = 'âŒ That name doesn\'t match the code. Ask your parent if your name is set correctly.';
         return;
       }
       localStorage.setItem('kidSession', JSON.stringify({ kid_id: data.kid_id, kid_name: data.kid_name, parent_id: data.parent_id, code }));

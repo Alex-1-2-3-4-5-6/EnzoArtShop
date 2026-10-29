@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Checkout – Little Heartworks</title>
+  <title>Checkout â€“ Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -107,7 +108,7 @@
 </head>
 <body>
 
-  <a href="javascript:history.back()" class="back-link">← Back</a>
+  <a href="javascript:history.back()" class="back-link">â† Back</a>
 
   <div id="loadingState" class="loading">Loading artwork...</div>
 
@@ -123,7 +124,7 @@
 
   <!-- Checkout form -->
   <div class="card" id="checkoutCard" style="display:none;">
-    <p class="card-title">📋 Your Information</p>
+    <p class="card-title">ðŸ“‹ Your Information</p>
 
     <div class="field">
       <label for="buyerName">Your Name</label>
@@ -135,7 +136,7 @@
     </div>
 
     <div class="donate-box">
-      <label>💛 Add a Donation (optional)</label>
+      <label>ðŸ’› Add a Donation (optional)</label>
       <input type="number" id="donateAmt" placeholder="0.00" min="0" step="0.01" oninput="updateTotal()" />
       <p class="hint">Add a little extra to support the young artist!</p>
     </div>
@@ -145,14 +146,14 @@
       <strong id="totalAmt">$0.00</strong>
     </div>
 
-    <button class="buy-btn" id="checkoutBtn" onclick="submitOrder()">🎨 Request to Buy</button>
+    <button class="buy-btn" id="checkoutBtn" onclick="submitOrder()">ðŸŽ¨ Request to Buy</button>
     <div class="msg" id="msg"></div>
   </div>
 
   <!-- Success -->
   <div class="success-card" id="successCard">
-    <div class="icon">🎉</div>
-    <h2>Request Sent! 🎉</h2>
+    <div class="icon">ðŸŽ‰</div>
+    <h2>Request Sent! ðŸŽ‰</h2>
     <p id="successMsg"></p>
     <p style="font-size:0.85rem;color:#bbb;margin-bottom:20px;">The seller will reach out to arrange payment and delivery in person.</p>
     <a href="platform-shop.html" class="done-link">Back to Shop</a>
@@ -167,7 +168,7 @@
 
     async function init() {
       const id = new URLSearchParams(window.location.search).get('id');
-      if (!id) { document.getElementById('loadingState').textContent = '❌ No artwork specified.'; return; }
+      if (!id) { document.getElementById('loadingState').textContent = 'âŒ No artwork specified.'; return; }
 
       const [{ data: { user } }, { data }] = await Promise.all([
         sb.auth.getUser(),
@@ -176,10 +177,10 @@
 
       document.getElementById('loadingState').style.display = 'none';
 
-      if (!data) { document.getElementById('loadingState').style.display='block'; document.getElementById('loadingState').textContent='❌ Artwork not found.'; return; }
+      if (!data) { document.getElementById('loadingState').style.display='block'; document.getElementById('loadingState').textContent='âŒ Artwork not found.'; return; }
       art = data;
 
-      document.title = 'Checkout: ' + art.name + ' – Little Heartworks';
+      document.title = 'Checkout: ' + art.name + ' â€“ Little Heartworks';
       document.getElementById('artImg').src = art.image_url;
       document.getElementById('artName').textContent = art.name;
       document.getElementById('artBy').textContent = art.kids?.name ? `by ${art.kids.name}` : '';
@@ -238,11 +239,11 @@
         document.getElementById('checkoutCard').style.display = 'none';
         document.getElementById('successCard').style.display  = 'block';
         document.getElementById('successMsg').textContent =
-          `Thanks ${name}! We'll be in touch at ${email} to arrange payment and delivery. Total: $${total} 🎨`;
+          `Thanks ${name}! We'll be in touch at ${email} to arrange payment and delivery. Total: $${total} ðŸŽ¨`;
 
       } catch(e) {
-        msg.className = 'msg error'; msg.textContent = '❌ Something went wrong. Please try again.'; msg.style.display = 'block';
-        btn.disabled = false; btn.textContent = 'Send Purchase Request 🎨';
+        msg.className = 'msg error'; msg.textContent = 'âŒ Something went wrong. Please try again.'; msg.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Send Purchase Request ðŸŽ¨';
       }
     }
 

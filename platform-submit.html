@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Submit Artwork – Little Heartworks</title>
+  <title>Submit Artwork â€“ Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -94,21 +95,21 @@
   <header>
     <div class="logo">Little He<span>art</span>works</div>
     <button onclick="openInfo()" style="background:#f0f0f0;border:none;border-radius:50%;width:32px;height:32px;font-size:0.95rem;cursor:pointer;color:#aaa;flex-shrink:0;font-weight:700;">?</button>
-    <a href="platform-dashboard.html" class="back-btn">← Dashboard</a>
+    <a href="platform-dashboard.html" class="back-btn">â† Dashboard</a>
   </header>
 
   <div class="container">
     <div class="panel">
-      <h2>🎨 Submit Artwork</h2>
-      <p class="sub">Fill in the details below — your parent will review before it goes live</p>
+      <h2>ðŸŽ¨ Submit Artwork</h2>
+      <p class="sub">Fill in the details below â€” your parent will review before it goes live</p>
 
       <div class="approval-note" id="approvalNote">
-        <strong>ℹ️ Heads up:</strong> After submitting, you'll need to approve this artwork from your dashboard before it appears in the shop.
+        <strong>â„¹ï¸ Heads up:</strong> After submitting, you'll need to approve this artwork from your dashboard before it appears in the shop.
       </div>
 
       <div class="drop-zone" id="dropZone">
         <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])" />
-        <div class="dz-icon">🖼️</div>
+        <div class="dz-icon">ðŸ–¼ï¸</div>
         <p><span>Click or drag</span> a photo here</p>
       </div>
       <img id="imgPreview" src="" alt="preview" />
@@ -143,7 +144,7 @@
           <label style="flex:1;cursor:pointer;">
             <input type="radio" name="listingType" id="listSell" value="sell" checked style="display:none;" />
             <div id="listSellBox" onclick="setListing('sell')" style="border:2.5px solid #ff6b6b;border-radius:16px;padding:14px;text-align:center;background:#fff5f5;transition:all 0.15s;">
-              <p style="font-size:1.4rem;">🛍️</p>
+              <p style="font-size:1.4rem;">ðŸ›ï¸</p>
               <p style="font-family:'Fredoka One',cursive;color:#ff6b6b;font-size:0.95rem;">For Sale</p>
               <p style="font-size:0.75rem;color:#aaa;margin-top:3px;">Buyers pay money</p>
             </div>
@@ -151,7 +152,7 @@
           <label style="flex:1;cursor:pointer;">
             <input type="radio" name="listingType" id="listTrade" value="trade" style="display:none;" />
             <div id="listTradeBox" onclick="setListing('trade')" style="border:2.5px solid #e0e0e0;border-radius:16px;padding:14px;text-align:center;background:white;transition:all 0.15s;">
-              <p style="font-size:1.4rem;">🔄</p>
+              <p style="font-size:1.4rem;">ðŸ”„</p>
               <p style="font-family:'Fredoka One',cursive;color:#aaa;font-size:0.95rem;">For Trade</p>
               <p style="font-size:0.75rem;color:#aaa;margin-top:3px;">Trade art for art</p>
             </div>
@@ -253,10 +254,10 @@
       const btn    = document.getElementById('submitBtn');
 
       const flagged = contentFilter(name) || contentFilter(desc);
-      if (flagged) { showMsg('error', `⚠️ Please remove inappropriate language before submitting.`); return; }
+      if (flagged) { showMsg('error', `âš ï¸ Please remove inappropriate language before submitting.`); return; }
 
       btn.disabled = true;
-      showMsg('loading', '⏳ Uploading image...');
+      showMsg('loading', 'â³ Uploading image...');
       document.getElementById('progressBar').style.display = 'block';
       document.getElementById('progressFill').style.width = '30%';
 
@@ -271,7 +272,7 @@
         if (uploadError) throw uploadError;
 
         document.getElementById('progressFill').style.width = '65%';
-        showMsg('loading', '⏳ Saving artwork details...');
+        showMsg('loading', 'â³ Saving artwork details...');
 
         // Get public URL
         const { data: urlData } = sb.storage.from('artwork-images').getPublicUrl(filename);
@@ -297,14 +298,14 @@
         document.getElementById('progressFill').style.width = '100%';
         const artCode = inserted?.id ? '#' + inserted.id.slice(0,6).toUpperCase() : '';
         const codeNote = artCode ? ` Write "${artCode}" on the back of the artwork so you can match it to this listing.` : '';
-        const statusNote = kidId ? 'Waiting for your approval — check your dashboard.' : 'It\'s live in the shop!';
-        showMsg('success', `✅ Artwork posted! ${statusNote}${codeNote}`);
+        const statusNote = kidId ? 'Waiting for your approval â€” check your dashboard.' : 'It\'s live in the shop!';
+        showMsg('success', `âœ… Artwork posted! ${statusNote}${codeNote}`);
         btn.textContent = 'Submitted!';
 
         setTimeout(() => window.location.href = 'platform-my-shop.html', 3000);
 
       } catch(e) {
-        showMsg('error', '❌ Error: ' + e.message);
+        showMsg('error', 'âŒ Error: ' + e.message);
         document.getElementById('progressBar').style.display = 'none';
         btn.disabled = false;
         btn.textContent = 'Submit for Approval';
@@ -317,19 +318,19 @@
   </script>
   <div id="infoOverlay" onclick="closeInfo(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:center;justify-content:center;padding:20px;">
     <div style="background:white;border-radius:28px;max-width:480px;width:100%;padding:36px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;" onclick="event.stopPropagation()">
-      <h2 style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#333;margin-bottom:6px;">How It Works 🎨</h2>
-      <p style="color:#aaa;font-size:0.88rem;margin-bottom:24px;">Little Heartworks — a kids art marketplace</p>
+      <h2 style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#333;margin-bottom:6px;">How It Works ðŸŽ¨</h2>
+      <p style="color:#aaa;font-size:0.88rem;margin-bottom:24px;">Little Heartworks â€” a kids art marketplace</p>
       <div style="display:flex;flex-direction:column;gap:16px;">
         <div style="background:#f4f0ff;border-radius:16px;padding:16px 18px;">
-          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#a29bfe;margin-bottom:4px;">✏️ Submitting Art</p>
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#a29bfe;margin-bottom:4px;">âœï¸ Submitting Art</p>
           <p style="font-size:0.88rem;color:#555;line-height:1.6;">Upload a photo, give the artwork a title, description, and price. If submitting for a kid it goes to your dashboard for approval first. If posting as yourself it goes straight to the shop.</p>
         </div>
         <div style="background:#fff8ee;border-radius:16px;padding:16px 18px;">
-          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#feca57;margin-bottom:4px;">👧 Kids submitting their own art</p>
-          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Kids can also submit art themselves using their 10-digit code from the home page — it comes to your dashboard for approval just the same.</p>
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#feca57;margin-bottom:4px;">ðŸ‘§ Kids submitting their own art</p>
+          <p style="font-size:0.88rem;color:#555;line-height:1.6;">Kids can also submit art themselves using their 10-digit code from the home page â€” it comes to your dashboard for approval just the same.</p>
         </div>
       </div>
-      <button onclick="closeInfo()" style="width:100%;margin-top:24px;background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;">Got it! 🎉</button>
+      <button onclick="closeInfo()" style="width:100%;margin-top:24px;background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;">Got it! ðŸŽ‰</button>
     </div>
   </div>
 </body>

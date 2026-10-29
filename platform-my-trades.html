@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Trades – Little Heartworks</title>
+  <title>My Trades â€“ Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -53,21 +54,21 @@
 <body>
   <header>
     <div class="logo">Little He<span>art</span>works</div>
-    <a href="platform-shop.html" class="hdr-btn">🛍️ Shop</a>
-    <a href="platform-dashboard.html" class="hdr-btn">← Dashboard</a>
+    <a href="platform-shop.html" class="hdr-btn">ðŸ›ï¸ Shop</a>
+    <a href="platform-dashboard.html" class="hdr-btn">â† Dashboard</a>
   </header>
 
   <div class="container">
-    <p class="page-title">🔄 My Trades</p>
+    <p class="page-title">ðŸ”„ My Trades</p>
     <p class="page-sub">Your art trading history and active offers</p>
 
-    <p class="section-title">📬 Offers I Received</p>
+    <p class="section-title">ðŸ“¬ Offers I Received</p>
     <div id="receivedList"><p class="empty">Loading...</p></div>
 
-    <p class="section-title">📤 Offers I Sent</p>
+    <p class="section-title">ðŸ“¤ Offers I Sent</p>
     <div id="sentList"><p class="empty">Loading...</p></div>
 
-    <p class="section-title">✅ Completed Trades</p>
+    <p class="section-title">âœ… Completed Trades</p>
     <div id="completedList"><p class="empty">Loading...</p></div>
   </div>
 
@@ -122,14 +123,14 @@
           <div class="trade-card">
             <div class="trade-imgs">
               <img src="${t.offered?.image_url||''}" onerror="this.style.display='none'" />
-              <div class="trade-arrow">⇄</div>
+              <div class="trade-arrow">â‡„</div>
               <img src="${t.target?.image_url||''}" onerror="this.style.display='none'" />
             </div>
             <div class="trade-info">
               <p class="trade-name">${isSeller ? `Gave: ${t.target?.name}` : `Gave: ${t.offered?.name}`}</p>
               <p class="trade-meta">Got: ${isSeller ? t.offered?.name : t.target?.name}</p>
               <p class="trade-meta">${new Date(t.completed_at).toLocaleDateString()}</p>
-              <span class="status-badge status-completed">✅ Completed</span>
+              <span class="status-badge status-completed">âœ… Completed</span>
             </div>
           </div>`;
       }).join('');
@@ -144,18 +145,18 @@
       let actions = '';
       if (t.status === 'pending' && isSeller) {
         actions = `
-          <button onclick="respond('${t.id}','accepted')" style="background:#d4edda;border:none;border-radius:50px;padding:7px 14px;color:#155724;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">✅ Accept</button>
-          <button onclick="respond('${t.id}','rejected')" style="background:#ffd6d6;border:none;border-radius:50px;padding:7px 14px;color:#c0392b;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">❌ Reject</button>`;
+          <button onclick="respond('${t.id}','accepted')" style="background:#d4edda;border:none;border-radius:50px;padding:7px 14px;color:#155724;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">âœ… Accept</button>
+          <button onclick="respond('${t.id}','rejected')" style="background:#ffd6d6;border:none;border-radius:50px;padding:7px 14px;color:#c0392b;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">âŒ Reject</button>`;
       } else if (t.status === 'pending' && !isSeller) {
-        actions = `<button onclick="cancelOffer('${t.id}')" style="background:#f0f0f0;border:none;border-radius:50px;padding:7px 14px;color:#999;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">✕ Cancel</button>`;
+        actions = `<button onclick="cancelOffer('${t.id}')" style="background:#f0f0f0;border:none;border-radius:50px;padding:7px 14px;color:#999;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">âœ• Cancel</button>`;
       } else if (isAccepted) {
         if (myConfirmed) {
-          actions = `<span class="confirmed-label">✅ You confirmed — waiting for them</span>`;
+          actions = `<span class="confirmed-label">âœ… You confirmed â€” waiting for them</span>`;
         } else {
           actions = `<button class="confirm-btn" onclick="confirm('${t.id}','${isSeller?'seller':'buyer'}')">
-            ${isSeller ? '📦 I sent my art' : '📬 I got the art'}
+            ${isSeller ? 'ðŸ“¦ I sent my art' : 'ðŸ“¬ I got the art'}
           </button>`;
-          if (otherConfirmed) actions = `<p style="font-size:0.78rem;color:#e67e22;margin-bottom:6px;">⏳ They confirmed — your turn!</p>` + actions;
+          if (otherConfirmed) actions = `<p style="font-size:0.78rem;color:#e67e22;margin-bottom:6px;">â³ They confirmed â€” your turn!</p>` + actions;
         }
       }
 
@@ -163,7 +164,7 @@
         <div class="trade-card">
           <div class="trade-imgs">
             <img src="${t.offered?.image_url||''}" title="${t.offered?.name||''}" onerror="this.style.display='none'" />
-            <div class="trade-arrow">⇄</div>
+            <div class="trade-arrow">â‡„</div>
             <img src="${t.target?.image_url||''}" title="${t.target?.name||''}" onerror="this.style.display='none'" />
           </div>
           <div class="trade-info">
