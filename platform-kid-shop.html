@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Browse Art â€“ Little Heartworks</title>
+  <title>Browse Art – Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -120,13 +120,13 @@
 <body>
 
   <header>
-    <div class="logo">ðŸŽ¨ Little He<span style="color:#fff176;">art</span>works</div>
+    <div class="logo">🎨 Little He<span style="color:#fff176;">art</span>works</div>
     <button onclick="openInfo()" style="background:rgba(255,255,255,0.25);border:2px solid rgba(255,255,255,0.6);border-radius:50%;width:32px;height:32px;font-size:0.95rem;cursor:pointer;color:white;flex-shrink:0;font-weight:700;">?</button>
-    <div class="kid-badge" id="kidBadge">ðŸ§’ ...</div>
+    <div class="kid-badge" id="kidBadge">🧒 ...</div>
     <a href="platform-kid-submit.html" class="nav-btn">âœï¸ Submit</a>
-    <a href="platform-kid-my-shop.html" class="nav-btn" style="background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.5);">ðŸ–¼ï¸ My Art</a>
+    <a href="platform-kid-my-shop.html" class="nav-btn" style="background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.5);">🖼️ My Art</a>
     <a href="platform-kid-inbox.html" class="nav-btn" style="position:relative;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.5);" id="inboxNavBtn">
-      ðŸ“¬ Inbox
+      📬 Inbox
       <span id="kidInboxDot" style="display:none;position:absolute;top:-3px;right:-3px;width:10px;height:10px;background:#ff6b6b;border-radius:50%;border:2px solid white;"></span>
     </a>
     <button class="switch-btn" onclick="switchKid()">Switch</button>
@@ -135,22 +135,22 @@
   <!-- Tabs -->
   <div style="display:flex;justify-content:center;gap:8px;padding:18px 20px 0;">
     <button id="tabShop"  onclick="switchTab('shop')"
-      style="border:none;border-radius:50px;padding:10px 28px;font-family:'Fredoka One',cursive;font-size:0.95rem;cursor:pointer;background:linear-gradient(135deg,#a29bfe,#ff9ff3);color:white;box-shadow:0 4px 14px rgba(162,155,254,0.35);">ðŸ›ï¸ Art Shop</button>
+      style="border:none;border-radius:50px;padding:10px 28px;font-family:'Fredoka One',cursive;font-size:0.95rem;cursor:pointer;background:linear-gradient(135deg,#a29bfe,#ff9ff3);color:white;box-shadow:0 4px 14px rgba(162,155,254,0.35);">🛍️ Art Shop</button>
     <button id="tabTrade" onclick="switchTab('trade')"
-      style="border:none;border-radius:50px;padding:10px 28px;font-family:'Fredoka One',cursive;font-size:0.95rem;cursor:pointer;background:white;color:#aaa;box-shadow:0 2px 8px rgba(0,0,0,0.06);">ðŸ”„ Trading</button>
+      style="border:none;border-radius:50px;padding:10px 28px;font-family:'Fredoka One',cursive;font-size:0.95rem;cursor:pointer;background:white;color:#aaa;box-shadow:0 2px 8px rgba(0,0,0,0.06);">🔄 Trading</button>
   </div>
 
   <div class="limit-bar">
-    <div class="limit-pill" id="limitPill">ðŸ›’ Loading...</div>
+    <div class="limit-pill" id="limitPill">🛒 Loading...</div>
   </div>
 
   <div class="search-wrap">
-    <input id="searchInput" type="text" placeholder="Search for art... ðŸ”" oninput="renderGrid()" />
+    <input id="searchInput" type="text" placeholder="Search for art... 🔍" oninput="renderGrid()" />
   </div>
 
   <p class="section-label" id="sectionLabel"></p>
   <div class="grid" id="grid"></div>
-  <div class="empty" id="emptyState" style="display:none">No art yet â€” check back soon! ðŸ–Œï¸</div>
+  <div class="empty" id="emptyState" style="display:none">No art yet — check back soon! 🖌️</div>
 
   <!-- Preview modal -->
   <div class="overlay" id="overlay" onclick="closeModal(event)">
@@ -162,7 +162,7 @@
         <p class="modal-price" id="modalPrice"></p>
         <p class="modal-desc" id="modalDesc" style="display:none"></p>
         <div class="modal-actions">
-          <button class="btn-request" id="modalRequestBtn" onclick="requestArt()">ðŸ›’ Request This!</button>
+          <button class="btn-request" id="modalRequestBtn" onclick="requestArt()">🛒 Request This!</button>
           <button class="btn-close" onclick="closeModal()">Close</button>
         </div>
         <div id="modalMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:12px;font-weight:700;font-size:0.88rem;"></div>
@@ -174,11 +174,11 @@
 
   <div id="infoOverlay" onclick="closeInfo(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:center;justify-content:center;padding:20px;">
     <div style="background:white;border-radius:28px;max-width:480px;width:100%;padding:36px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;" onclick="event.stopPropagation()">
-      <h2 style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#333;margin-bottom:6px;">How It Works ðŸŽ¨</h2>
-      <p style="color:#aaa;font-size:0.88rem;margin-bottom:24px;">Little Heartworks â€” a kids art marketplace</p>
+      <h2 style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#333;margin-bottom:6px;">How It Works 🎨</h2>
+      <p style="color:#aaa;font-size:0.88rem;margin-bottom:24px;">Little Heartworks — a kids art marketplace</p>
       <div style="display:flex;flex-direction:column;gap:16px;">
         <div style="background:#f4f0ff;border-radius:16px;padding:16px 18px;">
-          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#a29bfe;margin-bottom:4px;">ðŸ›’ Requesting Art</p>
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#a29bfe;margin-bottom:4px;">🛒 Requesting Art</p>
           <p style="font-size:0.88rem;color:#555;line-height:1.6;">Browse all the artwork and click "Request This!" on anything you like. Your parent will see your request and can approve it. You have a daily limit on how many pieces you can request.</p>
         </div>
         <div style="background:#fff8ee;border-radius:16px;padding:16px 18px;">
@@ -186,11 +186,11 @@
           <p style="font-size:0.88rem;color:#555;line-height:1.6;">Click "Submit Art" at the top to upload a photo of your artwork, give it a title and price, and send it to your parent for approval. Once approved it appears in the shop!</p>
         </div>
         <div style="background:#fff0f9;border-radius:16px;padding:16px 18px;">
-          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#ff9ff3;margin-bottom:4px;">ðŸ” Finding Art</p>
+          <p style="font-family:'Fredoka One',cursive;font-size:1rem;color:#ff9ff3;margin-bottom:4px;">🔍 Finding Art</p>
           <p style="font-size:0.88rem;color:#555;line-height:1.6;">Use the search bar to search by title or description. The more art you look at, the smarter the recommendations get!</p>
         </div>
       </div>
-      <button onclick="closeInfo()" style="width:100%;margin-top:24px;background:linear-gradient(135deg,#a29bfe,#ff9ff3);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;">Got it! ðŸŽ‰</button>
+      <button onclick="closeInfo()" style="width:100%;margin-top:24px;background:linear-gradient(135deg,#a29bfe,#ff9ff3);border:none;border-radius:50px;padding:14px;color:white;font-family:'Fredoka One',cursive;font-size:1.05rem;cursor:pointer;">Got it! 🎉</button>
     </div>
   </div>
 
@@ -212,7 +212,7 @@
       const isShop = tab === 'shop';
       document.getElementById('tabShop').style.cssText  = `border:none;border-radius:50px;padding:10px 28px;font-family:'Fredoka One',cursive;font-size:0.95rem;cursor:pointer;${isShop ? 'background:linear-gradient(135deg,#a29bfe,#ff9ff3);color:white;box-shadow:0 4px 14px rgba(162,155,254,0.35);' : 'background:white;color:#aaa;box-shadow:0 2px 8px rgba(0,0,0,0.06);'}`;
       document.getElementById('tabTrade').style.cssText = `border:none;border-radius:50px;padding:10px 28px;font-family:'Fredoka One',cursive;font-size:0.95rem;cursor:pointer;${!isShop ? 'background:linear-gradient(135deg,#a29bfe,#ff9ff3);color:white;box-shadow:0 4px 14px rgba(162,155,254,0.35);' : 'background:white;color:#aaa;box-shadow:0 2px 8px rgba(0,0,0,0.06);'}`;
-      document.getElementById('modalRequestBtn').textContent = isShop ? 'ðŸ›’ Request This!' : 'ðŸ”„ Request Trade!';
+      document.getElementById('modalRequestBtn').textContent = isShop ? '🛒 Request This!' : '🔄 Request Trade!';
       renderGrid();
     }
 
@@ -220,7 +220,7 @@
       const raw = localStorage.getItem('kidSession');
       if (!raw) { window.location.href = 'platform-index.html'; return; }
       kidSession = JSON.parse(raw);
-      document.getElementById('kidBadge').textContent = 'ðŸ§’ ' + kidSession.kid_name;
+      document.getElementById('kidBadge').textContent = '🧒 ' + kidSession.kid_name;
       await Promise.all([loadArtworks(), loadKidInfo(), checkKidInbox()]);
     }
 
@@ -239,7 +239,7 @@
       todayCount = sessionRequests.ids.length;
 
       // Fetch daily limit from kids table (need anon read policy on kids, or use RPC)
-      // We'll store it when we validate the code â€” update validate_kid_code to return it
+      // We'll store it when we validate the code — update validate_kid_code to return it
       dailyLimit = kidSession.daily_limit ?? null;
       updateLimitPill();
     }
@@ -247,9 +247,9 @@
     function updateLimitPill() {
       const pill = document.getElementById('limitPill');
       if (dailyLimit === null || dailyLimit === 0) {
-        pill.textContent = `ðŸ›’ ${todayCount} request${todayCount !== 1 ? 's' : ''} made today`;
+        pill.textContent = `🛒 ${todayCount} request${todayCount !== 1 ? 's' : ''} made today`;
       } else {
-        pill.textContent = `ðŸ›’ ${todayCount} / ${dailyLimit} requests used today`;
+        pill.textContent = `🛒 ${todayCount} / ${dailyLimit} requests used today`;
         pill.style.color = todayCount >= dailyLimit ? '#ff6b6b' : '#a29bfe';
       }
     }
@@ -274,7 +274,7 @@
       );
 
       label.style.display = 'block';
-      label.textContent = query ? `${filtered.length} result${filtered.length!==1?'s':''} for "${query}" âœ¨` : `All Artworks âœ¨ (${filtered.length})`;
+      label.textContent = query ? `${filtered.length} result${filtered.length!==1?'s':''} for "${query}" ✨` : `All Artworks ✨ (${filtered.length})`;
 
       if (filtered.length === 0) { empty.style.display='block'; grid.innerHTML=''; return; }
       empty.style.display = 'none';
@@ -285,9 +285,9 @@
         const isOwn = art.kid_id === kidSession.kid_id;
         const isRequested = requestedIds.has(art.id);
         const isTrading = activeTab === 'trade';
-        let btnClass = 'request', btnText = isTrading ? 'ðŸ”„ Request Trade' : 'ðŸ›’ Request This', btnDisabled = '';
-        if (isOwn) { btnClass = 'own'; btnText = 'ðŸŽ¨ Your Art'; btnDisabled = 'disabled'; }
-        else if (isRequested) { btnClass = 'requested'; btnText = 'âœ… Requested'; btnDisabled = 'disabled'; }
+        let btnClass = 'request', btnText = isTrading ? '🔄 Request Trade' : '🛒 Request This', btnDisabled = '';
+        if (isOwn) { btnClass = 'own'; btnText = '🎨 Your Art'; btnDisabled = 'disabled'; }
+        else if (isRequested) { btnClass = 'requested'; btnText = '✅ Requested'; btnDisabled = 'disabled'; }
         else if (atLimit && !isTrading) { btnClass = 'requested'; btnText = 'ðŸš« Limit Reached'; btnDisabled = 'disabled'; }
 
         const card = document.createElement('div');
@@ -296,7 +296,7 @@
           <img src="${art.image_url}" alt="${art.name}" loading="lazy" onclick="openModal('${art.id}')" style="cursor:pointer;" />
           <div class="card-body">
             <p class="card-title">${art.name}</p>
-            ${art.kids?.name ? `<p class="card-artist">ðŸŽ¨ by ${art.kids.name}</p>` : ''}
+            ${art.kids?.name ? `<p class="card-artist">🎨 by ${art.kids.name}</p>` : ''}
             <p class="card-price">$${art.price}</p>
             <button class="card-btn ${btnClass}" ${btnDisabled} onclick="openModal('${art.id}')">${btnText}</button>
           </div>`;
@@ -310,7 +310,7 @@
       document.getElementById('modalImg').src = art.image_url;
       document.getElementById('modalTitle').textContent = art.name;
       document.getElementById('modalPrice').textContent = '$' + art.price;
-      const artist = [art.kids?.name ? `ðŸ§’ by ${art.kids.name}` : '', art.parent_name ? `ðŸ‘¨â€ðŸ‘©â€ðŸ‘§ ${art.parent_name}` : ''].filter(Boolean).join(' Â· ');
+      const artist = [art.kids?.name ? `🧒 by ${art.kids.name}` : '', art.parent_name ? `👨‍👩‍👧 ${art.parent_name}` : ''].filter(Boolean).join(' Â· ');
       document.getElementById('modalArtist').textContent = artist;
       const descEl = document.getElementById('modalDesc');
       if (art.description) { descEl.textContent = art.description; descEl.style.display = 'block'; }
@@ -321,10 +321,10 @@
       const isOwn = art.kid_id === kidSession.kid_id;
       const isRequested = requestedIds.has(id);
 
-      if (isOwn) { btn.textContent = 'ðŸŽ¨ This is your art!'; btn.disabled = true; }
-      else if (isRequested) { btn.textContent = 'âœ… Already requested'; btn.disabled = true; }
+      if (isOwn) { btn.textContent = '🎨 This is your art!'; btn.disabled = true; }
+      else if (isRequested) { btn.textContent = '✅ Already requested'; btn.disabled = true; }
       else if (atLimit) { btn.textContent = 'ðŸš« Daily limit reached'; btn.disabled = true; }
-      else { btn.textContent = 'ðŸ›’ Request This!'; btn.disabled = false; }
+      else { btn.textContent = '🛒 Request This!'; btn.disabled = false; }
 
       document.getElementById('modalMsg').style.display = 'none';
       document.getElementById('overlay').classList.add('open');
@@ -337,7 +337,7 @@
 
     async function requestArt() {
       const btn = document.getElementById('modalRequestBtn');
-      btn.disabled = true; btn.textContent = 'â³ Sending...';
+      btn.disabled = true; btn.textContent = '⏳ Sending...';
 
       const { data, error } = await sb.rpc('request_art_as_kid', {
         p_code: kidSession.code,
@@ -346,11 +346,11 @@
 
       const msgEl = document.getElementById('modalMsg');
       if (error || data?.error) {
-        const errMap = { limit: 'ðŸš« You\'ve reached your daily request limit!', already: 'âœ… You already requested this.' };
-        const msg = errMap[data?.error] || 'âŒ Something went wrong.';
+        const errMap = { limit: 'ðŸš« You\'ve reached your daily request limit!', already: '✅ You already requested this.' };
+        const msg = errMap[data?.error] || '❌ Something went wrong.';
         msgEl.style.cssText = 'display:block;background:#ffd6d6;color:#c0392b;margin-top:12px;padding:10px 14px;border-radius:12px;font-weight:700;font-size:0.88rem;';
         msgEl.textContent = msg;
-        btn.disabled = false; btn.textContent = 'ðŸ›’ Request This!';
+        btn.disabled = false; btn.textContent = '🛒 Request This!';
         return;
       }
 
@@ -362,9 +362,9 @@
       todayCount++;
       updateLimitPill();
 
-      btn.textContent = 'âœ… Requested!';
+      btn.textContent = '✅ Requested!';
       msgEl.style.cssText = 'display:block;background:#d4edda;color:#155724;margin-top:12px;padding:10px 14px;border-radius:12px;font-weight:700;font-size:0.88rem;';
-      msgEl.textContent = 'ðŸŽ‰ Request sent to your parent!';
+      msgEl.textContent = '🎉 Request sent to your parent!';
       renderGrid();
     }
 

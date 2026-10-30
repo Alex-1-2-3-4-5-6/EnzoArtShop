@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>History â€“ Little Heartworks</title>
+  <title>History – Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -50,12 +50,12 @@
     <p class="page-sub">Your completed purchases and trades</p>
 
     <div class="section">
-      <p class="section-title">ðŸ›ï¸ Purchases I Made</p>
+      <p class="section-title">🛍️ Purchases I Made</p>
       <div id="purchaseHistory"><p class="empty">Loading...</p></div>
     </div>
 
     <div class="section">
-      <p class="section-title">ðŸ”„ Completed Trades</p>
+      <p class="section-title">🔄 Completed Trades</p>
       <div id="tradeHistory"><p class="empty">Loading...</p></div>
     </div>
   </div>
@@ -91,7 +91,7 @@
             <div class="row-info">
               <p class="row-name">${p.artworks?.name || p.artwork_name}</p>
               <p class="row-meta">${new Date(p.completed_at || p.purchased_at).toLocaleDateString()}</p>
-              <span class="badge">âœ… Purchased</span>
+              <span class="badge">✅ Purchased</span>
             </div>
             <p class="amount">$${total}</p>
           </div>`;
@@ -118,10 +118,10 @@
               <img src="${got?.image_url||''}" title="You got: ${got?.name||''}" onerror="this.style.display='none'" />
             </div>
             <div class="row-info">
-              <p class="row-name">Gave: ${gave?.name || 'â€”'}</p>
-              <p class="row-meta">Got: ${got?.name || 'â€”'}</p>
+              <p class="row-name">Gave: ${gave?.name || '—'}</p>
+              <p class="row-meta">Got: ${got?.name || '—'}</p>
               <p class="row-meta">${new Date(t.completed_at).toLocaleDateString()}</p>
-              <span class="badge">âœ… Completed</span>
+              <span class="badge">✅ Completed</span>
             </div>
           </div>`;
       }).join('');

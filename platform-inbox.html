@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inbox â€“ Little Heartworks</title>
+  <title>Inbox – Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -96,42 +96,42 @@
 <body>
 
   <header>
-    <div class="logo">ðŸ“¬ Inbox</div>
+    <div class="logo">📬 Inbox</div>
     <a href="platform-shop.html" class="hbtn hbtn-ghost">â† Back to Shop</a>
   </header>
 
   <div class="container">
-    <p class="page-title">ðŸ“¬ Your Inbox</p>
+    <p class="page-title">📬 Your Inbox</p>
     <p class="page-sub">All requests, offers, and approvals in one place</p>
 
     <!-- Kid art submissions awaiting approval -->
     <div class="panel" id="approvalsPanel" style="display:none;">
-      <p class="panel-title">ðŸ–¼ï¸ Awaiting Your Approval</p>
+      <p class="panel-title">🖼️ Awaiting Your Approval</p>
       <div id="approvalsList"><p class="empty">Loading...</p></div>
     </div>
 
     <!-- Kid buy requests -->
     <div class="panel" id="kidRequestsPanel" style="display:none;">
-      <p class="panel-title">ðŸ§’ Your Kid's Buy Requests</p>
+      <p class="panel-title">🧒 Your Kid's Buy Requests</p>
       <div id="kidRequestsList"><p class="empty">Loading...</p></div>
     </div>
 
     <!-- Kid sold art notifications -->
     <div class="panel" id="kidSalesPanel" style="display:none;">
-      <p class="panel-title">ðŸŽ‰ Kid's Art Sold!</p>
+      <p class="panel-title">🎉 Kid's Art Sold!</p>
       <div id="kidSalesList"></div>
     </div>
 
     <!-- Purchase requests from buyers -->
     <div class="panel">
-      <p class="panel-title">ðŸ›’ Purchase Requests</p>
+      <p class="panel-title">🛒 Purchase Requests</p>
       <p style="font-size:0.8rem;color:#bbb;margin-bottom:14px;">Arrange payment and delivery in person, then click "Mark as Sent" when the art is on its way.</p>
       <div id="purchaseList"><p class="empty">Loading...</p></div>
     </div>
 
     <!-- Trade offers -->
     <div class="panel">
-      <p class="panel-title">ðŸ”„ Trade Offers</p>
+      <p class="panel-title">🔄 Trade Offers</p>
       <div id="tradeList"><p class="empty">Loading...</p></div>
     </div>
   </div>
@@ -189,7 +189,7 @@
               ${p.artworks?.kids?.name ? `<strong>${p.artworks.kids.name}'s</strong> art was sold` : 'Art sold'} to ${p.buyer_name} for <strong>$${(parseFloat(p.artwork_price||0)+parseFloat(p.donation||0)).toFixed(2)}</strong>
             </p>
           </div>
-          <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('ks-${p.id}',this.closest('.notif-row'),document.getElementById('kidSalesList'),'kidSalesPanel','')">âœ•</button>
+          <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('ks-${p.id}',this.closest('.notif-row'),document.getElementById('kidSalesList'),'kidSalesPanel','')">✕</button>
         </div>`).join('');
     }
 
@@ -215,17 +215,17 @@
               ðŸ“… ${new Date(a.created_at).toLocaleDateString()}
             </p>
             <div class="btn-row">
-              <button class="action-btn btn-green" onclick="event.stopPropagation();approveArt('${a.id}')">âœ… Approve</button>
-              <button class="action-btn btn-gray"  onclick="event.stopPropagation();rejectArt('${a.id}')">âœ• Reject</button>
+              <button class="action-btn btn-green" onclick="event.stopPropagation();approveArt('${a.id}')">✅ Approve</button>
+              <button class="action-btn btn-gray"  onclick="event.stopPropagation();rejectArt('${a.id}')">✕ Reject</button>
             </div>
           </div>
-          <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('ap-${a.id}',this.closest('.notif-row'),document.getElementById('approvalsList'),'approvalsPanel','')">âœ•</button>
+          <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('ap-${a.id}',this.closest('.notif-row'),document.getElementById('approvalsList'),'approvalsPanel','')">✕</button>
         </div>`).join('');
     }
 
     async function approveArt(id) {
       await sb.from('artworks').update({ status: 'approved' }).eq('id', id);
-      toast('Artwork approved and live in the shop! âœ…');
+      toast('Artwork approved and live in the shop! ✅');
       document.getElementById(`ap-${id}`)?.remove();
       if (!document.querySelector('#approvalsList .notif-row')) {
         document.getElementById('approvalsPanel').style.display = 'none';
@@ -261,11 +261,11 @@
             <p class="notif-title">${r.artworks?.name || 'Artwork'}</p>
             <p class="notif-meta">A kid wants to buy this for <strong>$${r.artworks?.price || '?'}</strong></p>
             <div class="btn-row">
-              <a class="action-btn btn-green" href="platform-art.html?id=${r.artwork_id}" onclick="event.stopPropagation()">ðŸ›’ Go Buy It</a>
-              <button class="action-btn btn-gray" onclick="event.stopPropagation();declineKidRequest('${r.id}')">âœ• Decline</button>
+              <a class="action-btn btn-green" href="platform-art.html?id=${r.artwork_id}" onclick="event.stopPropagation()">🛒 Go Buy It</a>
+              <button class="action-btn btn-gray" onclick="event.stopPropagation();declineKidRequest('${r.id}')">✕ Decline</button>
             </div>
           </div>
-          <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('kr-${r.id}',this.closest('.notif-row'),document.getElementById('kidRequestsList'),'kidRequestsPanel','')">âœ•</button>
+          <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('kr-${r.id}',this.closest('.notif-row'),document.getElementById('kidRequestsList'),'kidRequestsPanel','')">✕</button>
         </div>`).join('');
     }
 
@@ -286,7 +286,7 @@
         .order('purchased_at', { ascending: false });
       const el = document.getElementById('purchaseList');
       const dismissed = getDismissed();
-      // Exclude kid-art purchases â€” those show in the Kid's Buy Requests panel
+      // Exclude kid-art purchases — those show in the Kid's Buy Requests panel
       const visible = (data || []).filter(p => !p.artworks?.kid_id && !dismissed.has('pr-' + p.id));
       if (!visible.length) { el.innerHTML = '<p class="empty">No purchase requests yet.</p>'; return; }
       el.innerHTML = visible.map(p => `
@@ -299,11 +299,11 @@
               ${p.buyer_email}
             </p>
             <div class="btn-row">
-              <button class="action-btn btn-green" onclick="event.stopPropagation();confirmSent('${p.id}')">ðŸ“¦ Mark as Sent</button>
-              <button class="action-btn btn-gray"  onclick="event.stopPropagation();declinePurchase('${p.id}','${p.artwork_id}')">âœ• Decline</button>
+              <button class="action-btn btn-green" onclick="event.stopPropagation();confirmSent('${p.id}')">📦 Mark as Sent</button>
+              <button class="action-btn btn-gray"  onclick="event.stopPropagation();declinePurchase('${p.id}','${p.artwork_id}')">✕ Decline</button>
             </div>
           </div>
-          <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('pr-${p.id}',this.closest('.notif-row'),document.getElementById('purchaseList'),null,'No purchase requests yet.')">âœ•</button>
+          <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('pr-${p.id}',this.closest('.notif-row'),document.getElementById('purchaseList'),null,'No purchase requests yet.')">✕</button>
         </div>`).join('');
     }
 
@@ -314,7 +314,7 @@
         await sb.from('purchases').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', purchaseId);
         if (data.artwork_id) await sb.from('artworks').update({ status: 'sold', on_hold: false }).eq('id', data.artwork_id);
       }
-      toast('Marked as sent! Waiting for buyer to confirm receipt. ðŸ“¦');
+      toast('Marked as sent! Waiting for buyer to confirm receipt. 📦');
       document.getElementById(`pr-${purchaseId}`)?.remove();
       document.getElementById(`kr-${purchaseId}`)?.remove();
       if (!document.querySelector('#purchaseList .notif-row')) {
@@ -360,11 +360,11 @@
                 in exchange for your art
               </p>
               <div class="btn-row">
-                <button class="action-btn btn-purple" onclick="event.stopPropagation();acceptTrade('${t.id}')">âœ… Accept</button>
-                <button class="action-btn btn-gray"   onclick="event.stopPropagation();declineTrade('${t.id}')">âœ• Decline</button>
+                <button class="action-btn btn-purple" onclick="event.stopPropagation();acceptTrade('${t.id}')">✅ Accept</button>
+                <button class="action-btn btn-gray"   onclick="event.stopPropagation();declineTrade('${t.id}')">✕ Decline</button>
               </div>
             </div>
-            <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('tr-${t.id}',this.closest('.notif-row'),document.getElementById('tradeList'),null,'No trade offers yet.')">âœ•</button>
+            <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('tr-${t.id}',this.closest('.notif-row'),document.getElementById('tradeList'),null,'No trade offers yet.')">✕</button>
           </div>`;
       }).join('');
     }

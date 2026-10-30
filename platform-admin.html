@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin â€“ Little Heartworks</title>
+  <title>Admin – Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -140,34 +140,34 @@
 
   <header>
     <div class="logo">Little He<span>art</span>works</div>
-    <span class="admin-badge">ðŸ” Admin</span>
+    <span class="admin-badge">🔐 Admin</span>
     <a href="platform-shop.html" class="back-btn">â† Shop</a>
   </header>
 
   <div class="container">
     <p class="page-title">ðŸ› ï¸ Admin Panel</p>
-    <p class="page-sub">Click ðŸ—‘ï¸ on any artwork to recycle it. Recycled art is hidden from the shop.</p>
+    <p class="page-sub">Click 🗑️ on any artwork to recycle it. Recycled art is hidden from the shop.</p>
 
     <div class="page-tabs">
-      <button class="page-tab active" id="tabArt"      onclick="showTab('art')">ðŸ–¼ï¸ Artworks</button>
-      <button class="page-tab"        id="tabBin"      onclick="showTab('bin')">ðŸ—‘ï¸ Recycle Bin <span id="binBadge" style="display:none;background:#ff6b6b;color:white;border-radius:50px;padding:2px 8px;font-size:0.75rem;margin-left:4px;"></span></button>
-      <button class="page-tab"        id="tabAccounts" onclick="showTab('accounts')">ðŸ‘¤ Accounts</button>
+      <button class="page-tab active" id="tabArt"      onclick="showTab('art')">🖼️ Artworks</button>
+      <button class="page-tab"        id="tabBin"      onclick="showTab('bin')">🗑️ Recycle Bin <span id="binBadge" style="display:none;background:#ff6b6b;color:white;border-radius:50px;padding:2px 8px;font-size:0.75rem;margin-left:4px;"></span></button>
+      <button class="page-tab"        id="tabAccounts" onclick="showTab('accounts')">👤 Accounts</button>
     </div>
 
     <!-- Artworks -->
     <div id="sectionArt">
       <div class="stats-row">
-        <div class="stat-chip"><div class="num" id="statTotal">â€”</div><div class="lbl">Total</div></div>
-        <div class="stat-chip"><div class="num" id="statPending">â€”</div><div class="lbl">Pending</div></div>
-        <div class="stat-chip"><div class="num" id="statApproved">â€”</div><div class="lbl">Approved</div></div>
-        <div class="stat-chip"><div class="num" id="statRejected">â€”</div><div class="lbl">Rejected</div></div>
+        <div class="stat-chip"><div class="num" id="statTotal">—</div><div class="lbl">Total</div></div>
+        <div class="stat-chip"><div class="num" id="statPending">—</div><div class="lbl">Pending</div></div>
+        <div class="stat-chip"><div class="num" id="statApproved">—</div><div class="lbl">Approved</div></div>
+        <div class="stat-chip"><div class="num" id="statRejected">—</div><div class="lbl">Rejected</div></div>
       </div>
       <div class="filter-bar">
         <input type="text" id="searchInput" placeholder="Search by title, kid, or parent..." oninput="renderGrid()" />
         <button class="filter-btn active" id="btnAll"      onclick="setFilter('all')">All</button>
-        <button class="filter-btn"        id="btnPending"  onclick="setFilter('pending')">â³ Pending</button>
-        <button class="filter-btn"        id="btnApproved" onclick="setFilter('approved')">âœ… Approved</button>
-        <button class="filter-btn"        id="btnRejected" onclick="setFilter('rejected')">âŒ Rejected</button>
+        <button class="filter-btn"        id="btnPending"  onclick="setFilter('pending')">⏳ Pending</button>
+        <button class="filter-btn"        id="btnApproved" onclick="setFilter('approved')">✅ Approved</button>
+        <button class="filter-btn"        id="btnRejected" onclick="setFilter('rejected')">❌ Rejected</button>
       </div>
       <div class="art-grid" id="artGrid"></div>
       <div class="empty" id="emptyState" style="display:none">No artworks found.</div>
@@ -176,15 +176,15 @@
     <!-- Recycle Bin -->
     <div id="sectionBin" style="display:none;">
       <div class="bin-header">
-        <div class="icon">ðŸ—‘ï¸</div>
+        <div class="icon">🗑️</div>
         <div>
           <h2>Recycle Bin</h2>
           <p>Recycled art is hidden from the shop. Restore or permanently delete below.</p>
         </div>
-        <button class="btn-empty-bin" onclick="emptyBin()">ðŸ—‘ï¸ Empty Bin</button>
+        <button class="btn-empty-bin" onclick="emptyBin()">🗑️ Empty Bin</button>
       </div>
       <div class="art-grid" id="binGrid"></div>
-      <div class="empty" id="binEmpty" style="display:none">Recycle bin is empty ðŸŽ‰</div>
+      <div class="empty" id="binEmpty" style="display:none">Recycle bin is empty 🎉</div>
     </div>
 
     <!-- Accounts -->
@@ -211,7 +211,7 @@
     async function init() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user || user.email !== ADMIN_EMAIL) {
-        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Fredoka One,cursive;font-size:1.5rem;color:#ccc;">ðŸ” Access denied.</div>';
+        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Fredoka One,cursive;font-size:1.5rem;color:#ccc;">🔐 Access denied.</div>';
         return;
       }
       loadArtworks();
@@ -290,18 +290,18 @@
             <span class="status-pill ${a.status}">${a.status}</span>
             <p class="art-name">${a.name}</p>
             <p class="art-meta">
-              $${a.price}${a.kids?.name ? ` Â· ðŸ§’ ${a.kids.name}` : ''}${a.parent_name ? ` Â· ðŸ‘¨â€ðŸ‘©â€ðŸ‘§ ${a.parent_name}` : ''}
+              $${a.price}${a.kids?.name ? ` Â· 🧒 ${a.kids.name}` : ''}${a.parent_name ? ` Â· 👨‍👩‍👧 ${a.parent_name}` : ''}
               <br/>${new Date(a.created_at).toLocaleDateString()}
               ${a.description ? `<br/><em>${a.description.slice(0,80)}${a.description.length>80?'â€¦':''}</em>` : ''}
             </p>
             <div class="card-actions">
               ${inBin ? `
                 <button class="btn-restore" onclick="restoreArt('${a.id}')">â†©ï¸ Restore</button>
-                <button class="btn-delete"  onclick="deleteArt('${a.id}')">ðŸ—‘ï¸ Delete Forever</button>
+                <button class="btn-delete"  onclick="deleteArt('${a.id}')">🗑️ Delete Forever</button>
               ` : `
-                ${a.status !== 'approved' ? `<button class="btn-approve" onclick="setArtStatus('${a.id}','approved')">âœ… Approve</button>` : ''}
-                ${a.status !== 'rejected' ? `<button class="btn-reject"  onclick="setArtStatus('${a.id}','rejected')">âŒ Reject</button>`  : ''}
-                <button class="btn-recycle" onclick="recycleArt('${a.id}')">ðŸ—‘ï¸</button>
+                ${a.status !== 'approved' ? `<button class="btn-approve" onclick="setArtStatus('${a.id}','approved')">✅ Approve</button>` : ''}
+                ${a.status !== 'rejected' ? `<button class="btn-reject"  onclick="setArtStatus('${a.id}','rejected')">❌ Reject</button>`  : ''}
+                <button class="btn-recycle" onclick="recycleArt('${a.id}')">🗑️</button>
               `}
             </div>
           </div>
@@ -310,15 +310,15 @@
 
     async function recycleArt(id) {
       const { error } = await sb.rpc('admin_set_artwork_status', { p_artwork_id: id, p_status: 'recycled' });
-      if (error) { showToast('âŒ ' + error.message); return; }
+      if (error) { showToast('❌ ' + error.message); return; }
       allArtworks = allArtworks.map(a => a.id === id ? { ...a, status: 'recycled' } : a);
       updateStats(); renderGrid(); renderBin();
-      showToast('ðŸ—‘ï¸ Moved to recycle bin');
+      showToast('🗑️ Moved to recycle bin');
     }
 
     async function restoreArt(id) {
       const { error } = await sb.rpc('admin_set_artwork_status', { p_artwork_id: id, p_status: 'pending' });
-      if (error) { showToast('âŒ ' + error.message); return; }
+      if (error) { showToast('❌ ' + error.message); return; }
       allArtworks = allArtworks.map(a => a.id === id ? { ...a, status: 'pending' } : a);
       updateStats(); renderGrid(); renderBin();
       showToast('â†©ï¸ Restored to pending');
@@ -327,10 +327,10 @@
     async function deleteArt(id) {
       if (!confirm('Permanently delete this artwork? This cannot be undone.')) return;
       const { error } = await sb.rpc('admin_delete_artwork', { p_artwork_id: id });
-      if (error) { showToast('âŒ ' + error.message); return; }
+      if (error) { showToast('❌ ' + error.message); return; }
       allArtworks = allArtworks.filter(a => a.id !== id);
       updateStats(); renderGrid(); renderBin();
-      showToast('ðŸ—‘ï¸ Deleted permanently');
+      showToast('🗑️ Deleted permanently');
     }
 
     async function emptyBin() {
@@ -340,15 +340,15 @@
       for (const a of recycled) await sb.rpc('admin_delete_artwork', { p_artwork_id: a.id });
       allArtworks = allArtworks.filter(a => a.status !== 'recycled');
       updateStats(); renderGrid(); renderBin();
-      showToast('ðŸ—‘ï¸ Bin emptied');
+      showToast('🗑️ Bin emptied');
     }
 
     async function setArtStatus(id, status) {
       const { error } = await sb.rpc('admin_set_artwork_status', { p_artwork_id: id, p_status: status });
-      if (error) { showToast('âŒ ' + error.message); return; }
+      if (error) { showToast('❌ ' + error.message); return; }
       allArtworks = allArtworks.map(a => a.id === id ? { ...a, status } : a);
       updateStats(); renderGrid(); renderBin();
-      showToast(status === 'approved' ? 'âœ… Approved!' : 'âŒ Rejected');
+      showToast(status === 'approved' ? '✅ Approved!' : '❌ Rejected');
     }
 
     async function loadUsers() {
@@ -376,11 +376,11 @@
               <p class="account-email">${u.email}</p>
               <div class="account-chips">
                 <span class="account-chip">ðŸ“… Joined ${new Date(u.created_at).toLocaleDateString()}</span>
-                <span class="account-chip">ðŸ–¼ï¸ ${u.artwork_count} artworks</span>
-                <span class="account-chip">ðŸ§’ ${u.kid_count} kids</span>
+                <span class="account-chip">🖼️ ${u.artwork_count} artworks</span>
+                <span class="account-chip">🧒 ${u.kid_count} kids</span>
               </div>
             </div>
-            ${!isAdmin ? `<button class="ban-btn" onclick="deleteAccount('${u.id}','${u.email}')">ðŸ—‘ï¸ Delete Account</button>` : ''}
+            ${!isAdmin ? `<button class="ban-btn" onclick="deleteAccount('${u.id}','${u.email}')">🗑️ Delete Account</button>` : ''}
           </div>`;
       }).join('');
     }
@@ -388,10 +388,10 @@
     async function deleteAccount(userId, email) {
       if (!confirm(`Delete account for ${email}?\n\nThis removes their account, all kids, and all artwork. Cannot be undone.`)) return;
       const { error } = await sb.rpc('admin_delete_user', { p_user_id: userId });
-      if (error) { showToast('âŒ ' + error.message); return; }
+      if (error) { showToast('❌ ' + error.message); return; }
       allUsers = allUsers.filter(u => u.id !== userId);
       renderAccounts();
-      showToast('ðŸ—‘ï¸ Account deleted');
+      showToast('🗑️ Account deleted');
     }
 
     function showToast(msg) {

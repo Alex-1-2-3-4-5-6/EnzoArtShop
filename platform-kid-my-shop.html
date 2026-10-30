@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Art â€“ Little Heartworks</title>
+  <title>My Art – Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -152,14 +152,14 @@
 <body>
 
   <header>
-    <div class="logo">ðŸŽ¨ My Art</div>
+    <div class="logo">🎨 My Art</div>
     <a href="platform-kid-submit.html" class="nav-btn">âœï¸ Submit New Art</a>
     <a href="platform-kid-shop.html" class="nav-btn-ghost">â† Browse</a>
   </header>
 
   <div class="container">
     <div class="kid-banner">
-      <div class="kid-avatar">ðŸ§’</div>
+      <div class="kid-avatar">🧒</div>
       <div class="kid-info">
         <p class="name" id="kidNameDisplay">Loading...</p>
         <p class="sub" id="kidSubDisplay">Your artworks</p>
@@ -167,7 +167,7 @@
     </div>
 
     <div class="drag-tip">
-      ðŸ’¡ <span>Use the buttons on each card to move art, or drag them between sections on desktop.</span>
+      💡 <span>Use the buttons on each card to move art, or drag them between sections on desktop.</span>
     </div>
 
     <div class="workspace">
@@ -178,7 +178,7 @@
            ondragleave="onDragLeave(event,'draft')"
            ondrop="onDrop(event,'draft')">
         <div class="zone-header">
-          <p class="zone-title">ðŸŽ¨ My Art</p>
+          <p class="zone-title">🎨 My Art</p>
           <span class="zone-hint">Private Â· just yours</span>
         </div>
         <div class="art-grid" id="draftGrid">
@@ -192,7 +192,7 @@
            ondragleave="onDragLeave(event,'posted')"
            ondrop="onDrop(event,'posted')">
         <div class="zone-header">
-          <p class="zone-title">âœ… Posted Artworks</p>
+          <p class="zone-title">✅ Posted Artworks</p>
           <span class="zone-hint">Live in shop</span>
         </div>
         <div class="art-grid" id="postedGrid">
@@ -202,10 +202,10 @@
 
     </div>
 
-    <!-- Requested Art (on_hold) â€” full width, no drop target -->
+    <!-- Requested Art (on_hold) — full width, no drop target -->
     <div class="zone-requested" id="zoneRequested" style="display:none;">
       <div class="zone-header">
-        <p class="zone-title">ðŸ›’ Requested Art</p>
+        <p class="zone-title">🛒 Requested Art</p>
         <span class="zone-hint">Someone wants to buy this Â· drag to relist or remove</span>
       </div>
       <div class="art-grid" id="requestedGrid"></div>
@@ -231,7 +231,7 @@
       const raw = localStorage.getItem('kidSession');
       if (!raw) { window.location.href = 'platform-index.html'; return; }
       kidSession = JSON.parse(raw);
-      document.getElementById('kidNameDisplay').textContent = `${kidSession.kid_name}'s Art ðŸŽ¨`;
+      document.getElementById('kidNameDisplay').textContent = `${kidSession.kid_name}'s Art 🎨`;
       loadArtworks();
     }
 
@@ -271,25 +271,25 @@
                          : a.status === 'rejected' ? 's-rejected'
                          : a.status === 'recycled' ? 's-recycled'
                          : 's-approved';
-        const badgeText  = a.status === 'pending'  ? 'â³ Waiting for parent'
-                         : a.status === 'rejected' ? 'âŒ Not approved'
+        const badgeText  = a.status === 'pending'  ? '⏳ Waiting for parent'
+                         : a.status === 'rejected' ? '❌ Not approved'
                          : a.status === 'recycled' ? 'ðŸ“ Taken down'
-                         : 'âœ… Live';
+                         : '✅ Live';
         // Pending cards can't be dragged; requested use 'on_hold' as drag status
         const noDrag     = a.status === 'pending';
         const dragSt     = zone === 'requested' ? 'on_hold' : a.status;
         const safeId   = a.id;
         const safeName = a.name.replace(/'/g,"\\'");
         const moveBtn  = zone === 'draft'
-          ? `<button class="move-btn move-btn-post" onclick="event.stopPropagation();moveArt('${safeId}','posted')">â³ Submit to Shop</button>`
+          ? `<button class="move-btn move-btn-post" onclick="event.stopPropagation();moveArt('${safeId}','posted')">⏳ Submit to Shop</button>`
           : zone === 'posted'
           ? `<button class="move-btn move-btn-unpost" onclick="event.stopPropagation();moveArt('${safeId}','draft')">ðŸ“ Move to My Art</button>`
           : zone === 'requested'
-          ? `<button class="move-btn move-btn-post" onclick="event.stopPropagation();moveArt('${safeId}','posted')">âœ… Re-list</button>
+          ? `<button class="move-btn move-btn-post" onclick="event.stopPropagation();moveArt('${safeId}','posted')">✅ Re-list</button>
              <button class="move-btn move-btn-unpost" onclick="event.stopPropagation();moveArt('${safeId}','draft')">ðŸ“ Move to My Art</button>`
           : '';
         const deleteBtn = (zone === 'draft' || zone === 'requested')
-          ? `<button class="delete-btn" onclick="event.stopPropagation();deleteArt('${safeId}','${safeName}')">ðŸ—‘ï¸ Delete</button>`
+          ? `<button class="delete-btn" onclick="event.stopPropagation();deleteArt('${safeId}','${safeName}')">🗑️ Delete</button>`
           : '';
         return `
           <div class="art-card${noDrag ? ' no-drag' : ''}" id="card-${a.id}"
@@ -301,7 +301,7 @@
               <p class="art-card-price">$${a.price}</p>
               <span class="art-ref">ðŸ“Œ #${a.id.slice(0,6).toUpperCase()}</span>
               <span class="art-date">ðŸ“… ${new Date(a.created_at).toLocaleDateString()}</span>
-              <span class="status-badge ${zone === 'requested' ? 's-hold' : badgeClass}">${zone === 'requested' ? 'ðŸ›’ Requested' : badgeText}</span>
+              <span class="status-badge ${zone === 'requested' ? 's-hold' : badgeClass}">${zone === 'requested' ? '🛒 Requested' : badgeText}</span>
               ${moveBtn}
               ${deleteBtn}
             </div>
@@ -313,7 +313,7 @@
       let update = null, msg = null;
       if (target === 'posted') {
         update = { status: 'pending' };
-        msg = 'â³ Sent to parent for approval!';
+        msg = '⏳ Sent to parent for approval!';
       } else if (target === 'draft') {
         update = { status: 'recycled', on_hold: false };
         msg = 'ðŸ“ Art moved to My Art';
@@ -321,14 +321,14 @@
       if (!update) return;
       const { error } = await sb.from('artworks').update(update).eq('id', id);
       if (!error) { toast(msg); loadArtworks(); }
-      else toast('âŒ ' + error.message);
+      else toast('❌ ' + error.message);
     }
 
     async function deleteArt(id, name) {
       if (!confirm(`Permanently delete "${name}"? This can't be undone.`)) return;
       const { error } = await sb.from('artworks').delete().eq('id', id);
       if (!error) { toast(`"${name}" deleted`); loadArtworks(); }
-      else toast('âŒ Delete failed: ' + error.message);
+      else toast('❌ Delete failed: ' + error.message);
     }
 
     /* â”€â”€ Drag & Drop â”€â”€ */
@@ -370,10 +370,10 @@
       if (zone === 'posted') {
         if (dragStatus === 'on_hold') {
           update = { on_hold: false };
-          msg = 'âœ… Art re-listed in shop!';
+          msg = '✅ Art re-listed in shop!';
         } else if (dragStatus !== 'approved') {
           update = { status: 'pending' };
-          msg = 'â³ Sent to parent for approval!';
+          msg = '⏳ Sent to parent for approval!';
         }
       } else if (zone === 'draft') {
         if (dragStatus === 'approved' || dragStatus === 'on_hold') {
@@ -381,12 +381,12 @@
           msg = 'ðŸ“ Art moved to My Art';
         }
       }
-      // zone === 'requested' is not a drop target â€” ignore
+      // zone === 'requested' is not a drop target — ignore
 
       if (update) {
         const { error } = await sb.from('artworks').update(update).eq('id', dragId);
         if (!error) { toast(msg); loadArtworks(); }
-        else toast('âŒ ' + error.message);
+        else toast('❌ ' + error.message);
       }
 
       dragId     = null;
