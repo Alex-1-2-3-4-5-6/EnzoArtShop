@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign Up â€“ Little Heartworks</title>
+  <title>Sign Up – Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -98,14 +98,14 @@
 </head>
 <body>
   <div class="card">
-    <a href="platform-index.html" class="back-btn">â† Back</a>
+    <a href="platform-index.html" class="back-btn">← Back</a>
 
     <div class="logo">Little He<span>art</span>works</div>
     <h2>Create Account</h2>
     <p class="sub">For parents &amp; guardians only</p>
 
     <div class="notice">
-      <strong>ðŸ”’ Parents only.</strong> This account is for adults who manage their child's artwork. Kids sign in using a 10-digit code from the home screen â€” no personal info needed.
+      <strong>🔒 Parents only.</strong> This account is for adults who manage their child's artwork. Kids sign in using a 10-digit code from the home screen — no personal info needed.
     </div>
 
     <div class="field">
@@ -137,7 +137,7 @@
       <label for="password">Password <span style="color:#bbb;font-weight:400;font-size:0.8rem;">(at least 6 characters)</span></label>
       <div class="pw-wrap">
         <input type="password" id="password" placeholder="Create a password" />
-        <button type="button" class="pw-toggle" onclick="togglePw('password',this)">ðŸ‘</button>
+        <button type="button" class="pw-toggle" onclick="togglePw('password',this)">👁</button>
       </div>
     </div>
 
@@ -145,7 +145,7 @@
       <label for="confirm">Confirm Password</label>
       <div class="pw-wrap">
         <input type="password" id="confirm" placeholder="Repeat your password" />
-        <button type="button" class="pw-toggle" onclick="togglePw('confirm',this)">ðŸ‘</button>
+        <button type="button" class="pw-toggle" onclick="togglePw('confirm',this)">👁</button>
       </div>
     </div>
 
@@ -179,7 +179,6 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Populate day + year dropdowns
     const dayEl  = document.getElementById('dobDay');
     const yearEl = document.getElementById('dobYear');
     for (let d = 1; d <= 31; d++) { const o = document.createElement('option'); o.value = d; o.textContent = d; dayEl.appendChild(o); }
@@ -189,7 +188,7 @@
     function togglePw(id, btn) {
       const el = document.getElementById(id);
       el.type = el.type === 'password' ? 'text' : 'password';
-      btn.textContent = el.type === 'password' ? 'ðŸ‘' : 'ðŸ™ˆ';
+      btn.textContent = el.type === 'password' ? '👁' : '🙈';
     }
 
     function showMsg(type, text) {
@@ -212,7 +211,7 @@
 
       const dob = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
       const age = Math.floor((new Date() - new Date(dob)) / (365.25 * 24 * 60 * 60 * 1000));
-      if (age < 18) return showMsg('error', 'âŒ You must be 18 or older to create a parent account.');
+      if (age < 18) return showMsg('error', '❌ You must be 18 or older to create a parent account.');
 
       if (!email)              return showMsg('error', 'Please enter your email address.');
       if (password.length < 6) return showMsg('error', 'Password must be at least 6 characters.');
@@ -229,7 +228,6 @@
         options: { data: { full_name: name, date_of_birth: dob } }
       });
 
-      // Supabase sometimes silently "succeeds" for existing emails â€” identities will be empty
       const alreadyExists = !error && data?.user?.identities?.length === 0;
 
       if (error || alreadyExists) {
@@ -237,11 +235,11 @@
           || (error?.message || '').toLowerCase().includes('already')
           || (error?.message || '').toLowerCase().includes('registered');
         showMsg('error', isDupe
-          ? 'âŒ An account with this email already exists. <a href="platform-login.html" style="color:#c0392b;">Log in instead â†’</a>'
-          : 'âŒ ' + error.message);
+          ? '❌ An account with this email already exists. <a href="platform-login.html" style="color:#c0392b;">Log in instead →</a>'
+          : '❌ ' + error.message);
         btn.disabled = false; btn.textContent = 'Create Account';
       } else {
-        showMsg('success', 'âœ… Account created! Redirecting to log in...');
+        showMsg('success', '✅ Account created! Redirecting to log in...');
         btn.textContent = 'Done!';
         setTimeout(() => window.location.href = 'platform-login.html', 2000);
       }
