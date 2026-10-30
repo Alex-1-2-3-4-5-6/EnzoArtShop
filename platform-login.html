@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Log In â€“ Little Heartworks</title>
+  <title>Log In – Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -74,7 +74,7 @@
 </head>
 <body>
   <div class="card">
-    <a href="platform-index.html" class="back-btn">â† Back</a>
+    <a href="platform-index.html" class="back-btn">← Back</a>
 
     <div class="logo">Little He<span>art</span>works</div>
     <h2>Welcome Back</h2>
@@ -89,7 +89,7 @@
       <label for="password">Password</label>
       <div class="pw-wrap">
         <input type="password" id="password" placeholder="Your password" onkeydown="if(event.key==='Enter')login()" />
-        <button type="button" class="pw-toggle" onclick="togglePw()">ðŸ‘</button>
+        <button type="button" class="pw-toggle" onclick="togglePw()">👁</button>
       </div>
     </div>
 
@@ -114,7 +114,7 @@
       const el = document.getElementById('password');
       const btn = document.querySelector('.pw-toggle');
       el.type = el.type === 'password' ? 'text' : 'password';
-      btn.textContent = el.type === 'password' ? 'ðŸ‘' : 'ðŸ™ˆ';
+      btn.textContent = el.type === 'password' ? '👁' : '🙈';
     }
 
     async function login() {
@@ -130,7 +130,6 @@
 
       btn.disabled = true; btn.textContent = 'Logging in...';
 
-      // If not keeping signed in, use a short session
       if (!keepMe) {
         await sb.auth.setSession({ access_token: null, refresh_token: null }).catch(() => {});
       }
@@ -138,11 +137,10 @@
       const { error } = await sb.auth.signInWithPassword({ email, password });
 
       if (error) {
-        msg.className = 'msg error'; msg.textContent = 'âŒ ' + error.message; msg.style.display = 'block';
+        msg.className = 'msg error'; msg.textContent = '❌ ' + error.message; msg.style.display = 'block';
         btn.disabled = false; btn.textContent = 'Log In';
       } else {
         if (!keepMe) {
-          // Store a flag â€” on next page load if not keepMe, sign out on tab close
           sessionStorage.setItem('noKeep', '1');
         }
         window.location.href = 'platform-shop.html';

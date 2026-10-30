@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reset Password â€“ Little Heartworks</title>
+  <title>Reset Password – Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -67,7 +67,7 @@
 </head>
 <body>
   <div class="card" id="requestCard">
-    <a href="platform-login.html" class="back-btn">â† Back to Login</a>
+    <a href="platform-login.html" class="back-btn">← Back to Login</a>
     <div class="logo">Little He<span>art</span>works</div>
     <h2>Reset Password</h2>
     <p class="sub">Enter your email and we'll send a reset link</p>
@@ -77,11 +77,10 @@
       <input type="email" id="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')sendReset()" />
     </div>
 
-    <button class="submit-btn" id="sendBtn" onclick="sendReset()">ðŸ“§ Send Reset Link</button>
+    <button class="submit-btn" id="sendBtn" onclick="sendReset()">📧 Send Reset Link</button>
     <div class="msg" id="requestMsg"></div>
   </div>
 
-  <!-- New password form (shown after clicking email link) -->
   <div class="card" id="newPwCard" style="display:none;">
     <div class="logo">Little He<span>art</span>works</div>
     <h2>New Password</h2>
@@ -91,18 +90,18 @@
       <label for="newPw">New Password</label>
       <div class="pw-wrap">
         <input type="password" id="newPw" placeholder="At least 6 characters" />
-        <button type="button" class="pw-toggle" onclick="togglePw('newPw',this)">ðŸ‘</button>
+        <button type="button" class="pw-toggle" onclick="togglePw('newPw',this)">👁</button>
       </div>
     </div>
     <div class="field">
       <label for="confirmPw">Confirm Password</label>
       <div class="pw-wrap">
         <input type="password" id="confirmPw" placeholder="Same password again" onkeydown="if(event.key==='Enter')savePw()" />
-        <button type="button" class="pw-toggle" onclick="togglePw('confirmPw',this)">ðŸ‘</button>
+        <button type="button" class="pw-toggle" onclick="togglePw('confirmPw',this)">👁</button>
       </div>
     </div>
 
-    <button class="submit-btn" id="saveBtn" onclick="savePw()">âœ… Save New Password</button>
+    <button class="submit-btn" id="saveBtn" onclick="savePw()">✅ Save New Password</button>
     <div class="msg" id="newPwMsg"></div>
   </div>
 
@@ -111,7 +110,6 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // If the URL has a recovery token, show the new password form
     sb.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         document.getElementById('requestCard').style.display = 'none';
@@ -122,7 +120,7 @@
     function togglePw(fieldId, btn) {
       const el = document.getElementById(fieldId);
       el.type = el.type === 'password' ? 'text' : 'password';
-      btn.textContent = el.type === 'password' ? 'ðŸ‘' : 'ðŸ™ˆ';
+      btn.textContent = el.type === 'password' ? '👁' : '🙈';
     }
 
     async function sendReset() {
@@ -137,11 +135,11 @@
         redirectTo: 'https://littleheartworks.net/platform-reset.html'
       });
       if (error) {
-        msg.className = 'msg error'; msg.textContent = 'âŒ ' + error.message; msg.style.display = 'block';
-        btn.disabled = false; btn.textContent = 'ðŸ“§ Send Reset Link';
+        msg.className = 'msg error'; msg.textContent = '❌ ' + error.message; msg.style.display = 'block';
+        btn.disabled = false; btn.textContent = '📧 Send Reset Link';
       } else {
         msg.className = 'msg success';
-        msg.textContent = 'âœ… Check your email for a reset link! It may take a minute.';
+        msg.textContent = '✅ Check your email for a reset link! It may take a minute.';
         msg.style.display = 'block';
         btn.disabled = true; btn.textContent = 'Sent!';
       }
@@ -161,10 +159,10 @@
       btn.disabled = true; btn.textContent = 'Saving...';
       const { error } = await sb.auth.updateUser({ password: pw });
       if (error) {
-        msg.className = 'msg error'; msg.textContent = 'âŒ ' + error.message; msg.style.display = 'block';
-        btn.disabled = false; btn.textContent = 'âœ… Save New Password';
+        msg.className = 'msg error'; msg.textContent = '❌ ' + error.message; msg.style.display = 'block';
+        btn.disabled = false; btn.textContent = '✅ Save New Password';
       } else {
-        msg.className = 'msg success'; msg.textContent = 'âœ… Password updated! Taking you to the shop...'; msg.style.display = 'block';
+        msg.className = 'msg success'; msg.textContent = '✅ Password updated! Taking you to the shop...'; msg.style.display = 'block';
         setTimeout(() => window.location.href = 'platform-shop.html', 2000);
       }
     }
