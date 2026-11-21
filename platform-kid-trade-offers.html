@@ -10,7 +10,6 @@
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body { min-height:100vh; background:#fff9f0; font-family:'Nunito',sans-serif; padding-bottom:90px; }
-
     header {
       background:linear-gradient(135deg,#a29bfe,#ff9ff3);
       padding:14px 20px; display:flex; align-items:center; gap:10px;
@@ -27,11 +26,8 @@
       border-radius:50px; padding:7px 14px; font-family:'Fredoka One',cursive;
       font-size:0.82rem; color:white; cursor:pointer; text-decoration:none; flex-shrink:0;
     }
-
     .container { max-width:760px; margin:0 auto; padding:22px 16px 20px; }
     .section-title { font-family:'Fredoka One',cursive; font-size:1rem; color:#a29bfe; margin:20px 0 10px; }
-
-    /* Meet-up banner */
     .meetup-banner {
       background:linear-gradient(135deg,#d4edda,#c3f0ca); border-radius:18px;
       padding:18px 20px; display:flex; align-items:center; gap:12px;
@@ -40,7 +36,6 @@
     .meetup-banner .icon { font-size:2.2rem; flex-shrink:0; }
     .meetup-banner h3 { font-family:'Fredoka One',cursive; font-size:1.05rem; color:#155724; }
     .meetup-banner p  { font-size:0.8rem; color:#27ae60; margin-top:3px; }
-
     .offer-card {
       background:white; border-radius:18px; padding:16px 18px;
       box-shadow:0 4px 14px rgba(0,0,0,0.06); margin-bottom:10px;
@@ -48,7 +43,6 @@
     }
     .offer-card.pending  { border-left-color:#feca57; }
     .offer-card.rejected { border-left-color:#ffd6d6; }
-
     .offer-row { display:flex; align-items:flex-start; gap:10px; }
     .offer-card-img {
       width:52px; height:52px; border-radius:11px; object-fit:cover;
@@ -66,16 +60,12 @@
     }
     .badge-pending  { background:#fff3cd; color:#856404; }
     .badge-rejected { background:#ffd6d6; color:#c0392b; }
-
     .cancel-btn {
       background:#f0f0f0; border:none; border-radius:50px; padding:7px 13px;
       color:#999; font-family:'Fredoka One',cursive; font-size:0.78rem;
       cursor:pointer; flex-shrink:0;
     }
-
     .empty { text-align:center; padding:30px; color:#ccc; font-family:'Fredoka One',cursive; font-size:0.9rem; }
-
-    /* Bottom nav */
     .bottom-nav {
       position:fixed; bottom:0; left:0; right:0; background:white;
       border-top:2px solid #eee; padding:10px 12px 14px;
@@ -93,7 +83,6 @@
   </style>
 </head>
 <body>
-
   <header>
     <div class="logo">📬 My Offers</div>
     <a href="platform-kid-trade-center.html" class="nav-btn">🃏 Browse</a>
@@ -103,10 +92,8 @@
   <div class="container">
     <p class="section-title">🤝 Accepted — Meet Up!</p>
     <div id="acceptedList"><p class="empty">Loading...</p></div>
-
     <p class="section-title">⏳ Pending</p>
     <div id="pendingList"><p class="empty">Loading...</p></div>
-
     <p class="section-title">✕ Rejected</p>
     <div id="rejectedList"><p class="empty">Loading...</p></div>
   </div>
@@ -139,36 +126,33 @@
       const raw = localStorage.getItem('kidSession');
       if (raw) {
         currentUser = JSON.parse(raw);
-      } else {
-        try {
-          const { data } = await sb.auth.getSession();
-          if (data?.session) {
-            const m = data.session.user.user_metadata || {};
-            currentUser = { kid_id: data.session.user.id, kid_name: m.full_name || data.session.user.email };
-          }
-        } catch(e) {}
-        if (!currentUser) {
-          try {
-            const { data } = await sb.auth.getUser();
-            if (data?.user) {
-              const m = data.user.user_metadata || {};
-              currentUser = { kid_id: data.user.id, kid_name: m.full_name || data.user.email };
-            }
-          } catch(e) {}
-        }
-        if (!currentUser) { window.location.href = 'platform-index.html'; return; }
+        load(); return;
       }
-      load();
+      try {
+        const { data } = await sb.auth.getSession();
+        if (data?.session) {
+          const m = data.session.user.user_metadata || {};
+          currentUser = { kid_id: data.session.user.id, kid_name: m.full_name || data.session.user.email };
+          load(); return;
+        }
+      } catch(e) {}
+      try {
+        const { data } = await sb.auth.getUser();
+        if (data?.user) {
+          const m = data.user.user_metadata || {};
+          currentUser = { kid_id: data.user.id, kid_name: m.full_name || data.user.email };
+          load(); return;
+        }
+      } catch(e) {}
+      window.location.href = 'platform-index.html';
     }
 
     async function load() {
-      const { data: offers } = await sb
-        .from('card_offers')
+      const { data } = await sb.from('card_offers')
         .select('*, listing:listing_id(id,card_name,card_image_url,status)')
         .eq('offerer_user_id', currentUser.kid_id)
         .order('created_at', { ascending: false });
-
-      const all = offers || [];
+      const all = data || [];
       renderAccepted(all.filter(o => o.status === 'accepted'));
       renderPending(all.filter(o => o.status === 'pending'));
       renderRejected(all.filter(o => o.status === 'rejected'));
@@ -176,7 +160,7 @@
 
     function renderAccepted(offers) {
       const el = document.getElementById('acceptedList');
-      if (!offers.length) { el.innerHTML = '<p class="empty">No accepted offers yet.</p>'; return; }
+      if (!offers.length) { el.innerHTML='<p class="empty">No accepted offers yet.</p>'; return; }
       el.innerHTML = offers.map(o => `
         <div class="meetup-banner">
           <div class="icon">🤝</div>
@@ -189,13 +173,13 @@
 
     function renderPending(offers) {
       const el = document.getElementById('pendingList');
-      if (!offers.length) { el.innerHTML = '<p class="empty">No pending offers.</p>'; return; }
+      if (!offers.length) { el.innerHTML='<p class="empty">No pending offers.</p>'; return; }
       el.innerHTML = offers.map(o => offerHTML(o)).join('');
     }
 
     function renderRejected(offers) {
       const el = document.getElementById('rejectedList');
-      if (!offers.length) { el.innerHTML = '<p class="empty">None.</p>'; return; }
+      if (!offers.length) { el.innerHTML='<p class="empty">None.</p>'; return; }
       el.innerHTML = offers.map(o => offerHTML(o)).join('');
     }
 
@@ -206,24 +190,20 @@
       const money = o.offer_money ? `💰 $${Number(o.offer_money).toFixed(2)}` : '';
       const cards = o.offer_cards ? `🃏 ${esc(o.offer_cards)}` : '';
       const what = [money,cards].filter(Boolean).join(' · ');
-      const cancel = o.status === 'pending'
+      const cancel = o.status==='pending'
         ? `<button class="cancel-btn" onclick="cancelOffer('${o.id}')">✕ Cancel</button>` : '';
-
-      return `
-        <div class="offer-card ${o.status}">
-          <div class="offer-row">
-            ${img}
-            <div class="offer-info">
-              <p class="offer-card-name">For: ${esc(o.listing?.card_name||'Unknown')}</p>
-              ${what ? `<p class="offer-what">Your offer: ${what}</p>` : ''}
-              <p class="offer-time">${new Date(o.created_at).toLocaleDateString()}</p>
-              <span class="status-badge badge-${o.status}">
-                ${o.status === 'pending' ? '⏳ Waiting...' : '✕ Rejected'}
-              </span>
-            </div>
-            ${cancel}
+      return `<div class="offer-card ${o.status}">
+        <div class="offer-row">
+          ${img}
+          <div class="offer-info">
+            <p class="offer-card-name">For: ${esc(o.listing?.card_name||'Unknown')}</p>
+            ${what?`<p class="offer-what">Your offer: ${what}</p>`:''}
+            <p class="offer-time">${new Date(o.created_at).toLocaleDateString()}</p>
+            <span class="status-badge badge-${o.status}">${o.status==='pending'?'⏳ Waiting...':'✕ Rejected'}</span>
           </div>
-        </div>`;
+          ${cancel}
+        </div>
+      </div>`;
     }
 
     async function cancelOffer(id) {

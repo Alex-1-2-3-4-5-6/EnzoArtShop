@@ -4,177 +4,107 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/x-icon" href="favicon.ico"><link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Posts – Trading Center</title>
+  <title>My Posts – Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
-
     header {
-      background:white; padding:16px 28px; display:flex; align-items:center; gap:12px;
-      box-shadow:0 2px 12px rgba(0,0,0,0.07); flex-wrap:wrap;
+      background:white; padding:14px 28px; display:flex; align-items:center; gap:12px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.07); position:sticky; top:0; z-index:40;
     }
     .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:#ff6b6b; flex:1; }
     .logo span { color:#a29bfe; }
-    .hdr-btn {
-      background:#f0f0f0; border:none; border-radius:50px; padding:8px 18px;
-      font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer; color:#888;
-      text-decoration:none; white-space:nowrap;
+    .hbtn {
+      background:white; border:2px solid #eee; border-radius:50px; padding:8px 18px;
+      font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer;
+      color:#555; text-decoration:none; white-space:nowrap;
     }
-    .hdr-btn.primary { background:linear-gradient(135deg,#ff6b6b,#feca57); color:white; }
-
-    .container { max-width:860px; margin:36px auto; padding:0 20px 80px; }
-    .page-title { font-family:'Fredoka One',cursive; font-size:2rem; color:#333; margin-bottom:4px; }
-    .page-sub { color:#aaa; font-size:0.92rem; margin-bottom:24px; }
-
-    /* New post form */
-    .new-post-panel {
-      background:white; border-radius:22px; padding:24px;
-      box-shadow:0 4px 18px rgba(0,0,0,0.07); margin-bottom:32px;
+    .container { max-width:760px; margin:0 auto; padding:28px 20px 60px; }
+    .panel { background:white; border-radius:20px; padding:26px; box-shadow:0 4px 16px rgba(0,0,0,0.06); margin-bottom:28px; }
+    .panel-title { font-family:'Fredoka One',cursive; font-size:1.2rem; color:#333; margin-bottom:18px; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    @media(max-width:520px){.form-grid{grid-template-columns:1fr;}}
+    label { display:block; font-weight:700; font-size:0.85rem; color:#555; margin-bottom:5px; }
+    .field { margin-bottom:0; }
+    .field input, .field textarea {
+      width:100%; padding:10px 14px; border:2px solid #eee; border-radius:12px;
+      font-family:'Nunito',sans-serif; font-size:0.92rem; outline:none; resize:vertical;
     }
-    .panel-title { font-family:'Fredoka One',cursive; font-size:1.1rem; color:#333; margin-bottom:16px; }
-    .form-row { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
-    .form-group { flex:1; min-width:160px; display:flex; flex-direction:column; gap:6px; }
-    .form-label { font-family:'Fredoka One',cursive; font-size:0.85rem; color:#555; }
-    .form-input, .form-textarea {
-      padding:10px 14px; border:2.5px solid #e0e0e0; border-radius:14px;
-      font-family:'Nunito',sans-serif; font-size:0.93rem; outline:none;
-      transition:border-color 0.2s; width:100%;
-    }
-    .form-input:focus, .form-textarea:focus { border-color:#a29bfe; }
-    .form-textarea { resize:vertical; min-height:70px; }
-    .img-preview {
-      width:80px; height:80px; border-radius:12px; object-fit:cover;
-      border:2px dashed #e0e0e0; display:none;
-    }
+    .field input:focus, .field textarea:focus { border-color:#a29bfe; }
+    .field-full { grid-column:1/-1; }
+    .img-preview { width:80px; height:80px; border-radius:12px; object-fit:cover; margin-top:8px; display:none; }
     .post-btn {
-      background:linear-gradient(135deg,#ff6b6b,#feca57); border:none;
-      border-radius:50px; padding:11px 28px; color:white;
-      font-family:'Fredoka One',cursive; font-size:0.95rem; cursor:pointer;
+      background:linear-gradient(135deg,#ff6b6b,#feca57); border:none; border-radius:50px;
+      padding:12px 28px; font-family:'Fredoka One',cursive; font-size:1rem;
+      color:white; cursor:pointer; margin-top:16px;
     }
-    .msg { padding:10px 14px; border-radius:10px; font-weight:700; font-size:0.88rem; display:none; margin-top:10px; }
-    .msg.success { background:#d4edda; color:#155724; display:block; }
-    .msg.error   { background:#ffd6d6; color:#c0392b; display:block; }
-    .msg.loading { background:#fff3cd; color:#856404; display:block; }
+    .msg { padding:10px 14px; border-radius:10px; font-weight:700; font-size:0.88rem; margin-top:12px; display:none; }
+    .msg.success { background:#d4edda; color:#155724; }
+    .msg.error { background:#ffd6d6; color:#c0392b; }
+    .msg.loading { background:#fff3cd; color:#856404; }
 
-    /* Listings */
-    .listing-block {
-      background:white; border-radius:22px; padding:22px;
-      box-shadow:0 4px 18px rgba(0,0,0,0.07); margin-bottom:24px;
-    }
-    .listing-header { display:flex; align-items:center; gap:14px; margin-bottom:16px; flex-wrap:wrap; }
-    .listing-img {
-      width:72px; height:72px; border-radius:14px; object-fit:cover;
-      background:#f0f0f0; flex-shrink:0; font-size:2rem;
-      display:flex; align-items:center; justify-content:center; color:#ccc;
-      overflow:hidden;
-    }
-    .listing-img img { width:100%; height:100%; object-fit:cover; }
-    .listing-info { flex:1; min-width:0; }
-    .listing-name { font-family:'Fredoka One',cursive; font-size:1.1rem; color:#333; }
-    .listing-meta { font-size:0.8rem; color:#aaa; margin-top:3px; }
-    .listing-min { font-family:'Fredoka One',cursive; font-size:0.82rem; color:#27ae60; margin-top:4px; }
-    .listing-actions { display:flex; gap:8px; flex-shrink:0; }
-    .del-btn {
-      background:#ffd6d6; border:none; border-radius:50px; padding:7px 14px;
-      color:#c0392b; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer;
-    }
+    .listing-card { background:#fafafa; border-radius:14px; padding:16px; margin-bottom:12px; border:2px solid #eee; }
+    .listing-header { display:flex; align-items:flex-start; gap:12px; margin-bottom:10px; }
+    .listing-thumb { width:60px; height:60px; border-radius:10px; object-fit:cover; background:#f0f0f0; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.6rem; overflow:hidden; }
+    .listing-thumb img { width:100%; height:100%; object-fit:cover; }
+    .listing-info { flex:1; }
+    .listing-name { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; }
+    .listing-meta { font-size:0.78rem; color:#aaa; margin-top:2px; }
+    .delete-btn { background:#ffd6d6; border:none; border-radius:50px; padding:6px 12px; color:#c0392b; font-family:'Fredoka One',cursive; font-size:0.78rem; cursor:pointer; flex-shrink:0; }
 
-    /* Offers on a listing */
-    .offers-header {
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      margin-bottom:10px; flex-wrap:wrap;
-    }
-    .offers-title { font-family:'Fredoka One',cursive; font-size:0.92rem; color:#888; }
-    .search-offers {
-      flex:1; min-width:160px; max-width:280px; padding:8px 14px;
-      border:2px solid #e0e0e0; border-radius:50px; font-family:'Nunito',sans-serif;
-      font-size:0.85rem; outline:none; transition:border-color 0.2s;
-    }
+    .offers-label { font-family:'Fredoka One',cursive; font-size:0.85rem; color:#a29bfe; margin-bottom:8px; }
+    .search-offers { padding:7px 12px; border:2px solid #eee; border-radius:50px; font-family:'Nunito',sans-serif; font-size:0.82rem; outline:none; width:100%; margin-bottom:8px; }
     .search-offers:focus { border-color:#a29bfe; }
-
-    .offer-item {
-      background:#fafafa; border-radius:14px; padding:14px 16px;
-      border:2px solid #eee; margin-bottom:10px;
-    }
-    .offer-item.accepted { border-color:#a8e6cf; background:#f0fff8; }
-    .offer-row { display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap; }
-    .offer-details { flex:1; min-width:0; }
-    .offer-from { font-family:'Fredoka One',cursive; font-size:0.9rem; color:#333; }
-    .offer-what { font-size:0.83rem; color:#555; margin-top:4px; }
-    .offer-msg { font-size:0.8rem; color:#aaa; font-style:italic; margin-top:3px; }
-    .offer-time { font-size:0.75rem; color:#ccc; margin-top:3px; }
-    .offer-btns { display:flex; gap:7px; flex-shrink:0; }
-    .accept-btn {
-      background:#d4edda; border:none; border-radius:50px; padding:7px 14px;
-      color:#155724; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer;
-    }
-    .reject-btn {
-      background:#ffd6d6; border:none; border-radius:50px; padding:7px 14px;
-      color:#c0392b; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer;
-    }
-
-    /* "Bring your cards" banner */
-    .meetup-banner {
-      background:linear-gradient(135deg,#d4edda,#c3f0ca); border-radius:16px;
-      padding:16px 20px; display:flex; align-items:center; gap:12px;
-      border:2px solid #a8e6cf; margin-bottom:10px;
-    }
-    .meetup-banner .icon { font-size:2rem; flex-shrink:0; }
-    .meetup-banner p { font-family:'Fredoka One',cursive; font-size:1rem; color:#155724; }
-    .meetup-banner small { font-size:0.78rem; color:#27ae60; display:block; margin-top:3px; }
-
-    .empty { text-align:center; padding:24px; color:#ccc; font-family:'Fredoka One',cursive; font-size:0.95rem; }
-    .closed-badge {
-      background:#e0e0e0; color:#888; border-radius:50px; padding:4px 12px;
-      font-family:'Fredoka One',cursive; font-size:0.75rem; display:inline-block; margin-top:4px;
-    }
+    .offer-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #f0f0f0; flex-wrap:wrap; }
+    .offer-row:last-child { border-bottom:none; }
+    .offer-what { flex:1; font-size:0.82rem; color:#555; }
+    .accept-btn { background:#d4edda; border:none; border-radius:50px; padding:6px 12px; color:#155724; font-family:'Fredoka One',cursive; font-size:0.75rem; cursor:pointer; }
+    .reject-btn { background:#ffd6d6; border:none; border-radius:50px; padding:6px 12px; color:#c0392b; font-family:'Fredoka One',cursive; font-size:0.75rem; cursor:pointer; }
+    .meetup-banner { background:linear-gradient(135deg,#d4edda,#c3f0ca); border-radius:14px; padding:12px 16px; margin-top:8px; border:2px solid #a8e6cf; }
+    .meetup-banner p { font-family:'Fredoka One',cursive; font-size:0.9rem; color:#155724; }
+    .empty { text-align:center; padding:20px; color:#ccc; font-family:'Fredoka One',cursive; font-size:0.88rem; }
   </style>
 </head>
 <body>
   <header>
-    <div class="logo">Little He<span>art</span>works</div>
-    <a href="platform-trade-center.html" class="hdr-btn primary">🃏 Trading Center</a>
-    <a href="platform-my-trades.html" class="hdr-btn">📬 My Offers</a>
-    <a href="platform-kid-dashboard.html" class="hdr-btn" id="kidDashBtn" style="display:none">← Dashboard</a>
-    <a href="platform-dashboard.html" class="hdr-btn" id="parentDashBtn" style="display:none">← Dashboard</a>
+    <div class="logo">Little <span>Heart</span>works</div>
+    <a href="platform-trade-center.html" class="hbtn">🃏 Browse</a>
+    <a href="platform-my-trades.html" class="hbtn">📬 My Offers</a>
+    <a href="platform-shop.html" class="hbtn">← Shop</a>
   </header>
 
   <div class="container">
-    <p class="page-title">📋 My Posts</p>
-    <p class="page-sub">Post your cards for trade and manage the offers you receive.</p>
-
-    <!-- New post form -->
-    <div class="new-post-panel">
+    <div class="panel">
       <p class="panel-title">➕ Post a Card for Trade</p>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Card name *</label>
-          <input class="form-input" type="text" id="newCardName" placeholder="e.g. Charizard Holo" />
+      <div class="form-grid">
+        <div class="field">
+          <label>Card name *</label>
+          <input type="text" id="cardName" placeholder="e.g. Charizard Holo" />
         </div>
-        <div class="form-group">
-          <label class="form-label">Minimum offer ($)</label>
-          <input class="form-input" type="number" id="newMinPrice" placeholder="Leave blank = any offer OK" min="0" step="0.01" />
+        <div class="field">
+          <label>Minimum offer ($)</label>
+          <input type="number" id="minPrice" min="0" step="0.01" placeholder="Leave blank = any offer OK" />
         </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Description (optional)</label>
-          <textarea class="form-textarea" id="newDescription" placeholder="Condition, set, year..."></textarea>
+        <div class="field field-full">
+          <label>Description <span style="font-weight:400;color:#aaa;">(optional)</span></label>
+          <textarea id="description" rows="2" placeholder="Condition, set, etc."></textarea>
         </div>
-        <div class="form-group" style="justify-content:flex-start;">
-          <label class="form-label">Card image (optional)</label>
-          <input class="form-input" type="file" id="newCardImg" accept="image/*" onchange="previewImg(this)" style="padding:6px;" />
-          <img class="img-preview" id="imgPreview" />
+        <div class="field">
+          <label>Card image <span style="font-weight:400;color:#aaa;">(optional)</span></label>
+          <input type="file" id="cardImage" accept="image/*" onchange="previewImg(this)" />
+          <img id="imgPreview" class="img-preview" />
         </div>
       </div>
       <button class="post-btn" onclick="postCard()">Post Card 🃏</button>
       <div class="msg" id="postMsg"></div>
     </div>
 
-    <!-- My listings -->
-    <div id="listingsList"><p class="empty">Loading your posts...</p></div>
+    <div class="panel">
+      <p class="panel-title">📋 My Listed Cards</p>
+      <div id="myListings"><p class="empty">Loading...</p></div>
+    </div>
   </div>
 
   <script>
@@ -182,235 +112,149 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let currentUser = null;
+    let offerSearches = {};
 
     async function init() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'platform-login.html'; return; }
       currentUser = user;
-
-      const { data: kidRec } = await sb.from('kids').select('id').eq('kid_user_id', user.id).single();
-      if (kidRec) {
-        document.getElementById('kidDashBtn').style.display = '';
-      } else {
-        document.getElementById('parentDashBtn').style.display = '';
-      }
-
-      loadListings();
+      loadMyListings();
     }
 
     function previewImg(input) {
-      const preview = document.getElementById('imgPreview');
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
-        reader.readAsDataURL(input.files[0]);
-      }
+      const file = input.files[0];
+      if (!file) return;
+      const img = document.getElementById('imgPreview');
+      img.src = URL.createObjectURL(file);
+      img.style.display = 'block';
     }
 
     async function postCard() {
-      const name = document.getElementById('newCardName').value.trim();
-      const minPrice = parseFloat(document.getElementById('newMinPrice').value) || null;
-      const desc = document.getElementById('newDescription').value.trim();
-      const imgFile = document.getElementById('newCardImg').files[0];
-      const msgEl = document.getElementById('postMsg');
-
-      if (!name) { msgEl.className = 'msg error'; msgEl.textContent = 'Card name is required!'; return; }
-
-      msgEl.className = 'msg loading'; msgEl.textContent = '⏳ Posting...';
+      const name = document.getElementById('cardName').value.trim();
+      const msg = document.getElementById('postMsg');
+      if (!name) { showMsg(msg,'error','Card name is required.'); return; }
+      showMsg(msg,'loading','⏳ Posting...');
 
       let imageUrl = null;
-      if (imgFile) {
-        const ext = imgFile.name.split('.').pop();
+      const file = document.getElementById('cardImage').files[0];
+      if (file) {
+        const ext = file.name.split('.').pop();
         const filename = `card-${currentUser.id}-${Date.now()}.${ext}`;
-        const { error: upErr } = await sb.storage.from('card-images').upload(filename, imgFile, { upsert: true, contentType: imgFile.type });
-        if (upErr) { msgEl.className = 'msg error'; msgEl.textContent = 'Image upload failed: ' + upErr.message; return; }
-        const { data: urlData } = sb.storage.from('card-images').getPublicUrl(filename);
-        imageUrl = urlData.publicUrl;
+        const { error: upErr } = await sb.storage.from('card-images').upload(filename, file, { contentType: file.type });
+        if (upErr) { showMsg(msg,'error','Image upload failed: '+upErr.message); return; }
+        imageUrl = sb.storage.from('card-images').getPublicUrl(filename).data.publicUrl;
       }
 
+      const meta = currentUser.user_metadata || {};
       const { error } = await sb.from('card_listings').insert({
         poster_user_id: currentUser.id,
+        poster_name: meta.full_name || currentUser.email,
         card_name: name,
-        description: desc || null,
-        min_price: minPrice,
+        description: document.getElementById('description').value.trim() || null,
+        min_price: parseFloat(document.getElementById('minPrice').value) || null,
         card_image_url: imageUrl,
         status: 'active'
       });
-
-      if (error) { msgEl.className = 'msg error'; msgEl.textContent = error.message; return; }
-
-      msgEl.className = 'msg success'; msgEl.textContent = '✅ Card posted!';
-      document.getElementById('newCardName').value = '';
-      document.getElementById('newMinPrice').value = '';
-      document.getElementById('newDescription').value = '';
-      document.getElementById('newCardImg').value = '';
-      document.getElementById('imgPreview').style.display = 'none';
-      setTimeout(() => { msgEl.style.display = 'none'; }, 2500);
-      loadListings();
+      if (error) { showMsg(msg,'error',error.message); return; }
+      showMsg(msg,'success','✅ Card posted!');
+      document.getElementById('cardName').value='';
+      document.getElementById('minPrice').value='';
+      document.getElementById('description').value='';
+      document.getElementById('cardImage').value='';
+      document.getElementById('imgPreview').style.display='none';
+      loadMyListings();
     }
 
-    async function loadListings() {
-      const { data, error } = await sb
-        .from('card_listings')
-        .select('*')
-        .eq('poster_user_id', currentUser.id)
-        .order('created_at', { ascending: false });
-
-      if (error) { document.getElementById('listingsList').innerHTML = '<p class="empty">Error loading posts.</p>'; return; }
-
-      const listings = data || [];
-      if (!listings.length) {
-        document.getElementById('listingsList').innerHTML = '<p class="empty">You haven\'t posted any cards yet.</p>';
-        return;
-      }
-
-      // Load all offers for all listings at once
-      const listingIds = listings.map(l => l.id);
-      const { data: offers } = await sb
-        .from('card_offers')
-        .select('*')
-        .in('listing_id', listingIds)
-        .order('created_at', { ascending: false });
-
-      const offersByListing = {};
-      (offers || []).forEach(o => {
-        if (!offersByListing[o.listing_id]) offersByListing[o.listing_id] = [];
-        offersByListing[o.listing_id].push(o);
-      });
-
-      document.getElementById('listingsList').innerHTML = listings.map(l =>
-        renderListing(l, offersByListing[l.id] || [])
-      ).join('');
+    async function loadMyListings() {
+      const { data } = await sb.from('card_listings').select('*').eq('poster_user_id', currentUser.id).order('created_at',{ascending:false});
+      const el = document.getElementById('myListings');
+      if (!data || !data.length) { el.innerHTML='<p class="empty">No cards posted yet.</p>'; return; }
+      el.innerHTML = data.map(l => listingHTML(l)).join('');
+      data.forEach(l => loadOffersForListing(l.id));
     }
 
-    function renderListing(l, offers) {
-      const imgHtml = l.card_image_url
-        ? `<div class="listing-img"><img src="${esc(l.card_image_url)}" /></div>`
-        : `<div class="listing-img">🃏</div>`;
-
-      const minLabel = l.min_price ? `<p class="listing-min">💰 Min: $${Number(l.min_price).toFixed(2)}</p>` : '';
-      const statusBadge = l.status === 'closed' ? `<span class="closed-badge">✅ Closed</span>` : '';
-      const deleteBtn = l.status === 'active'
-        ? `<button class="del-btn" onclick="deleteListing('${l.id}')">🗑️ Remove</button>`
-        : '';
-
-      const pendingOffers = offers.filter(o => o.status === 'pending');
-      const acceptedOffer = offers.find(o => o.status === 'accepted');
-
-      let meetupBanner = '';
-      if (acceptedOffer) {
-        meetupBanner = `
-          <div class="meetup-banner">
-            <div class="icon">🤝</div>
-            <div>
-              <p>Bring your cards to each other!</p>
-              <small>You accepted ${esc(acceptedOffer.offerer_name)}'s offer. Meet up to exchange!</small>
-            </div>
-          </div>`;
-      }
-
-      const offersSection = `
-        <div class="offers-header">
-          <span class="offers-title">${pendingOffers.length} pending offer${pendingOffers.length !== 1 ? 's' : ''} · ${offers.length} total</span>
-          ${l.status === 'active' && offers.length > 0
-            ? `<input class="search-offers" placeholder="🔍 Search offers..." oninput="filterOffers(this,'${l.id}')" data-lid="${l.id}" />`
-            : ''}
-        </div>
-        <div id="offers-${l.id}">
-          ${renderOfferItems(offers, l)}
-        </div>`;
-
-      return `
-        <div class="listing-block" id="listing-${l.id}">
-          <div class="listing-header">
-            ${imgHtml}
-            <div class="listing-info">
-              <p class="listing-name">${esc(l.card_name)}</p>
-              ${l.description ? `<p class="listing-meta">${esc(l.description)}</p>` : ''}
-              ${minLabel}
-              ${statusBadge}
-              <p class="listing-meta">${new Date(l.created_at).toLocaleDateString()}</p>
-            </div>
-            <div class="listing-actions">${deleteBtn}</div>
+    function listingHTML(l) {
+      const thumb = l.card_image_url
+        ? `<div class="listing-thumb"><img src="${esc(l.card_image_url)}" /></div>`
+        : `<div class="listing-thumb">🃏</div>`;
+      const minPrice = l.min_price ? ` · Min $${Number(l.min_price).toFixed(2)}` : '';
+      return `<div class="listing-card" id="listing-${l.id}">
+        <div class="listing-header">
+          ${thumb}
+          <div class="listing-info">
+            <p class="listing-name">${esc(l.card_name)}</p>
+            <p class="listing-meta">${esc(l.description||'')}${minPrice}</p>
           </div>
-          ${meetupBanner}
-          ${offersSection}
-        </div>`;
+          <button class="delete-btn" onclick="deleteListing('${l.id}')">✕ Remove</button>
+        </div>
+        <p class="offers-label">Offers received:</p>
+        <input class="search-offers" type="text" placeholder="Search offers (cards, money...)" oninput="filterOffers('${l.id}',this.value)" />
+        <div id="offers-${l.id}"><p class="empty">Loading...</p></div>
+      </div>`;
     }
 
-    function renderOfferItems(offers, listing) {
-      if (!offers.length) return '<p class="empty" style="padding:14px">No offers yet.</p>';
+    async function loadOffersForListing(listingId) {
+      const { data } = await sb.from('card_offers').select('*').eq('listing_id', listingId).order('created_at',{ascending:false});
+      const offers = data || [];
+      offerSearches[listingId] = offers;
+      renderOffers(listingId, offers);
+    }
 
-      return offers.map(o => {
-        const moneyStr = o.offer_money ? `💰 $${Number(o.offer_money).toFixed(2)}` : '';
-        const cardsStr = o.offer_cards ? `🃏 ${esc(o.offer_cards)}` : '';
-        const what = [moneyStr, cardsStr].filter(Boolean).join('  ·  ');
+    function filterOffers(listingId, q) {
+      const all = offerSearches[listingId] || [];
+      const filtered = q ? all.filter(o =>
+        (o.offer_cards||'').toLowerCase().includes(q.toLowerCase()) ||
+        String(o.offer_money||'').includes(q)
+      ) : all;
+      renderOffers(listingId, filtered);
+    }
 
-        let actions = '';
-        if (o.status === 'pending' && listing.status === 'active') {
-          actions = `
-            <div class="offer-btns">
-              <button class="accept-btn" onclick="acceptOffer('${listing.id}','${o.id}','${esc(o.offerer_name)}')">✅ Accept</button>
-              <button class="reject-btn" onclick="rejectOffer('${o.id}','${listing.id}')">✕ Reject</button>
-            </div>`;
-        } else if (o.status === 'accepted') {
-          actions = `<span style="font-family:'Fredoka One',cursive;font-size:0.82rem;color:#27ae60;">✅ Accepted</span>`;
-        } else if (o.status === 'rejected') {
-          actions = `<span style="font-family:'Fredoka One',cursive;font-size:0.82rem;color:#aaa;">✕ Rejected</span>`;
-        }
-
-        return `
-          <div class="offer-item ${o.status === 'accepted' ? 'accepted' : ''}" data-search="${(o.offer_money ? o.offer_money + ' ' : '') + (o.offer_cards || '') + ' ' + (o.offerer_name || '')}">
-            <div class="offer-row">
-              <div class="offer-details">
-                <p class="offer-from">From: ${esc(o.offerer_name || 'Someone')}</p>
-                ${what ? `<p class="offer-what">${what}</p>` : ''}
-                ${o.message ? `<p class="offer-msg">"${esc(o.message)}"</p>` : ''}
-                <p class="offer-time">${new Date(o.created_at).toLocaleDateString()}</p>
-              </div>
-              ${actions}
-            </div>
+    function renderOffers(listingId, offers) {
+      const el = document.getElementById('offers-'+listingId);
+      if (!el) return;
+      if (!offers.length) { el.innerHTML='<p class="empty">No offers yet.</p>'; return; }
+      el.innerHTML = offers.map(o => {
+        const money = o.offer_money ? `💰 $${Number(o.offer_money).toFixed(2)}` : '';
+        const cards = o.offer_cards ? `🃏 ${esc(o.offer_cards)}` : '';
+        const what = [money,cards].filter(Boolean).join(' · ');
+        if (o.status === 'accepted') {
+          return `<div class="offer-row">
+            <div class="offer-what"><strong>${esc(o.offerer_name||'Someone')}</strong>: ${what}</div>
+            <div class="meetup-banner" style="margin:0;padding:6px 12px;"><p>🤝 Bring your cards to each other!</p></div>
           </div>`;
+        }
+        const btns = o.status === 'pending'
+          ? `<button class="accept-btn" onclick="respondOffer('${o.id}','${listingId}','accepted')">✅ Accept</button>
+             <button class="reject-btn" onclick="respondOffer('${o.id}','${listingId}','rejected')">✕ Reject</button>`
+          : `<span style="font-size:0.78rem;color:#c0392b;">✕ Rejected</span>`;
+        return `<div class="offer-row">
+          <div class="offer-what"><strong>${esc(o.offerer_name||'Someone')}</strong>: ${what||'(no details)'}</div>
+          ${btns}
+        </div>`;
       }).join('');
     }
 
-    function filterOffers(input, listingId) {
-      const q = input.value.toLowerCase().trim();
-      const container = document.getElementById(`offers-${listingId}`);
-      container.querySelectorAll('.offer-item').forEach(el => {
-        const text = el.dataset.search.toLowerCase();
-        el.style.display = !q || text.includes(q) ? '' : 'none';
-      });
+    async function respondOffer(offerId, listingId, status) {
+      await sb.from('card_offers').update({ status }).eq('id', offerId);
+      if (status === 'accepted') {
+        await sb.from('card_listings').update({ status: 'completed' }).eq('id', listingId);
+      }
+      loadOffersForListing(listingId);
+      if (status === 'accepted') loadMyListings();
     }
 
-    async function acceptOffer(listingId, offerId, offererName) {
-      if (!confirm(`Accept this offer from ${offererName}?`)) return;
-
-      // Accept this offer, reject all others on same listing, close the listing
-      await sb.from('card_offers').update({ status: 'accepted' }).eq('id', offerId);
-      await sb.from('card_offers').update({ status: 'rejected' })
-        .eq('listing_id', listingId).neq('id', offerId).eq('status', 'pending');
-      await sb.from('card_listings').update({ status: 'closed' }).eq('id', listingId);
-
-      loadListings();
+    async function deleteListing(id) {
+      if (!confirm('Remove this card listing?')) return;
+      await sb.from('card_listings').delete().eq('id', id);
+      loadMyListings();
     }
 
-    async function rejectOffer(offerId, listingId) {
-      await sb.from('card_offers').update({ status: 'rejected' }).eq('id', offerId);
-      loadListings();
+    function showMsg(el, type, text) {
+      el.className='msg '+type; el.textContent=text; el.style.display='block';
+      if (type!=='loading') setTimeout(()=>el.style.display='none', 3000);
     }
 
-    async function deleteListing(listingId) {
-      if (!confirm('Remove this card listing? All offers will be deleted too.')) return;
-      await sb.from('card_offers').delete().eq('listing_id', listingId);
-      await sb.from('card_listings').delete().eq('id', listingId);
-      loadListings();
-    }
-
-    function esc(s) {
-      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
     init();
   </script>
 </body>

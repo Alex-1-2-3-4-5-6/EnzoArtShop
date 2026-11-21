@@ -1,95 +1,68 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/x-icon" href="favicon.ico"><link rel="icon" type="image/png" href="favicon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Offers – Trading Center</title>
+  <title>My Card Offers – Little Heartworks</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
-
     header {
-      background:white; padding:16px 28px; display:flex; align-items:center; gap:12px;
-      box-shadow:0 2px 12px rgba(0,0,0,0.07); flex-wrap:wrap;
+      background:white; padding:14px 28px; display:flex; align-items:center; gap:12px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.07); position:sticky; top:0; z-index:40;
     }
     .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:#ff6b6b; flex:1; }
     .logo span { color:#a29bfe; }
-    .hdr-btn {
-      background:#f0f0f0; border:none; border-radius:50px; padding:8px 18px;
-      font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer; color:#888;
-      text-decoration:none; white-space:nowrap;
+    .hbtn {
+      background:white; border:2px solid #eee; border-radius:50px; padding:8px 18px;
+      font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer;
+      color:#555; text-decoration:none; white-space:nowrap;
     }
-    .hdr-btn.primary { background:linear-gradient(135deg,#ff6b6b,#feca57); color:white; }
-
-    .container { max-width:860px; margin:36px auto; padding:0 20px 80px; }
-    .page-title { font-family:'Fredoka One',cursive; font-size:2rem; color:#333; margin-bottom:4px; }
-    .page-sub { color:#aaa; font-size:0.92rem; margin-bottom:28px; }
-    .section-title { font-family:'Fredoka One',cursive; font-size:1.05rem; color:#666; margin:28px 0 12px; }
-
-    /* Meet-up banner */
+    .container { max-width:700px; margin:0 auto; padding:28px 20px 60px; }
+    .section-title { font-family:'Fredoka One',cursive; font-size:1rem; color:#a29bfe; margin:24px 0 12px; }
     .meetup-banner {
       background:linear-gradient(135deg,#d4edda,#c3f0ca); border-radius:18px;
-      padding:20px 24px; display:flex; align-items:center; gap:14px;
+      padding:18px 20px; display:flex; align-items:center; gap:12px;
       border:2px solid #a8e6cf; margin-bottom:12px;
     }
-    .meetup-banner .icon { font-size:2.4rem; flex-shrink:0; }
-    .meetup-banner h3 { font-family:'Fredoka One',cursive; font-size:1.15rem; color:#155724; }
-    .meetup-banner p  { font-size:0.85rem; color:#27ae60; margin-top:4px; }
-
+    .meetup-banner .icon { font-size:2rem; flex-shrink:0; }
+    .meetup-banner h3 { font-family:'Fredoka One',cursive; font-size:1rem; color:#155724; }
+    .meetup-banner p { font-size:0.8rem; color:#27ae60; margin-top:3px; }
     .offer-card {
-      background:white; border-radius:20px; padding:18px 20px;
-      box-shadow:0 4px 14px rgba(0,0,0,0.06); margin-bottom:12px;
+      background:white; border-radius:16px; padding:16px 18px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.06); margin-bottom:10px;
       border-left:4px solid transparent;
     }
-    .offer-card.pending  { border-left-color:#feca57; }
-    .offer-card.accepted { border-left-color:#a8e6cf; }
+    .offer-card.pending { border-left-color:#feca57; }
     .offer-card.rejected { border-left-color:#ffd6d6; }
-
-    .offer-row { display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap; }
-    .offer-card-img {
-      width:60px; height:60px; border-radius:12px; object-fit:cover;
-      background:#f0f0f0; flex-shrink:0; display:flex;
-      align-items:center; justify-content:center; font-size:1.6rem; color:#ccc; overflow:hidden;
-    }
-    .offer-card-img img { width:100%; height:100%; object-fit:cover; }
-    .offer-info { flex:1; min-width:0; }
-    .offer-card-name { font-family:'Fredoka One',cursive; font-size:0.98rem; color:#333; }
-    .offer-what { font-size:0.83rem; color:#555; margin-top:4px; }
-    .offer-msg-text { font-size:0.8rem; color:#aaa; font-style:italic; margin-top:3px; }
-    .offer-time { font-size:0.76rem; color:#ccc; margin-top:3px; }
-
-    .status-badge {
-      display:inline-block; border-radius:50px; padding:4px 13px;
-      font-family:'Fredoka One',cursive; font-size:0.76rem; margin-top:6px;
-    }
-    .badge-pending  { background:#fff3cd; color:#856404; }
-    .badge-accepted { background:#d4edda; color:#155724; }
+    .offer-row { display:flex; align-items:flex-start; gap:10px; }
+    .offer-thumb { width:50px; height:50px; border-radius:10px; object-fit:cover; background:#f4f0ff; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1.3rem; overflow:hidden; }
+    .offer-thumb img { width:100%; height:100%; object-fit:cover; }
+    .offer-info { flex:1; }
+    .offer-card-name { font-family:'Fredoka One',cursive; font-size:0.9rem; color:#333; }
+    .offer-what { font-size:0.8rem; color:#555; margin-top:3px; }
+    .offer-time { font-size:0.72rem; color:#ccc; margin-top:3px; }
+    .status-badge { display:inline-block; border-radius:50px; padding:3px 11px; font-family:'Fredoka One',cursive; font-size:0.72rem; margin-top:5px; }
+    .badge-pending { background:#fff3cd; color:#856404; }
     .badge-rejected { background:#ffd6d6; color:#c0392b; }
-
-    .cancel-btn {
-      background:#f0f0f0; border:none; border-radius:50px; padding:7px 14px;
-      color:#999; font-family:'Fredoka One',cursive; font-size:0.8rem; cursor:pointer;
-      flex-shrink:0;
-    }
-
-    .empty { text-align:center; padding:40px; color:#ccc; font-family:'Fredoka One',cursive; font-size:0.95rem; }
+    .cancel-btn { background:#f0f0f0; border:none; border-radius:50px; padding:7px 13px; color:#999; font-family:'Fredoka One',cursive; font-size:0.78rem; cursor:pointer; flex-shrink:0; }
+    .empty { text-align:center; padding:24px; color:#ccc; font-family:'Fredoka One',cursive; font-size:0.88rem; }
   </style>
 </head>
 <body>
   <header>
-    <div class="logo">Little He<span>art</span>works</div>
-    <a href="platform-trade-center.html" class="hdr-btn primary">🃏 Trading Center</a>
-    <a href="platform-trade-my-posts.html" class="hdr-btn">📋 My Posts</a>
-    <a href="platform-kid-dashboard.html" class="hdr-btn" id="kidDashBtn" style="display:none">← Dashboard</a>
-    <a href="platform-dashboard.html" class="hdr-btn" id="parentDashBtn" style="display:none">← Dashboard</a>
+    <div class="logo">Little <span>Heart</span>works</div>
+    <a href="platform-trade-center.html" class="hbtn">🃏 Browse</a>
+    <a href="platform-trade-my-posts.html" class="hbtn">📋 My Posts</a>
+    <a href="platform-shop.html" class="hbtn">← Shop</a>
   </header>
 
   <div class="container">
-    <p class="page-title">📬 My Offers</p>
-    <p class="page-sub">Offers you've sent to other traders.</p>
+    <p style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#333;margin-bottom:4px;">📬 My Card Offers</p>
+    <p style="color:#aaa;font-size:0.9rem;margin-bottom:4px;">Offers you've sent on other people's cards.</p>
 
     <p class="section-title">🤝 Accepted — Meet Up!</p>
     <div id="acceptedList"><p class="empty">Loading...</p></div>
@@ -97,7 +70,7 @@
     <p class="section-title">⏳ Pending</p>
     <div id="pendingList"><p class="empty">Loading...</p></div>
 
-    <p class="section-title">✕ Rejected / Closed</p>
+    <p class="section-title">✕ Rejected</p>
     <div id="rejectedList"><p class="empty">Loading...</p></div>
   </div>
 
@@ -111,101 +84,75 @@
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { window.location.href = 'platform-login.html'; return; }
       currentUser = user;
-
-      const { data: kidRec } = await sb.from('kids').select('id').eq('kid_user_id', user.id).single();
-      if (kidRec) {
-        document.getElementById('kidDashBtn').style.display = '';
-      } else {
-        document.getElementById('parentDashBtn').style.display = '';
-      }
-
       load();
     }
 
     async function load() {
-      const { data: offers } = await sb
-        .from('card_offers')
-        .select('*, listing:listing_id(id,card_name,card_image_url,status)')
+      const { data } = await sb.from('card_offers')
+        .select('*, listing:listing_id(id,card_name,card_image_url)')
         .eq('offerer_user_id', currentUser.id)
         .order('created_at', { ascending: false });
-
-      const all = offers || [];
-      const accepted = all.filter(o => o.status === 'accepted');
-      const pending  = all.filter(o => o.status === 'pending');
-      const rejected = all.filter(o => o.status === 'rejected');
-
-      renderAccepted(accepted);
-      renderPending(pending);
-      renderRejected(rejected);
+      const all = data || [];
+      renderAccepted(all.filter(o => o.status === 'accepted'));
+      renderPending(all.filter(o => o.status === 'pending'));
+      renderRejected(all.filter(o => o.status === 'rejected'));
     }
 
     function renderAccepted(offers) {
       const el = document.getElementById('acceptedList');
-      if (!offers.length) { el.innerHTML = '<p class="empty">No accepted offers yet.</p>'; return; }
+      if (!offers.length) { el.innerHTML='<p class="empty">No accepted offers yet.</p>'; return; }
       el.innerHTML = offers.map(o => `
         <div class="meetup-banner">
           <div class="icon">🤝</div>
           <div>
             <h3>Bring your cards to each other!</h3>
-            <p>Your offer for <strong>${esc(o.listing?.card_name || 'a card')}</strong> was accepted — time to meet up and exchange!</p>
+            <p>Your offer for <strong>${esc(o.listing?.card_name||'a card')}</strong> was accepted — time to meet up and trade!</p>
           </div>
         </div>`).join('');
     }
 
     function renderPending(offers) {
       const el = document.getElementById('pendingList');
-      if (!offers.length) { el.innerHTML = '<p class="empty">No pending offers.</p>'; return; }
-      el.innerHTML = offers.map(o => offerCardHTML(o)).join('');
+      if (!offers.length) { el.innerHTML='<p class="empty">No pending offers.</p>'; return; }
+      el.innerHTML = offers.map(o => offerHTML(o)).join('');
     }
 
     function renderRejected(offers) {
       const el = document.getElementById('rejectedList');
-      if (!offers.length) { el.innerHTML = '<p class="empty">None.</p>'; return; }
-      el.innerHTML = offers.map(o => offerCardHTML(o)).join('');
+      if (!offers.length) { el.innerHTML='<p class="empty">None.</p>'; return; }
+      el.innerHTML = offers.map(o => offerHTML(o)).join('');
     }
 
-    function offerCardHTML(o) {
-      const imgHtml = o.listing?.card_image_url
-        ? `<div class="offer-card-img"><img src="${esc(o.listing.card_image_url)}" /></div>`
-        : `<div class="offer-card-img">🃏</div>`;
-
-      const moneyStr = o.offer_money ? `💰 $${Number(o.offer_money).toFixed(2)}` : '';
-      const cardsStr = o.offer_cards ? `🃏 ${esc(o.offer_cards)}` : '';
-      const what = [moneyStr, cardsStr].filter(Boolean).join('  ·  ');
-
-      const cancelBtn = o.status === 'pending'
-        ? `<button class="cancel-btn" onclick="cancelOffer('${o.id}')">✕ Cancel</button>`
-        : '';
-
-      return `
-        <div class="offer-card ${o.status}">
-          <div class="offer-row">
-            ${imgHtml}
-            <div class="offer-info">
-              <p class="offer-card-name">For: ${esc(o.listing?.card_name || 'Unknown card')}</p>
-              ${what ? `<p class="offer-what">Your offer: ${what}</p>` : ''}
-              ${o.message ? `<p class="offer-msg-text">"${esc(o.message)}"</p>` : ''}
-              <p class="offer-time">${new Date(o.created_at).toLocaleDateString()}</p>
-              <span class="status-badge badge-${o.status}">${
-                o.status === 'pending' ? '⏳ Pending' :
-                o.status === 'accepted' ? '✅ Accepted' : '✕ Rejected'
-              }</span>
-            </div>
-            ${cancelBtn}
+    function offerHTML(o) {
+      const img = o.listing?.card_image_url
+        ? `<div class="offer-thumb"><img src="${esc(o.listing.card_image_url)}" /></div>`
+        : `<div class="offer-thumb">🃏</div>`;
+      const money = o.offer_money ? `💰 $${Number(o.offer_money).toFixed(2)}` : '';
+      const cards = o.offer_cards ? `🃏 ${esc(o.offer_cards)}` : '';
+      const what = [money,cards].filter(Boolean).join(' · ');
+      const cancel = o.status==='pending'
+        ? `<button class="cancel-btn" onclick="cancelOffer('${o.id}')">✕ Cancel</button>` : '';
+      return `<div class="offer-card ${o.status}">
+        <div class="offer-row">
+          ${img}
+          <div class="offer-info">
+            <p class="offer-card-name">For: ${esc(o.listing?.card_name||'Unknown')}</p>
+            ${what?`<p class="offer-what">Your offer: ${what}</p>`:''}
+            <p class="offer-time">${new Date(o.created_at).toLocaleDateString()}</p>
+            <span class="status-badge badge-${o.status}">${o.status==='pending'?'⏳ Waiting...':'✕ Rejected'}</span>
           </div>
-        </div>`;
+          ${cancel}
+        </div>
+      </div>`;
     }
 
-    async function cancelOffer(offerId) {
+    async function cancelOffer(id) {
       if (!confirm('Cancel this offer?')) return;
-      await sb.from('card_offers').delete().eq('id', offerId);
+      await sb.from('card_offers').delete().eq('id', id);
       load();
     }
 
-    function esc(s) {
-      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
     init();
   </script>
 </body>
