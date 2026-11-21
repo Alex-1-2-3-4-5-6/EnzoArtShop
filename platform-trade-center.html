@@ -184,12 +184,7 @@
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        document.getElementById('listingsGrid').innerHTML = `<p class="empty">Could not load listings.</p>`;
-        return;
-      }
-
-      allListings = data || [];
+      allListings = (error ? [] : data) || [];
       renderListings(allListings);
     }
 
