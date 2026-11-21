@@ -228,9 +228,9 @@
     let allListings = [];
 
     async function init() {
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) { window.location.href = 'platform-login.html'; return; }
-      currentUser = user;
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { window.location.href = 'platform-login.html'; return; }
+      currentUser = session.user;
       loadListings();
     }
 

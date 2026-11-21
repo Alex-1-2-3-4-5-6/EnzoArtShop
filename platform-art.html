@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -245,7 +245,7 @@
           <p id="tradePickLabel" style="font-size:0.82rem;color:#a29bfe;margin-bottom:10px;display:none;">Selected: <strong id="tradePickName"></strong></p>
           <button id="sendTradeBtn" onclick="sendTrade()" class="big-btn purple" style="display:none;">🔄 Send Trade Offer</button>
           <div id="tradeMsgEl" style="margin-top:10px;font-size:0.85rem;text-align:center;color:#aaa;"></div>
-          ${!currentUser ? `<div style="text-align:center;margin-top:12px;"><a href="platform-login.html" style="color:#a29bfe;font-family:'Fredoka One',cursive;">Sign in to trade â†’</a></div>` : ''}`;
+          ${!currentUser ? `<div style="text-align:center;margin-top:12px;"><a href="platform-login.html" style="color:#a29bfe;font-family:'Fredoka One',cursive;">Sign in to trade →</a></div>` : ''}`;
         if (currentUser) loadMyArtForTrade(currentUser.id);
 
       } else if (art.on_hold) {
@@ -278,7 +278,7 @@
           <h3 style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#333;margin-bottom:14px;">🛒 Buy This Artwork</h3>
           <div class="login-prompt">
             <p>Sign in to purchase this artwork</p>
-            <a href="platform-login.html">Sign In â†’</a>
+            <a href="platform-login.html">Sign In →</a>
           </div>`;
 
       } else {

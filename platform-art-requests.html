@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -234,7 +234,7 @@
         <div class="row">
           <div class="trade-imgs">
             <img src="${t.offered?.image_url||''}" title="${t.offered?.name||''}" onerror="this.style.display='none'" />
-            <div class="trade-arrow">â†’</div>
+            <div class="trade-arrow">→</div>
             <img src="${t.target?.image_url||''}" title="${t.target?.name||''}" onerror="this.style.display='none'" />
           </div>
           <div class="row-info">
@@ -255,7 +255,7 @@
         <div class="row">
           <div class="trade-imgs">
             <img src="${t.offered?.image_url||''}" title="${t.offered?.name||''}" onerror="this.style.display='none'" />
-            <div class="trade-arrow">â†’</div>
+            <div class="trade-arrow">→</div>
             <img src="${t.target?.image_url||''}" title="${t.target?.name||''}" onerror="this.style.display='none'" />
           </div>
           <div class="row-info">
@@ -279,11 +279,11 @@
           <div class="row">
             <div class="trade-imgs">
               <img src="${t.offered?.image_url||''}" title="${t.offered?.name||''}" onerror="this.style.display='none'" />
-              <div class="trade-arrow">â‡„</div>
+              <div class="trade-arrow">⇄</div>
               <img src="${t.target?.image_url||''}" title="${t.target?.name||''}" onerror="this.style.display='none'" />
             </div>
             <div class="row-info">
-              <p class="row-name">${t.offered?.name} â‡„ ${t.target?.name}</p>
+              <p class="row-name">${t.offered?.name} ⇄ ${t.target?.name}</p>
               ${otherConfirmed && !myConfirmed ? '<p class="status-label status-waiting">⚡ They confirmed — your turn!</p>' : ''}
               ${myConfirmed ? '<p class="status-label status-confirmed">✅ You confirmed — waiting for them</p>' : ''}
             </div>
