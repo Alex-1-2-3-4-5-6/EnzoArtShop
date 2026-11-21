@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico"><link rel="icon" type="image/png" href="favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trading Center – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
+
+    header {
+      background:white; padding:16px 28px; display:flex; align-items:center; gap:12px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.07); flex-wrap:wrap; gap:10px;
+    }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:#ff6b6b; flex:1; min-width:160px; }
+    .logo span { color:#a29bfe; }
+    .hdr-btn {
+      background:#f0f0f0; border:none; border-radius:50px; padding:8px 18px;
+      font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer; color:#888;
+      text-decoration:none; white-space:nowrap;
+    }
+    .hdr-btn.primary {
+      background:linear-gradient(135deg,#ff6b6b,#feca57); color:white;
+    }
+
+    .container { max-width:1000px; margin:36px auto; padding:0 20px 80px; }
+    .page-title { font-family:'Fredoka One',cursive; font-size:2rem; color:#333; margin-bottom:4px; }
+    .page-sub { color:#aaa; font-size:0.92rem; margin-bottom:24px; }
+
+    .search-row {
+      display:flex; gap:10px; margin-bottom:28px; flex-wrap:wrap;
+    }
+    .search-input {
+      flex:1; min-width:200px; padding:12px 18px; border:2.5px solid #e0e0e0;
+      border-radius:50px; font-family:'Nunito',sans-serif; font-size:0.95rem;
+      outline:none; transition:border-color 0.2s;
+    }
+    .search-input:focus { border-color:#a29bfe; }
+
+    .grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px;
+    }
+
+    .card {
+      background:white; border-radius:22px; overflow:hidden;
+      box-shadow:0 4px 18px rgba(0,0,0,0.07); transition:transform 0.2s;
+    }
+    .card:hover { transform:translateY(-3px); }
+    .card-img {
+      width:100%; height:180px; object-fit:cover; background:#f0f0f0;
+      display:flex; align-items:center; justify-content:center; font-size:3rem; color:#ccc;
+    }
+    .card-img img { width:100%; height:100%; object-fit:cover; }
+    .card-body { padding:16px; }
+    .card-name { font-family:'Fredoka One',cursive; font-size:1.05rem; color:#333; margin-bottom:4px; }
+    .card-meta { font-size:0.8rem; color:#aaa; margin-bottom:10px; }
+    .card-min { font-family:'Fredoka One',cursive; font-size:0.85rem; color:#27ae60; margin-bottom:12px; }
+    .offer-btn {
+      width:100%; background:linear-gradient(135deg,#a29bfe,#ff9ff3); border:none;
+      border-radius:50px; padding:11px; color:white; font-family:'Fredoka One',cursive;
+      font-size:0.9rem; cursor:pointer; transition:transform 0.15s;
+    }
+    .offer-btn:hover { transform:scale(1.03); }
+    .offer-btn:disabled { background:#e0e0e0; color:#aaa; cursor:default; transform:none; }
+
+    .empty { text-align:center; padding:60px 20px; color:#ccc; font-family:'Fredoka One',cursive; font-size:1.1rem; }
+
+    /* Offer modal */
+    .modal-bg {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45);
+      align-items:center; justify-content:center; z-index:1000; padding:16px;
+    }
+    .modal-bg.open { display:flex; }
+    .modal {
+      background:white; border-radius:24px; padding:30px; max-width:460px; width:100%;
+      box-shadow:0 12px 40px rgba(0,0,0,0.18); max-height:90vh; overflow-y:auto;
+    }
+    .modal-title { font-family:'Fredoka One',cursive; font-size:1.3rem; color:#333; margin-bottom:4px; }
+    .modal-sub { color:#aaa; font-size:0.85rem; margin-bottom:20px; }
+    .form-label { font-family:'Fredoka One',cursive; font-size:0.88rem; color:#555; margin-bottom:6px; display:block; }
+    .form-input, .form-textarea {
+      width:100%; padding:11px 14px; border:2.5px solid #e0e0e0; border-radius:14px;
+      font-family:'Nunito',sans-serif; font-size:0.93rem; outline:none;
+      transition:border-color 0.2s; margin-bottom:16px;
+    }
+    .form-input:focus, .form-textarea:focus { border-color:#a29bfe; }
+    .form-textarea { resize:vertical; min-height:80px; }
+    .modal-actions { display:flex; gap:10px; margin-top:4px; }
+    .send-btn {
+      flex:1; background:linear-gradient(135deg,#a29bfe,#ff9ff3); border:none;
+      border-radius:50px; padding:12px; color:white; font-family:'Fredoka One',cursive;
+      font-size:0.95rem; cursor:pointer;
+    }
+    .cancel-btn {
+      background:#f0f0f0; border:none; border-radius:50px; padding:12px 20px;
+      font-family:'Fredoka One',cursive; font-size:0.95rem; cursor:pointer; color:#888;
+    }
+    .msg { margin-top:12px; padding:10px 14px; border-radius:10px; font-weight:700; font-size:0.88rem; display:none; }
+    .msg.success { background:#d4edda; color:#155724; display:block; }
+    .msg.error   { background:#ffd6d6; color:#c0392b; display:block; }
+    .msg.loading { background:#fff3cd; color:#856404; display:block; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">🃏 Trading Center</div>
+    <a href="platform-trade-my-posts.html" class="hdr-btn primary" id="myPostsBtn" style="display:none">📋 My Posts</a>
+    <a href="platform-my-trades.html" class="hdr-btn" id="myOffersBtn" style="display:none">📬 My Offers</a>
+    <a href="platform-kid-dashboard.html" class="hdr-btn" id="kidDashBtn" style="display:none">← Dashboard</a>
+    <a href="platform-dashboard.html" class="hdr-btn" id="parentDashBtn" style="display:none">← Dashboard</a>
+  </header>
+
+  <div class="container">
+    <p class="page-title">🃏 Card Trading Center</p>
+    <p class="page-sub">Browse cards up for trade — make an offer with your cards and/or money!</p>
+
+    <div class="search-row">
+      <input class="search-input" id="searchInput" placeholder="🔍 Search by card name..." oninput="filterListings()" />
+    </div>
+
+    <div class="grid" id="listingsGrid">
+      <p class="empty">Loading listings...</p>
+    </div>
+  </div>
+
+  <!-- Offer modal -->
+  <div class="modal-bg" id="offerModal">
+    <div class="modal">
+      <p class="modal-title">Make an Offer</p>
+      <p class="modal-sub" id="offerModalSub">For: <strong id="offerCardName"></strong></p>
+      <input type="hidden" id="offerListingId" />
+
+      <label class="form-label">💰 Money offer (optional)</label>
+      <input class="form-input" type="number" id="offerMoney" placeholder="e.g. 3.00" min="0" step="0.01" />
+
+      <label class="form-label">🃏 Cards you're offering (optional)</label>
+      <textarea class="form-textarea" id="offerCards" placeholder="Describe the card(s) you want to trade (name, set, condition...)"></textarea>
+
+      <label class="form-label">💬 Message (optional)</label>
+      <input class="form-input" type="text" id="offerMessage" placeholder="Say something to the seller..." />
+
+      <div id="offerMsg"></div>
+      <div class="modal-actions">
+        <button class="cancel-btn" onclick="closeOfferModal()">Cancel</button>
+        <button class="send-btn" onclick="sendOffer()">Send Offer ✨</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let currentUser = null;
+    let allListings = [];
+
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      currentUser = user;
+
+      if (user) {
+        // Show appropriate dashboard link
+        const { data: kidRec } = await sb.from('kids').select('id').eq('kid_user_id', user.id).single();
+        if (kidRec) {
+          document.getElementById('kidDashBtn').style.display = '';
+        } else {
+          document.getElementById('parentDashBtn').style.display = '';
+        }
+        document.getElementById('myPostsBtn').style.display = '';
+        document.getElementById('myOffersBtn').style.display = '';
+      }
+
+      loadListings();
+    }
+
+    async function loadListings() {
+      const { data, error } = await sb
+        .from('card_listings')
+        .select('*')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        document.getElementById('listingsGrid').innerHTML = `<p class="empty">Could not load listings.</p>`;
+        return;
+      }
+
+      allListings = data || [];
+      renderListings(allListings);
+    }
+
+    function filterListings() {
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      if (!q) { renderListings(allListings); return; }
+      renderListings(allListings.filter(l =>
+        l.card_name.toLowerCase().includes(q) ||
+        (l.description || '').toLowerCase().includes(q)
+      ));
+    }
+
+    function renderListings(listings) {
+      const grid = document.getElementById('listingsGrid');
+      if (!listings.length) {
+        grid.innerHTML = '<p class="empty" style="grid-column:1/-1">No cards listed for trade yet. Be the first! 🃏</p>';
+        return;
+      }
+
+      grid.innerHTML = listings.map(l => {
+        const isOwn = currentUser && l.poster_user_id === currentUser.id;
+        const minLabel = l.min_price ? `<p class="card-min">💰 Min offer: $${Number(l.min_price).toFixed(2)}</p>` : '';
+        const imgHtml = l.card_image_url
+          ? `<div class="card-img"><img src="${escHtml(l.card_image_url)}" alt="${escHtml(l.card_name)}" /></div>`
+          : `<div class="card-img">🃏</div>`;
+
+        return `
+          <div class="card">
+            ${imgHtml}
+            <div class="card-body">
+              <p class="card-name">${escHtml(l.card_name)}</p>
+              ${l.description ? `<p class="card-meta">${escHtml(l.description)}</p>` : ''}
+              ${minLabel}
+              <button class="offer-btn" ${isOwn ? 'disabled title="This is your listing"' : ''}
+                onclick="${isOwn ? '' : `openOfferModal('${l.id}','${escAttr(l.card_name)}')`}">
+                ${isOwn ? '📋 Your listing' : '🤝 Make an Offer'}
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function openOfferModal(listingId, cardName) {
+      if (!currentUser) { window.location.href = 'platform-login.html'; return; }
+      document.getElementById('offerListingId').value = listingId;
+      document.getElementById('offerCardName').textContent = cardName;
+      document.getElementById('offerMoney').value = '';
+      document.getElementById('offerCards').value = '';
+      document.getElementById('offerMessage').value = '';
+      document.getElementById('offerMsg').className = 'msg';
+      document.getElementById('offerMsg').textContent = '';
+      document.getElementById('offerModal').classList.add('open');
+    }
+
+    function closeOfferModal() {
+      document.getElementById('offerModal').classList.remove('open');
+    }
+
+    async function sendOffer() {
+      const listingId = document.getElementById('offerListingId').value;
+      const money = parseFloat(document.getElementById('offerMoney').value) || 0;
+      const cards = document.getElementById('offerCards').value.trim();
+      const message = document.getElementById('offerMessage').value.trim();
+      const msgEl = document.getElementById('offerMsg');
+
+      if (!money && !cards) {
+        msgEl.className = 'msg error'; msgEl.textContent = 'Add money, cards, or both to make an offer!';
+        return;
+      }
+
+      msgEl.className = 'msg loading'; msgEl.textContent = 'Sending offer...';
+
+      // Get offerer display name
+      const meta = currentUser.user_metadata || {};
+      const offererName = meta.full_name || currentUser.email;
+
+      const { error } = await sb.from('card_offers').insert({
+        listing_id: listingId,
+        offerer_user_id: currentUser.id,
+        offerer_name: offererName,
+        offer_money: money || null,
+        offer_cards: cards || null,
+        message: message || null,
+        status: 'pending'
+      });
+
+      if (error) {
+        msgEl.className = 'msg error'; msgEl.textContent = error.message; return;
+      }
+
+      msgEl.className = 'msg success'; msgEl.textContent = '✅ Offer sent!';
+      setTimeout(closeOfferModal, 1200);
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function escAttr(s) {
+      return String(s).replace(/'/g,"\\'");
+    }
+
+    init();
+  </script>
+</body>
+</html>
