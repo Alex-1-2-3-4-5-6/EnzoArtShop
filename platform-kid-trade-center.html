@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico"><link rel="icon" type="image/png" href="favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Card Trading – Little Heartworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { min-height:100vh; background:#fff9f0; font-family:'Nunito',sans-serif; padding-bottom:90px; }
+
+    header {
+      background:linear-gradient(135deg,#a29bfe,#ff9ff3);
+      padding:14px 20px; display:flex; align-items:center; gap:10px;
+      box-shadow:0 4px 20px rgba(162,155,254,0.3); position:sticky; top:0; z-index:40;
+    }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.2rem; color:white; flex:1; }
+    .nav-btn {
+      background:white; border:none; border-radius:50px; padding:8px 16px;
+      font-family:'Fredoka One',cursive; font-size:0.85rem; cursor:pointer;
+      color:#a29bfe; text-decoration:none; transition:transform 0.2s; flex-shrink:0;
+    }
+    .nav-btn:hover { transform:scale(1.04); }
+    .nav-btn-ghost {
+      background:rgba(255,255,255,0.2); border:2px solid rgba(255,255,255,0.5);
+      border-radius:50px; padding:7px 14px; font-family:'Fredoka One',cursive;
+      font-size:0.82rem; color:white; cursor:pointer; text-decoration:none; flex-shrink:0;
+    }
+
+    .hero {
+      background:linear-gradient(135deg,#a29bfe22,#ff9ff322);
+      border-bottom:2px solid #eee; padding:20px 20px 16px;
+      text-align:center;
+    }
+    .hero h1 { font-family:'Fredoka One',cursive; font-size:1.7rem; color:#333; margin-bottom:4px; }
+    .hero p  { color:#aaa; font-size:0.88rem; margin-bottom:14px; }
+    .post-big-btn {
+      display:inline-block; background:linear-gradient(135deg,#ff6b6b,#feca57);
+      border:none; border-radius:50px; padding:12px 28px; color:white;
+      font-family:'Fredoka One',cursive; font-size:1rem; cursor:pointer;
+      text-decoration:none; box-shadow:0 4px 14px rgba(255,107,107,0.3);
+      transition:transform 0.15s;
+    }
+    .post-big-btn:hover { transform:scale(1.04); }
+
+    .search-wrap {
+      max-width:700px; margin:20px auto 0; padding:0 16px;
+    }
+    .search-wrap input {
+      width:100%; padding:13px 20px; border-radius:50px;
+      border:3px solid #a29bfe; font-family:'Nunito',sans-serif;
+      font-size:0.95rem; outline:none; background:white;
+      box-shadow:0 2px 12px rgba(162,155,254,0.15);
+    }
+    .search-wrap input:focus { border-color:#ff9ff3; }
+
+    .container { max-width:960px; margin:0 auto; padding:22px 16px 20px; }
+    .section-label {
+      font-family:'Fredoka One',cursive; font-size:1rem; color:#a29bfe;
+      margin-bottom:14px;
+    }
+
+    .grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px;
+    }
+
+    .card {
+      background:white; border-radius:20px; overflow:hidden;
+      box-shadow:0 4px 16px rgba(0,0,0,0.07); transition:transform 0.2s;
+      border:2px solid #f0eeff;
+    }
+    .card:hover { transform:translateY(-3px); }
+    .card-img {
+      width:100%; height:160px; background:#f4f0ff;
+      display:flex; align-items:center; justify-content:center; font-size:3rem; color:#ccc;
+      overflow:hidden;
+    }
+    .card-img img { width:100%; height:100%; object-fit:cover; }
+    .card-body { padding:14px; }
+    .card-name { font-family:'Fredoka One',cursive; font-size:1rem; color:#333; margin-bottom:4px; }
+    .card-desc { font-size:0.78rem; color:#aaa; margin-bottom:8px; }
+    .card-min { font-family:'Fredoka One',cursive; font-size:0.82rem; color:#27ae60; margin-bottom:10px; }
+    .offer-btn {
+      width:100%; background:linear-gradient(135deg,#a29bfe,#ff9ff3); border:none;
+      border-radius:50px; padding:10px; color:white; font-family:'Fredoka One',cursive;
+      font-size:0.88rem; cursor:pointer; transition:transform 0.15s;
+    }
+    .offer-btn:hover { transform:scale(1.03); }
+    .offer-btn:disabled { background:#e0e0e0; color:#aaa; cursor:default; transform:none; }
+
+    .empty {
+      text-align:center; padding:50px 20px; color:#ccc;
+      font-family:'Fredoka One',cursive; font-size:1rem;
+    }
+    .empty .icon { font-size:3.5rem; margin-bottom:12px; }
+
+    /* Bottom nav */
+    .bottom-nav {
+      position:fixed; bottom:0; left:0; right:0;
+      background:white; border-top:2px solid #eee;
+      padding:10px 12px 14px; display:flex; gap:6px;
+      justify-content:center; z-index:200;
+    }
+    .bnav-btn {
+      flex:1; min-width:60px; max-width:120px;
+      background:#f4f0ff; border:none; border-radius:14px; padding:9px 6px;
+      font-family:'Fredoka One',cursive; font-size:0.72rem; color:#a29bfe;
+      cursor:pointer; text-decoration:none; text-align:center;
+      display:flex; flex-direction:column; align-items:center; gap:2px;
+    }
+    .bnav-btn.active { background:linear-gradient(135deg,#a29bfe,#ff9ff3); color:white; }
+    .bnav-btn.post  { background:linear-gradient(135deg,#ff6b6b,#feca57); color:white; }
+    .bnav-icon { font-size:1.2rem; }
+
+    /* Offer modal */
+    .modal-bg {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45);
+      align-items:flex-end; justify-content:center; z-index:1000; padding:0;
+    }
+    .modal-bg.open { display:flex; }
+    .modal {
+      background:white; border-radius:24px 24px 0 0; padding:28px 24px 32px;
+      width:100%; max-width:500px; max-height:90vh; overflow-y:auto;
+    }
+    .modal-title { font-family:'Fredoka One',cursive; font-size:1.2rem; color:#333; margin-bottom:4px; }
+    .modal-sub { color:#aaa; font-size:0.83rem; margin-bottom:18px; }
+    .form-label { font-family:'Fredoka One',cursive; font-size:0.85rem; color:#555; margin-bottom:5px; display:block; }
+    .form-input, .form-textarea {
+      width:100%; padding:11px 14px; border:2.5px solid #e0e0e0; border-radius:14px;
+      font-family:'Nunito',sans-serif; font-size:0.92rem; outline:none;
+      transition:border-color 0.2s; margin-bottom:14px;
+    }
+    .form-input:focus, .form-textarea:focus { border-color:#a29bfe; }
+    .form-textarea { resize:vertical; min-height:70px; }
+    .modal-actions { display:flex; gap:10px; }
+    .send-btn {
+      flex:1; background:linear-gradient(135deg,#a29bfe,#ff9ff3); border:none;
+      border-radius:50px; padding:13px; color:white; font-family:'Fredoka One',cursive;
+      font-size:0.95rem; cursor:pointer;
+    }
+    .cancel-btn {
+      background:#f0f0f0; border:none; border-radius:50px; padding:13px 18px;
+      font-family:'Fredoka One',cursive; font-size:0.95rem; cursor:pointer; color:#888;
+    }
+    .msg { padding:10px 14px; border-radius:10px; font-weight:700; font-size:0.85rem;
+      display:none; margin-bottom:12px; }
+    .msg.success { background:#d4edda; color:#155724; display:block; }
+    .msg.error   { background:#ffd6d6; color:#c0392b; display:block; }
+    .msg.loading { background:#fff3cd; color:#856404; display:block; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">🃏 Card Trading</div>
+    <a href="platform-kid-trade-my-posts.html" class="nav-btn">📋 My Posts</a>
+    <a href="platform-kid-trade-offers.html" class="nav-btn">📬 My Offers</a>
+    <a href="platform-kid-dashboard.html" class="nav-btn-ghost">← Dashboard</a>
+  </header>
+
+  <div class="hero">
+    <h1>🃏 Card Trading Center</h1>
+    <p>Post your cards for trade or make an offer on someone else's!</p>
+    <a href="platform-kid-trade-my-posts.html" class="post-big-btn">➕ Post a Card for Trade</a>
+  </div>
+
+  <div class="search-wrap">
+    <input id="searchInput" type="text" placeholder="🔍 Search cards..." oninput="filterListings()" />
+  </div>
+
+  <div class="container">
+    <p class="section-label" id="sectionLabel">All Cards Up for Trade</p>
+    <div class="grid" id="listingsGrid">
+      <div class="empty" style="grid-column:1/-1"><div class="icon">⏳</div>Loading...</div>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="bottom-nav">
+    <a href="platform-kid-trade-center.html" class="bnav-btn active">
+      <span class="bnav-icon">🃏</span>Browse
+    </a>
+    <a href="platform-kid-trade-my-posts.html" class="bnav-btn post">
+      <span class="bnav-icon">➕</span>Post Card
+    </a>
+    <a href="platform-kid-trade-offers.html" class="bnav-btn">
+      <span class="bnav-icon">📬</span>My Offers
+    </a>
+    <a href="platform-kid-shop.html" class="bnav-btn">
+      <span class="bnav-icon">🛍️</span>Shop
+    </a>
+    <a href="platform-kid-dashboard.html" class="bnav-btn">
+      <span class="bnav-icon">🏠</span>Home
+    </a>
+  </div>
+
+  <!-- Offer modal -->
+  <div class="modal-bg" id="offerModal">
+    <div class="modal">
+      <p class="modal-title">Make an Offer 🤝</p>
+      <p class="modal-sub">For: <strong id="offerCardName"></strong></p>
+      <input type="hidden" id="offerListingId" />
+      <div class="msg" id="offerMsg"></div>
+
+      <label class="form-label">💰 Money offer (optional)</label>
+      <input class="form-input" type="number" id="offerMoney" placeholder="e.g. 3.00" min="0" step="0.01" />
+
+      <label class="form-label">🃏 Cards you're offering (optional)</label>
+      <textarea class="form-textarea" id="offerCards" placeholder="Name the card(s) you want to trade..."></textarea>
+
+      <label class="form-label">💬 Message (optional)</label>
+      <input class="form-input" type="text" id="offerMessage" placeholder="Say something!" />
+
+      <div class="modal-actions">
+        <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+        <button class="send-btn" onclick="sendOffer()">Send Offer ✨</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let currentUser = null;
+    let allListings = [];
+
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { window.location.href = 'platform-login.html'; return; }
+      currentUser = user;
+      loadListings();
+    }
+
+    async function loadListings() {
+      const { data } = await sb
+        .from('card_listings')
+        .select('*')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+      allListings = data || [];
+      renderListings(allListings);
+    }
+
+    function filterListings() {
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      const filtered = q
+        ? allListings.filter(l => l.card_name.toLowerCase().includes(q) || (l.description||'').toLowerCase().includes(q))
+        : allListings;
+      renderListings(filtered);
+      document.getElementById('sectionLabel').textContent = q
+        ? `Results for "${q}"`
+        : 'All Cards Up for Trade';
+    }
+
+    function renderListings(listings) {
+      const grid = document.getElementById('listingsGrid');
+      if (!listings.length) {
+        grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+          <div class="icon">🃏</div>
+          No cards listed yet — be the first to post one!
+        </div>`;
+        return;
+      }
+      grid.innerHTML = listings.map(l => {
+        const isOwn = l.poster_user_id === currentUser.id;
+        const img = l.card_image_url
+          ? `<div class="card-img"><img src="${esc(l.card_image_url)}" alt="${esc(l.card_name)}" /></div>`
+          : `<div class="card-img">🃏</div>`;
+        const minLabel = l.min_price ? `<p class="card-min">💰 Min: $${Number(l.min_price).toFixed(2)}</p>` : '';
+        return `
+          <div class="card">
+            ${img}
+            <div class="card-body">
+              <p class="card-name">${esc(l.card_name)}</p>
+              ${l.description ? `<p class="card-desc">${esc(l.description)}</p>` : ''}
+              ${minLabel}
+              <button class="offer-btn"
+                ${isOwn ? 'disabled' : `onclick="openModal('${l.id}','${escA(l.card_name)}')"`}>
+                ${isOwn ? '📋 Your listing' : '🤝 Make an Offer'}
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function openModal(id, name) {
+      document.getElementById('offerListingId').value = id;
+      document.getElementById('offerCardName').textContent = name;
+      document.getElementById('offerMoney').value = '';
+      document.getElementById('offerCards').value = '';
+      document.getElementById('offerMessage').value = '';
+      document.getElementById('offerMsg').className = 'msg';
+      document.getElementById('offerModal').classList.add('open');
+    }
+    function closeModal() { document.getElementById('offerModal').classList.remove('open'); }
+
+    async function sendOffer() {
+      const listingId = document.getElementById('offerListingId').value;
+      const money = parseFloat(document.getElementById('offerMoney').value) || 0;
+      const cards = document.getElementById('offerCards').value.trim();
+      const message = document.getElementById('offerMessage').value.trim();
+      const msgEl = document.getElementById('offerMsg');
+      if (!money && !cards) {
+        msgEl.className = 'msg error'; msgEl.textContent = 'Add money, cards, or both!'; return;
+      }
+      msgEl.className = 'msg loading'; msgEl.textContent = 'Sending...';
+      const name = currentUser.user_metadata?.full_name || currentUser.email;
+      const { error } = await sb.from('card_offers').insert({
+        listing_id: listingId, offerer_user_id: currentUser.id,
+        offerer_name: name, offer_money: money || null,
+        offer_cards: cards || null, message: message || null, status: 'pending'
+      });
+      if (error) { msgEl.className = 'msg error'; msgEl.textContent = error.message; return; }
+      msgEl.className = 'msg success'; msgEl.textContent = '✅ Offer sent!';
+      setTimeout(closeModal, 1200);
+    }
+
+    function esc(s)  { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function escA(s) { return String(s||'').replace(/'/g,"\\'"); }
+
+    init();
+  </script>
+</body>
+</html>
