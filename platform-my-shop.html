@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -174,7 +174,7 @@
   <header>
     <div class="logo">Little He<span>art</span>works</div>
     <a href="platform-submit.html" class="hbtn hbtn-green">🎨 Upload Art</a>
-    <a href="platform-shop.html"   class="hbtn hbtn-gray">â† Back to Shop</a>
+    <a href="platform-shop.html"   class="hbtn hbtn-gray">← Back to Shop</a>
   </header>
 
   <div class="container">
@@ -283,7 +283,7 @@
     function renderZone(gridId, items, zone) {
       const grid = document.getElementById(gridId);
       if (!items.length) {
-        const hints = { draft:'ðŸ“ Upload art to see it here', posted:'â¬…ï¸ Drag art here to publish it', requested:'' };
+        const hints = { draft:'📁 Upload art to see it here', posted:'â¬…ï¸ Drag art here to publish it', requested:'' };
         grid.innerHTML = `<div class="drop-hint">${hints[zone]}</div>`;
         return;
       }
@@ -294,7 +294,7 @@
                          : 's-approved';
         const badgeText  = a.status === 'pending'  ? '⏳ Pending Review'
                          : a.status === 'rejected' ? '❌ Rejected'
-                         : a.status === 'recycled' ? 'ðŸ“ Unpublished'
+                         : a.status === 'recycled' ? '📁 Unpublished'
                          : '✅ Live';
         const kidLabel  = a.kids?.name ? `<p style="font-size:0.68rem;color:#a29bfe;margin-bottom:2px;">🧒 ${a.kids.name}</p>` : '';
         const dragSt    = zone === 'requested' ? 'on_hold' : a.status;
@@ -303,10 +303,10 @@
         const moveBtn   = zone === 'draft'
           ? `<button class="move-btn move-btn-post" onclick="event.stopPropagation();moveArt('${safeId}','posted')">✅ Post to Shop</button>`
           : zone === 'posted'
-          ? `<button class="move-btn move-btn-unpost" onclick="event.stopPropagation();moveArt('${safeId}','draft')">ðŸ“ Move to My Art</button>`
+          ? `<button class="move-btn move-btn-unpost" onclick="event.stopPropagation();moveArt('${safeId}','draft')">📁 Move to My Art</button>`
           : zone === 'requested'
           ? `<button class="move-btn move-btn-post" onclick="event.stopPropagation();moveArt('${safeId}','posted')">✅ Re-list</button>
-             <button class="move-btn move-btn-unpost" onclick="event.stopPropagation();moveArt('${safeId}','draft')">ðŸ“ Move to My Art</button>`
+             <button class="move-btn move-btn-unpost" onclick="event.stopPropagation();moveArt('${safeId}','draft')">📁 Move to My Art</button>`
           : '';
         const deleteBtn = (zone === 'draft' || zone === 'requested')
           ? `<button class="delete-btn" onclick="event.stopPropagation();deleteArt('${safeId}','${safeName}')">🗑️ Delete</button>`
@@ -321,8 +321,8 @@
               <p class="art-card-name">${a.name}</p>
               ${kidLabel}
               <p class="art-card-price">$${a.price}</p>
-              <span class="art-ref">ðŸ“Œ #${a.id.slice(0,6).toUpperCase()}</span>
-              <span class="art-posted">ðŸ“… ${new Date(a.created_at).toLocaleDateString()}</span>
+              <span class="art-ref">📌 #${a.id.slice(0,6).toUpperCase()}</span>
+              <span class="art-posted">📅 ${new Date(a.created_at).toLocaleDateString()}</span>
               <span class="status-badge ${zone === 'requested' ? 's-hold' : badgeClass}">${zone === 'requested' ? '🛒 Requested' : badgeText}</span>
               ${moveBtn}
               ${deleteBtn}
@@ -379,7 +379,7 @@
       } else if (zone === 'draft') {
         if (dragStatus === 'approved' || dragStatus === 'on_hold') {
           update = { status: 'recycled', on_hold: false };
-          msg = 'ðŸ“ Art moved to My Art';
+          msg = '📁 Art moved to My Art';
         }
       }
       // zone === 'requested' is not a drop target — ignore
@@ -404,7 +404,7 @@
         msg = '✅ Art published to shop!';
       } else if (target === 'draft') {
         update = { status: 'recycled', on_hold: false };
-        msg = 'ðŸ“ Art moved to My Art';
+        msg = '📁 Art moved to My Art';
       }
       if (!update) return;
       const { error } = await sb.from('artworks').update(update).eq('id', id);

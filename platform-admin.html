@@ -141,11 +141,11 @@
   <header>
     <div class="logo">Little He<span>art</span>works</div>
     <span class="admin-badge">🔐 Admin</span>
-    <a href="platform-shop.html" class="back-btn">â† Shop</a>
+    <a href="platform-shop.html" class="back-btn">← Shop</a>
   </header>
 
   <div class="container">
-    <p class="page-title">ðŸ› ï¸ Admin Panel</p>
+    <p class="page-title">🛠️ Admin Panel</p>
     <p class="page-sub">Click 🗑️ on any artwork to recycle it. Recycled art is hidden from the shop.</p>
 
     <div class="page-tabs">
@@ -296,7 +296,7 @@
             </p>
             <div class="card-actions">
               ${inBin ? `
-                <button class="btn-restore" onclick="restoreArt('${a.id}')">â†©ï¸ Restore</button>
+                <button class="btn-restore" onclick="restoreArt('${a.id}')">↩️ Restore</button>
                 <button class="btn-delete"  onclick="deleteArt('${a.id}')">🗑️ Delete Forever</button>
               ` : `
                 ${a.status !== 'approved' ? `<button class="btn-approve" onclick="setArtStatus('${a.id}','approved')">✅ Approve</button>` : ''}
@@ -321,7 +321,7 @@
       if (error) { showToast('❌ ' + error.message); return; }
       allArtworks = allArtworks.map(a => a.id === id ? { ...a, status: 'pending' } : a);
       updateStats(); renderGrid(); renderBin();
-      showToast('â†©ï¸ Restored to pending');
+      showToast('↩️ Restored to pending');
     }
 
     async function deleteArt(id) {
@@ -375,7 +375,7 @@
               <p class="account-name">${u.full_name || '(no name)'} ${isAdmin ? '<span style="background:#ff6b6b;color:white;font-size:0.7rem;padding:2px 8px;border-radius:50px;margin-left:4px;">Admin</span>' : ''}</p>
               <p class="account-email">${u.email}</p>
               <div class="account-chips">
-                <span class="account-chip">ðŸ“… Joined ${new Date(u.created_at).toLocaleDateString()}</span>
+                <span class="account-chip">📅 Joined ${new Date(u.created_at).toLocaleDateString()}</span>
                 <span class="account-chip">🖼️ ${u.artwork_count} artworks</span>
                 <span class="account-chip">🧒 ${u.kid_count} kids</span>
               </div>

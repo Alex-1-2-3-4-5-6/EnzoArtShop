@@ -211,18 +211,27 @@
     let currentUser = null;
 
     async function init() {
-      // Support both: kids with Supabase accounts AND kids using the code/kidSession system
       const raw = localStorage.getItem('kidSession');
       if (raw) {
         currentUser = JSON.parse(raw);
       } else {
-        const { data: { session } } = await sb.auth.getSession();
-        if (session) {
-          const m = session.user.user_metadata || {};
-          currentUser = { kid_id: session.user.id, kid_name: m.full_name || session.user.email };
-        } else {
-          window.location.href = 'platform-index.html'; return;
+        try {
+          const { data } = await sb.auth.getSession();
+          if (data?.session) {
+            const m = data.session.user.user_metadata || {};
+            currentUser = { kid_id: data.session.user.id, kid_name: m.full_name || data.session.user.email };
+          }
+        } catch(e) {}
+        if (!currentUser) {
+          try {
+            const { data } = await sb.auth.getUser();
+            if (data?.user) {
+              const m = data.user.user_metadata || {};
+              currentUser = { kid_id: data.user.id, kid_name: m.full_name || data.user.email };
+            }
+          } catch(e) {}
         }
+        if (!currentUser) { window.location.href = 'platform-index.html'; return; }
       }
       loadListings();
     }

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -97,7 +97,7 @@
 
   <header>
     <div class="logo">📬 Inbox</div>
-    <a href="platform-shop.html" class="hbtn hbtn-ghost">â† Back to Shop</a>
+    <a href="platform-shop.html" class="hbtn hbtn-ghost">← Back to Shop</a>
   </header>
 
   <div class="container">
@@ -212,7 +212,7 @@
             <p class="notif-title">${a.name}</p>
             <p class="notif-meta">
               ${a.kids?.name ? `<strong>${a.kids.name}</strong> submitted this for $${a.price}` : `Submitted for $${a.price}`}<br>
-              ðŸ“… ${new Date(a.created_at).toLocaleDateString()}
+              📅 ${new Date(a.created_at).toLocaleDateString()}
             </p>
             <div class="btn-row">
               <button class="action-btn btn-green" onclick="event.stopPropagation();approveArt('${a.id}')">✅ Approve</button>

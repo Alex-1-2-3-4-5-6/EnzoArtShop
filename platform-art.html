@@ -129,7 +129,7 @@
 
   <header>
     <div class="logo">🎨 Little He<span>art</span>works</div>
-    <a href="platform-shop.html" class="hbtn hbtn-ghost">â† Shop</a>
+    <a href="platform-shop.html" class="hbtn hbtn-ghost">← Shop</a>
     <a href="platform-shop.html?tab=trade" class="hbtn hbtn-ghost" id="tradingBtn">🔄 Trading</a>
     <a href="platform-my-shop.html" class="hbtn hbtn-white" id="myShopBtn" style="display:none;">🖼️ My Shop</a>
     <a href="#" class="account-btn" id="accountBtn" onclick="handleAccount(event)">
@@ -144,7 +144,7 @@
 
   <div id="notFound" class="not-found" style="display:none">
     🖼️ Artwork not found.<br>
-    <a href="platform-shop.html">â† Back to Shop</a>
+    <a href="platform-shop.html">← Back to Shop</a>
   </div>
 
   <div class="page" id="pageContent" style="display:none">
@@ -306,7 +306,7 @@
           <div id="orderTotalBox" style="background:#f4f0ff;border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:0.88rem;color:#a29bfe;display:none;">
             <span style="font-family:'Fredoka One',cursive;" id="orderTotalText"></span>
           </div>
-          <button onclick="submitPurchase()" class="big-btn" id="purchaseBtn">ðŸ’Œ Send Request to Seller</button>
+          <button onclick="submitPurchase()" class="big-btn" id="purchaseBtn">💌 Send Request to Seller</button>
           <div id="purchaseMsg" style="margin-top:10px;font-size:0.85rem;text-align:center;"></div>`;
       }
 
@@ -447,7 +447,7 @@
         msg.style.color = '#e74c3c';
         msg.textContent = '❌ ' + (data?.error || error?.message);
         btn.disabled = false;
-        btn.textContent = 'ðŸ’Œ Send Request to Seller';
+        btn.textContent = '💌 Send Request to Seller';
         return;
       }
 

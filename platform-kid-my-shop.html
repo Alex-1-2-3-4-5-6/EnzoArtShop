@@ -154,7 +154,7 @@
   <header>
     <div class="logo">🎨 My Art</div>
     <a href="platform-kid-submit.html" class="nav-btn">✏️ Submit New Art</a>
-    <a href="platform-kid-shop.html" class="nav-btn-ghost">â† Browse</a>
+    <a href="platform-kid-shop.html" class="nav-btn-ghost">← Browse</a>
       <a href="platform-kid-trade-center.html" class="nav-btn">🃏 Trade</a>
   </header>
 
@@ -262,7 +262,7 @@
     function renderZone(gridId, items, zone) {
       const grid = document.getElementById(gridId);
       if (!items.length) {
-        const hints = { draft:'ðŸ“ Submit art to see it here', posted:'â¬…ï¸ Drag art here to submit for the shop', requested:'' };
+        const hints = { draft:'📁 Submit art to see it here', posted:'â¬…ï¸ Drag art here to submit for the shop', requested:'' };
         grid.innerHTML = `<div class="drop-hint">${hints[zone]}</div>`;
         return;
       }
@@ -274,7 +274,7 @@
                          : 's-approved';
         const badgeText  = a.status === 'pending'  ? '⏳ Waiting for parent'
                          : a.status === 'rejected' ? '❌ Not approved'
-                         : a.status === 'recycled' ? 'ðŸ“ Taken down'
+                         : a.status === 'recycled' ? '📁 Taken down'
                          : '✅ Live';
         // Pending cards can't be dragged; requested use 'on_hold' as drag status
         const noDrag     = a.status === 'pending';
@@ -284,10 +284,10 @@
         const moveBtn  = zone === 'draft'
           ? `<button class="move-btn move-btn-post" onclick="event.stopPropagation();moveArt('${safeId}','posted')">⏳ Submit to Shop</button>`
           : zone === 'posted'
-          ? `<button class="move-btn move-btn-unpost" onclick="event.stopPropagation();moveArt('${safeId}','draft')">ðŸ“ Move to My Art</button>`
+          ? `<button class="move-btn move-btn-unpost" onclick="event.stopPropagation();moveArt('${safeId}','draft')">📁 Move to My Art</button>`
           : zone === 'requested'
           ? `<button class="move-btn move-btn-post" onclick="event.stopPropagation();moveArt('${safeId}','posted')">✅ Re-list</button>
-             <button class="move-btn move-btn-unpost" onclick="event.stopPropagation();moveArt('${safeId}','draft')">ðŸ“ Move to My Art</button>`
+             <button class="move-btn move-btn-unpost" onclick="event.stopPropagation();moveArt('${safeId}','draft')">📁 Move to My Art</button>`
           : '';
         const deleteBtn = (zone === 'draft' || zone === 'requested')
           ? `<button class="delete-btn" onclick="event.stopPropagation();deleteArt('${safeId}','${safeName}')">🗑️ Delete</button>`
@@ -300,8 +300,8 @@
             <div class="art-card-info">
               <p class="art-card-name">${a.name}</p>
               <p class="art-card-price">$${a.price}</p>
-              <span class="art-ref">ðŸ“Œ #${a.id.slice(0,6).toUpperCase()}</span>
-              <span class="art-date">ðŸ“… ${new Date(a.created_at).toLocaleDateString()}</span>
+              <span class="art-ref">📌 #${a.id.slice(0,6).toUpperCase()}</span>
+              <span class="art-date">📅 ${new Date(a.created_at).toLocaleDateString()}</span>
               <span class="status-badge ${zone === 'requested' ? 's-hold' : badgeClass}">${zone === 'requested' ? '🛒 Requested' : badgeText}</span>
               ${moveBtn}
               ${deleteBtn}
@@ -317,7 +317,7 @@
         msg = '⏳ Sent to parent for approval!';
       } else if (target === 'draft') {
         update = { status: 'recycled', on_hold: false };
-        msg = 'ðŸ“ Art moved to My Art';
+        msg = '📁 Art moved to My Art';
       }
       if (!update) return;
       const { error } = await sb.from('artworks').update(update).eq('id', id);
@@ -379,7 +379,7 @@
       } else if (zone === 'draft') {
         if (dragStatus === 'approved' || dragStatus === 'on_hold') {
           update = { status: 'recycled', on_hold: false };
-          msg = 'ðŸ“ Art moved to My Art';
+          msg = '📁 Art moved to My Art';
         }
       }
       // zone === 'requested' is not a drop target — ignore

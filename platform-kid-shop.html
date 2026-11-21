@@ -288,7 +288,7 @@
         let btnClass = 'request', btnText = isTrading ? '🔄 Request Trade' : '🛒 Request This', btnDisabled = '';
         if (isOwn) { btnClass = 'own'; btnText = '🎨 Your Art'; btnDisabled = 'disabled'; }
         else if (isRequested) { btnClass = 'requested'; btnText = '✅ Requested'; btnDisabled = 'disabled'; }
-        else if (atLimit && !isTrading) { btnClass = 'requested'; btnText = 'ðŸš« Limit Reached'; btnDisabled = 'disabled'; }
+        else if (atLimit && !isTrading) { btnClass = 'requested'; btnText = '🚫 Limit Reached'; btnDisabled = 'disabled'; }
 
         const card = document.createElement('div');
         card.className = 'card';
@@ -323,7 +323,7 @@
 
       if (isOwn) { btn.textContent = '🎨 This is your art!'; btn.disabled = true; }
       else if (isRequested) { btn.textContent = '✅ Already requested'; btn.disabled = true; }
-      else if (atLimit) { btn.textContent = 'ðŸš« Daily limit reached'; btn.disabled = true; }
+      else if (atLimit) { btn.textContent = '🚫 Daily limit reached'; btn.disabled = true; }
       else { btn.textContent = '🛒 Request This!'; btn.disabled = false; }
 
       document.getElementById('modalMsg').style.display = 'none';
@@ -346,7 +346,7 @@
 
       const msgEl = document.getElementById('modalMsg');
       if (error || data?.error) {
-        const errMap = { limit: 'ðŸš« You\'ve reached your daily request limit!', already: '✅ You already requested this.' };
+        const errMap = { limit: '🚫 You\'ve reached your daily request limit!', already: '✅ You already requested this.' };
         const msg = errMap[data?.error] || '❌ Something went wrong.';
         msgEl.style.cssText = 'display:block;background:#ffd6d6;color:#c0392b;margin-top:12px;padding:10px 14px;border-radius:12px;font-weight:700;font-size:0.88rem;';
         msgEl.textContent = msg;
