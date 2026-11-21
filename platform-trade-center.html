@@ -12,21 +12,40 @@
     body { min-height:100vh; background:#f4f6ff; font-family:'Nunito',sans-serif; }
 
     header {
-      background:white; padding:16px 28px; display:flex; align-items:center; gap:12px;
-      box-shadow:0 2px 12px rgba(0,0,0,0.07); flex-wrap:wrap; gap:10px;
+      background:white; padding:14px 20px; display:flex; align-items:center; gap:10px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.07);
     }
-    .logo { font-family:'Fredoka One',cursive; font-size:1.3rem; color:#ff6b6b; flex:1; min-width:160px; }
+    .logo { font-family:'Fredoka One',cursive; font-size:1.2rem; color:#ff6b6b; flex:1; }
     .logo span { color:#a29bfe; }
     .hdr-btn {
-      background:#f0f0f0; border:none; border-radius:50px; padding:8px 18px;
-      font-family:'Fredoka One',cursive; font-size:0.88rem; cursor:pointer; color:#888;
+      background:#f0f0f0; border:none; border-radius:50px; padding:8px 16px;
+      font-family:'Fredoka One',cursive; font-size:0.82rem; cursor:pointer; color:#888;
       text-decoration:none; white-space:nowrap;
     }
-    .hdr-btn.primary {
-      background:linear-gradient(135deg,#ff6b6b,#feca57); color:white;
+    .hdr-btn.primary { background:linear-gradient(135deg,#ff6b6b,#feca57); color:white; }
+
+    /* Bottom nav for mobile — shows only when logged in */
+    .bottom-nav {
+      display:none; position:fixed; bottom:0; left:0; right:0;
+      background:white; border-top:2px solid #eee;
+      padding:10px 16px 14px; gap:8px;
+      justify-content:center; z-index:200; flex-wrap:wrap;
+    }
+    .bottom-nav.visible { display:flex; }
+    .bnav-btn {
+      flex:1; min-width:80px; max-width:140px;
+      background:#f4f6ff; border:none; border-radius:14px; padding:10px 8px;
+      font-family:'Fredoka One',cursive; font-size:0.78rem; color:#666;
+      cursor:pointer; text-decoration:none; text-align:center; display:flex;
+      flex-direction:column; align-items:center; gap:3px;
+    }
+    .bnav-btn.highlight { background:linear-gradient(135deg,#ff6b6b,#feca57); color:white; }
+    .bnav-btn .bnav-icon { font-size:1.3rem; }
+    @media(min-width:600px) {
+      .bottom-nav { display:none !important; }
     }
 
-    .container { max-width:1000px; margin:36px auto; padding:0 20px 80px; }
+    .container { max-width:1000px; margin:36px auto; padding:0 20px 140px; }
     .page-title { font-family:'Fredoka One',cursive; font-size:2rem; color:#333; margin-bottom:4px; }
     .page-sub { color:#aaa; font-size:0.92rem; margin-bottom:24px; }
 
@@ -127,6 +146,22 @@
     </div>
   </div>
 
+  <!-- Mobile bottom nav (hidden until logged in) -->
+  <div class="bottom-nav" id="bottomNav">
+    <a href="platform-trade-my-posts.html" class="bnav-btn highlight">
+      <span class="bnav-icon">➕</span>Post a Card
+    </a>
+    <a href="platform-trade-my-posts.html" class="bnav-btn">
+      <span class="bnav-icon">📋</span>My Posts
+    </a>
+    <a href="platform-my-trades.html" class="bnav-btn">
+      <span class="bnav-icon">📬</span>My Offers
+    </a>
+    <a href="#" class="bnav-btn" id="bottomDashBtn">
+      <span class="bnav-icon">🏠</span>Dashboard
+    </a>
+  </div>
+
   <!-- Offer modal -->
   <div class="modal-bg" id="offerModal">
     <div class="modal">
@@ -164,9 +199,12 @@
       currentUser = user;
 
       if (user) {
-        // Show appropriate dashboard link
         const { data: kidRec } = await sb.from('kids').select('id').eq('kid_user_id', user.id).single();
-        if (kidRec) {
+        const isKid = !!kidRec;
+        const dashUrl = isKid ? 'platform-kid-dashboard.html' : 'platform-dashboard.html';
+
+        // Desktop header buttons
+        if (isKid) {
           document.getElementById('kidDashBtn').style.display = '';
         } else {
           document.getElementById('parentDashBtn').style.display = '';
@@ -174,6 +212,10 @@
         document.getElementById('myPostsBtn').style.display = '';
         document.getElementById('myOffersBtn').style.display = '';
         document.getElementById('postCardBtn').style.display = '';
+
+        // Mobile bottom nav
+        document.getElementById('bottomNav').classList.add('visible');
+        document.getElementById('bottomDashBtn').href = dashUrl;
       }
 
       loadListings();
