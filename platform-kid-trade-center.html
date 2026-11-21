@@ -228,9 +228,19 @@
     let allListings = [];
 
     async function init() {
+      // Support both: kids with Supabase accounts AND kids using the code/kidSession system
       const raw = localStorage.getItem('kidSession');
-      if (!raw) { window.location.href = 'platform-index.html'; return; }
-      currentUser = JSON.parse(raw);
+      if (raw) {
+        currentUser = JSON.parse(raw);
+      } else {
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) {
+          const m = session.user.user_metadata || {};
+          currentUser = { kid_id: session.user.id, kid_name: m.full_name || session.user.email };
+        } else {
+          window.location.href = 'platform-index.html'; return;
+        }
+      }
       loadListings();
     }
 
