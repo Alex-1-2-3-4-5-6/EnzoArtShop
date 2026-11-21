@@ -232,16 +232,31 @@
       const raw = localStorage.getItem('kidSession');
       if (raw) {
         currentUser = JSON.parse(raw);
-      } else {
-        const { data: { session } } = await sb.auth.getSession();
+        loadListings();
+        return;
+      }
+      // Try Supabase session (account-based kids from kid-dashboard)
+      try {
+        const { data, error } = await sb.auth.getSession();
+        const session = data?.session;
         if (session) {
           const m = session.user.user_metadata || {};
           currentUser = { kid_id: session.user.id, kid_name: m.full_name || session.user.email };
-        } else {
-          window.location.href = 'platform-index.html'; return;
+          loadListings();
+          return;
         }
-      }
-      loadListings();
+      } catch(e) {}
+      // Also try getUser as fallback
+      try {
+        const { data } = await sb.auth.getUser();
+        if (data?.user) {
+          const m = data.user.user_metadata || {};
+          currentUser = { kid_id: data.user.id, kid_name: m.full_name || data.user.email };
+          loadListings();
+          return;
+        }
+      } catch(e) {}
+      window.location.href = 'platform-index.html';
     }
 
     async function loadListings() {
