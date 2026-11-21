@@ -136,9 +136,9 @@
     let currentUser = null;
 
     async function init() {
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) { window.location.href = 'platform-login.html'; return; }
-      currentUser = session.user;
+      const raw = localStorage.getItem('kidSession');
+      if (!raw) { window.location.href = 'platform-index.html'; return; }
+      currentUser = JSON.parse(raw);
       load();
     }
 
@@ -146,7 +146,7 @@
       const { data: offers } = await sb
         .from('card_offers')
         .select('*, listing:listing_id(id,card_name,card_image_url,status)')
-        .eq('offerer_user_id', currentUser.id)
+        .eq('offerer_user_id', currentUser.kid_id)
         .order('created_at', { ascending: false });
 
       const all = offers || [];

@@ -211,9 +211,9 @@
     let currentUser = null;
 
     async function init() {
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) { window.location.href = 'platform-login.html'; return; }
-      currentUser = session.user;
+      const raw = localStorage.getItem('kidSession');
+      if (!raw) { window.location.href = 'platform-index.html'; return; }
+      currentUser = JSON.parse(raw);
       loadListings();
     }
 
@@ -238,14 +238,14 @@
       let imageUrl = null;
       if (imgFile) {
         const ext = imgFile.name.split('.').pop();
-        const filename = `card-${currentUser.id}-${Date.now()}.${ext}`;
+        const filename = `card-${currentUser.kid_id}-${Date.now()}.${ext}`;
         const { error: upErr } = await sb.storage.from('card-images').upload(filename, imgFile, { upsert: true, contentType: imgFile.type });
         if (upErr) { msgEl.className = 'msg error'; msgEl.textContent = 'Photo upload failed: ' + upErr.message; return; }
         imageUrl = sb.storage.from('card-images').getPublicUrl(filename).data.publicUrl;
       }
 
       const { error } = await sb.from('card_listings').insert({
-        poster_user_id: currentUser.id, card_name: name,
+        poster_user_id: currentUser.kid_id, card_name: name,
         description: desc || null, min_price: minPrice,
         card_image_url: imageUrl, status: 'active'
       });
@@ -263,7 +263,7 @@
 
     async function loadListings() {
       const { data } = await sb.from('card_listings').select('*')
-        .eq('poster_user_id', currentUser.id).order('created_at', { ascending: false });
+        .eq('poster_user_id', currentUser.kid_id).order('created_at', { ascending: false });
       const listings = data || [];
       if (!listings.length) {
         document.getElementById('listingsList').innerHTML = '<p class="empty">No cards posted yet — post your first one above!</p>';

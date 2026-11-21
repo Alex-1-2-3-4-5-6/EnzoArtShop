@@ -228,9 +228,9 @@
     let allListings = [];
 
     async function init() {
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) { window.location.href = 'platform-login.html'; return; }
-      currentUser = session.user;
+      const raw = localStorage.getItem('kidSession');
+      if (!raw) { window.location.href = 'platform-index.html'; return; }
+      currentUser = JSON.parse(raw);
       loadListings();
     }
 
@@ -266,7 +266,7 @@
         return;
       }
       grid.innerHTML = listings.map(l => {
-        const isOwn = l.poster_user_id === currentUser.id;
+        const isOwn = l.poster_user_id === currentUser.kid_id;
         const img = l.card_image_url
           ? `<div class="card-img"><img src="${esc(l.card_image_url)}" alt="${esc(l.card_name)}" /></div>`
           : `<div class="card-img">🃏</div>`;
@@ -308,9 +308,9 @@
         msgEl.className = 'msg error'; msgEl.textContent = 'Add money, cards, or both!'; return;
       }
       msgEl.className = 'msg loading'; msgEl.textContent = 'Sending...';
-      const name = currentUser.user_metadata?.full_name || currentUser.email;
+      const name = currentUser.kid_name;
       const { error } = await sb.from('card_offers').insert({
-        listing_id: listingId, offerer_user_id: currentUser.id,
+        listing_id: listingId, offerer_user_id: currentUser.kid_id,
         offerer_name: name, offer_money: money || null,
         offer_cards: cards || null, message: message || null, status: 'pending'
       });
