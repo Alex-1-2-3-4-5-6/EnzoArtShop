@@ -119,6 +119,7 @@
 
     <div class="search-row">
       <input class="search-input" id="searchInput" placeholder="🔍 Search by card name..." oninput="filterListings()" />
+      <a href="platform-trade-my-posts.html" id="postCardBtn" style="display:none;background:linear-gradient(135deg,#ff6b6b,#feca57);border:none;border-radius:50px;padding:12px 22px;color:white;font-family:'Fredoka One',cursive;font-size:0.95rem;cursor:pointer;text-decoration:none;white-space:nowrap;">+ Post a Card</a>
     </div>
 
     <div class="grid" id="listingsGrid">
@@ -172,6 +173,7 @@
         }
         document.getElementById('myPostsBtn').style.display = '';
         document.getElementById('myOffersBtn').style.display = '';
+        document.getElementById('postCardBtn').style.display = '';
       }
 
       loadListings();
