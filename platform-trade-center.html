@@ -161,13 +161,13 @@
         const img = l.card_image_url
           ? `<div class="card-img"><img src="${esc(l.card_image_url)}" /></div>`
           : `<div class="card-img">🃏</div>`;
-        const minPrice = l.min_price ? `Min $${Number(l.min_price).toFixed(2)}` : 'Any offer';
+        const preferred = l.preferred_trade ? esc(l.preferred_trade) : 'Any offer';
         return `<div class="card" onclick="openModal(${JSON.stringify(l).replace(/"/g,'&quot;')})">
           ${img}
           <div class="card-body">
             <p class="card-name">${esc(l.card_name)}</p>
             <p class="card-by">by ${esc(l.poster_name||'Anonymous')}</p>
-            <p class="card-price">${minPrice}</p>
+            <p class="card-price">${preferred}</p>
           </div>
         </div>`;
       }).join('');
@@ -178,7 +178,7 @@
       const thumb = document.getElementById('modalThumb');
       thumb.innerHTML = listing.card_image_url ? `<img src="${esc(listing.card_image_url)}" />` : '🃏';
       document.getElementById('modalCardName').textContent = listing.card_name;
-      document.getElementById('modalCardMin').textContent = listing.min_price ? `Min offer: $${Number(listing.min_price).toFixed(2)}` : 'Any offer OK';
+      document.getElementById('modalCardMin').textContent = listing.preferred_trade ? `Wants: ${listing.preferred_trade}` : 'Any offer OK';
       document.getElementById('offerMoney').value = '';
       document.getElementById('offerCards').value = '';
       document.getElementById('modalMsg').textContent = '';
@@ -193,10 +193,6 @@
       const money = parseFloat(document.getElementById('offerMoney').value) || null;
       const cards = document.getElementById('offerCards').value.trim() || null;
       if (!money && !cards) { document.getElementById('modalMsg').textContent = 'Add money or cards to offer.'; return; }
-      if (selectedListing.min_price && money && money < selectedListing.min_price) {
-        document.getElementById('modalMsg').textContent = `Minimum offer is $${Number(selectedListing.min_price).toFixed(2)}.`;
-        return;
-      }
       const btn = document.querySelector('.send-btn');
       btn.disabled = true; btn.textContent = 'Sending...';
       const meta = currentUser.user_metadata || {};
