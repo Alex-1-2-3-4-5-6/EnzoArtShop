@@ -318,7 +318,8 @@
     }
 
     async function deleteListing(id) {
-      if (!confirm('Remove this card listing?')) return;
+      if (!confirm('Remove this card listing? All offers on it will also be deleted.')) return;
+      await sb.from('card_offers').delete().eq('listing_id', id);
       await sb.from('card_listings').delete().eq('id', id);
       loadMyListings();
     }

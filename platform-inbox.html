@@ -129,10 +129,10 @@
       <div id="purchaseList"><p class="empty">Loading...</p></div>
     </div>
 
-    <!-- Trade offers -->
-    <div class="panel">
-      <p class="panel-title">🔄 Trade Offers</p>
-      <div id="tradeList"><p class="empty">Loading...</p></div>
+    <!-- Card trade offers received -->
+    <div class="panel" id="cardOffersPanel" style="display:none;">
+      <p class="panel-title">🃏 New Card Trade Offers</p>
+      <div id="cardOffersList"><p class="empty">Loading...</p></div>
     </div>
   </div>
 
@@ -163,7 +163,7 @@
       loadKidRequests();
       loadKidSales();
       loadPurchases();
-      loadTrades();
+      loadCardOffers();
     }
 
     async function loadKidSales() {
@@ -336,55 +336,37 @@
       }
     }
 
-    async function loadTrades() {
-      const { data } = await sb.from('trades')
-        .select('*, offered:offered_artwork_id(id,name,image_url,kids(name)), target:target_artwork_id(id,name,image_url)')
-        .eq('owner_id', currentUser.id)
+    async function loadCardOffers() {
+      // Pending card offers on listings I posted
+      const { data: myListings } = await sb.from('card_listings')
+        .select('id').eq('poster_user_id', currentUser.id).eq('status', 'active');
+      if (!myListings || !myListings.length) return;
+      const listingIds = myListings.map(l => l.id);
+      const { data } = await sb.from('card_offers')
+        .select('*, listing:listing_id(card_name,card_image_url)')
+        .in('listing_id', listingIds)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
-      const el = document.getElementById('tradeList');
-      if (!data || !data.length) { el.innerHTML = '<p class="empty">No trade offers yet.</p>'; return; }
       const dismissed = getDismissed();
-      const visible = data.filter(t => !dismissed.has('tr-' + t.id));
-      if (!visible.length) { el.innerHTML = '<p class="empty">No trade offers yet.</p>'; return; }
-      el.innerHTML = visible.map(t => {
-        const offered = t.offered;
-        const target  = t.target;
-        return `
-          <div class="notif-row" id="tr-${t.id}" style="cursor:pointer;" onclick="location.href='platform-art.html?id=${offered?.id}'">
-            <img class="notif-img" src="${offered?.image_url||''}" onerror="this.style.display='none'" title="Offered: ${offered?.name||''}" />
-            <div class="notif-body">
-              <p class="notif-title">Trade for "${target?.name||'your art'}"</p>
-              <p class="notif-meta">
-                They're offering <strong>${offered?.name||'unknown'}</strong>${offered?.kids?.name ? ` (by ${offered.kids.name})` : ''}<br>
-                in exchange for your art
-              </p>
-              <div class="btn-row">
-                <button class="action-btn btn-purple" onclick="event.stopPropagation();acceptTrade('${t.id}')">✅ Accept</button>
-                <button class="action-btn btn-gray"   onclick="event.stopPropagation();declineTrade('${t.id}')">✕ Decline</button>
-              </div>
+      const visible = (data || []).filter(o => !dismissed.has('co-' + o.id));
+      if (!visible.length) return;
+      document.getElementById('cardOffersPanel').style.display = 'block';
+      document.getElementById('cardOffersList').innerHTML = visible.map(o => {
+        const money = o.offer_money ? `💰 $${Number(o.offer_money).toFixed(2)}` : '';
+        const cards = o.offer_cards ? `🃏 ${esc(o.offer_cards)}` : '';
+        const what = [money, cards].filter(Boolean).join(' · ');
+        return `<div class="notif-row" id="co-${o.id}">
+          <img class="notif-img" src="${esc(o.listing?.card_image_url||'')}" onerror="this.style.display='none'" style="cursor:default;" />
+          <div class="notif-body">
+            <p class="notif-title">Offer on "${esc(o.listing?.card_name||'your card')}"</p>
+            <p class="notif-meta"><strong>${esc(o.offerer_name||'Someone')}</strong> offered: ${what||'(no details)'}</p>
+            <div class="btn-row">
+              <a class="action-btn btn-purple" href="platform-trade-my-posts.html">Go to My Posts →</a>
             </div>
-            <button class="dismiss-btn" onclick="event.stopPropagation();dismiss('tr-${t.id}',this.closest('.notif-row'),document.getElementById('tradeList'),null,'No trade offers yet.')">✕</button>
-          </div>`;
+          </div>
+          <button class="dismiss-btn" onclick="dismiss('co-${o.id}',this.closest('.notif-row'),document.getElementById('cardOffersList'),'cardOffersPanel','')">✕</button>
+        </div>`;
       }).join('');
-    }
-
-    async function acceptTrade(tradeId) {
-      await sb.from('trades').update({ status: 'accepted' }).eq('id', tradeId);
-      toast('Trade accepted! Both of you can now confirm sending.');
-      document.getElementById(`tr-${tradeId}`)?.remove();
-      if (!document.querySelector('#tradeList .notif-row')) {
-        document.getElementById('tradeList').innerHTML = '<p class="empty">No trade offers yet.</p>';
-      }
-    }
-
-    async function declineTrade(tradeId) {
-      await sb.from('trades').update({ status: 'rejected' }).eq('id', tradeId);
-      toast('Trade declined.');
-      document.getElementById(`tr-${tradeId}`)?.remove();
-      if (!document.querySelector('#tradeList .notif-row')) {
-        document.getElementById('tradeList').innerHTML = '<p class="empty">No trade offers yet.</p>';
-      }
     }
 
     function toast(msg) {

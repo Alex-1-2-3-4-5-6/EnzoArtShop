@@ -100,6 +100,7 @@
     <p class="page-title">📬 My Notifications</p>
     <p class="page-sub" id="kidNameSub">Here's what's happening with your art</p>
 
+    <div id="cardOffersSection"></div>
     <div id="mainContent">
       <p style="text-align:center;padding:40px;color:#ccc;font-family:'Fredoka One',cursive;">Loading...</p>
     </div>
@@ -130,7 +131,8 @@
       const raw = localStorage.getItem('kidSession');
       if (!raw) { window.location.href = 'platform-index.html'; return; }
       kidSession = JSON.parse(raw);
-      document.getElementById('kidNameSub').textContent = `Hey ${kidSession.kid_name}! Here's what's happening with your art 🎨`;
+      document.getElementById('kidNameSub').textContent = `Hey ${kidSession.kid_name}! Here's what's happening 🎨`;
+      loadCardOfferNotifs();
 
       const dismissed = getDismissed();
       const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -251,6 +253,49 @@
       main.innerHTML = html || '';
       checkEmpty();
     }
+
+    async function loadCardOfferNotifs() {
+      const { data: listings } = await sb.from('card_listings')
+        .select('id').eq('poster_user_id', kidSession.kid_id).eq('status', 'active');
+      if (!listings || !listings.length) return;
+      const ids = listings.map(l => l.id);
+      const { data: offers } = await sb.from('card_offers')
+        .select('*, listing:listing_id(card_name,card_image_url)')
+        .in('listing_id', ids).eq('status', 'pending')
+        .order('created_at', { ascending: false });
+      const dismissed = getDismissed();
+      const visible = (offers || []).filter(o => !dismissed.has('co-' + o.id));
+      if (!visible.length) return;
+      const section = document.getElementById('cardOffersSection');
+      section.innerHTML = `<div class="panel" id="cardOffersPanel" style="background:white;border-radius:22px;padding:24px 26px;box-shadow:0 4px 16px rgba(0,0,0,0.06);margin-bottom:20px;">
+        <p class="panel-title" style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:#333;margin-bottom:16px;">🃏 New Card Trade Offers!</p>
+        <div id="cardOffersList">` +
+        visible.map(o => {
+          const money = o.offer_money ? `💰 $${Number(o.offer_money).toFixed(2)}` : '';
+          const cards = o.offer_cards ? `🃏 ${esc(o.offer_cards)}` : '';
+          const what = [money, cards].filter(Boolean).join(' · ');
+          return `<div class="notif-row" id="co-${o.id}">
+            <img class="notif-img" src="${esc(o.listing?.card_image_url||'')}" onerror="this.style.display='none'" style="cursor:default;" />
+            <div class="notif-body">
+              <p class="notif-title">${esc(o.listing?.card_name||'Your card')}</p>
+              <p class="notif-meta"><strong>${esc(o.offerer_name||'Someone')}</strong> offered: ${what||'(no details)'}</p>
+              <a href="platform-kid-trade-my-posts.html" style="display:inline-block;margin-top:6px;background:linear-gradient(135deg,#a29bfe,#ff9ff3);color:white;border-radius:50px;padding:6px 14px;font-family:'Fredoka One',cursive;font-size:0.78rem;text-decoration:none;">See offer →</a>
+            </div>
+            <button class="dismiss-btn" onclick="dismissCardOffer('co-${o.id}')">✕</button>
+          </div>`;
+        }).join('') +
+        `</div></div>`;
+    }
+
+    function dismissCardOffer(key) {
+      const d = getDismissed(); d.add(key); localStorage.setItem('kidInboxDismissed', JSON.stringify([...d]));
+      document.getElementById(key)?.remove();
+      if (!document.querySelector('#cardOffersList .notif-row')) {
+        document.getElementById('cardOffersPanel')?.remove();
+      }
+    }
+
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
     init();
   </script>
