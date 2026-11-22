@@ -74,6 +74,27 @@
     <div id="rejectedList"><p class="empty">Loading...</p></div>
   </div>
 
+  <!-- Propose time modal -->
+  <div id="proposeModalBg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:white;border-radius:24px;padding:28px;max-width:420px;width:100%;">
+      <p style="font-family:'Fredoka One',cursive;font-size:1.2rem;color:#333;margin-bottom:6px;">🕐 Propose a Time</p>
+      <p style="font-size:0.85rem;color:#aaa;margin-bottom:18px;">Suggest a different meeting time and place.</p>
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-weight:700;font-size:0.85rem;color:#555;margin-bottom:5px;">Meeting location</label>
+        <input type="text" id="proposeLocation" placeholder="e.g. Front of school, park on Main St..." style="width:100%;padding:10px 14px;border:2px solid #eee;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.92rem;outline:none;" />
+      </div>
+      <div style="margin-bottom:18px;">
+        <label style="display:block;font-weight:700;font-size:0.85rem;color:#555;margin-bottom:5px;">Date and time</label>
+        <input type="datetime-local" id="proposeDatetime" style="width:100%;padding:10px 14px;border:2px solid #eee;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.92rem;outline:none;" />
+      </div>
+      <p id="proposeMsg" style="font-size:0.82rem;color:#c0392b;margin-bottom:10px;"></p>
+      <div style="display:flex;gap:10px;">
+        <button onclick="closeProposeModal()" style="flex:1;background:#f0f0f0;border:none;border-radius:50px;padding:11px;font-family:'Fredoka One',cursive;font-size:0.9rem;color:#999;cursor:pointer;">Cancel</button>
+        <button id="proposeSendBtn" onclick="sendProposal()" style="flex:2;background:linear-gradient(135deg,#a29bfe,#ff9ff3);border:none;border-radius:50px;padding:11px;font-family:'Fredoka One',cursive;font-size:0.9rem;color:white;cursor:pointer;">Send ✉️</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
@@ -101,14 +122,35 @@
     function renderAccepted(offers) {
       const el = document.getElementById('acceptedList');
       if (!offers.length) { el.innerHTML='<p class="empty">No accepted offers yet.</p>'; return; }
-      el.innerHTML = offers.map(o => `
-        <div class="meetup-banner">
-          <div class="icon">🤝</div>
-          <div>
-            <h3>Bring your cards to each other!</h3>
-            <p>Your offer for <strong>${esc(o.listing?.card_name||'a card')}</strong> was accepted — time to meet up and trade!</p>
+      el.innerHTML = offers.map(o => {
+        const hasTime = o.meeting_datetime;
+        const confirmed = o.meeting_status === 'confirmed';
+        const theyProposed = o.meeting_proposed_by === 'poster';
+        const meetingInfo = hasTime
+          ? `<p style="font-size:0.82rem;color:#155724;margin-top:4px;">📍 ${esc(o.meeting_location||'TBD')} · 🕐 ${esc(o.meeting_datetime)}</p>`
+          : '<p style="font-size:0.82rem;color:#aaa;margin-top:4px;">⏳ Waiting for seller to propose a time...</p>';
+        const actions = confirmed
+          ? `<p style="font-size:0.82rem;color:#27ae60;font-weight:700;margin-top:8px;">✅ Meeting confirmed!</p>`
+          : hasTime && theyProposed
+            ? `<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+                <button onclick="acceptMeetingTime('${o.id}')" style="background:#d4edda;border:none;border-radius:50px;padding:8px 16px;color:#155724;font-family:'Fredoka One',cursive;font-size:0.82rem;cursor:pointer;">✅ Accept This Time</button>
+                <button onclick="openProposeModal('${o.id}')" style="background:#fff3cd;border:none;border-radius:50px;padding:8px 16px;color:#856404;font-family:'Fredoka One',cursive;font-size:0.82rem;cursor:pointer;">🕐 Propose Different Time</button>
+              </div>`
+            : hasTime
+              ? `<p style="font-size:0.78rem;color:#aaa;margin-top:8px;">⏳ Waiting for them to respond to your proposal...</p>`
+              : '';
+        return `<div class="meetup-banner" style="flex-direction:column;align-items:flex-start;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="icon">🤝</div>
+            <div>
+              <h3>Bring your cards to each other!</h3>
+              <p>Your offer for <strong>${esc(o.listing?.card_name||'a card')}</strong> was accepted!</p>
+            </div>
           </div>
-        </div>`).join('');
+          ${meetingInfo}
+          ${actions}
+        </div>`;
+      }).join('');
     }
 
     function renderPending(offers) {
@@ -149,6 +191,38 @@
     async function cancelOffer(id) {
       if (!confirm('Cancel this offer?')) return;
       await sb.from('card_offers').delete().eq('id', id);
+      load();
+    }
+
+    async function acceptMeetingTime(offerId) {
+      await sb.from('card_offers').update({ meeting_status: 'confirmed' }).eq('id', offerId);
+      load();
+    }
+
+    let proposingOfferId = null;
+    function openProposeModal(offerId) {
+      proposingOfferId = offerId;
+      document.getElementById('proposeLocation').value = '';
+      document.getElementById('proposeDatetime').value = '';
+      document.getElementById('proposeMsg').textContent = '';
+      document.getElementById('proposeModalBg').style.display = 'flex';
+    }
+    function closeProposeModal() { document.getElementById('proposeModalBg').style.display = 'none'; }
+
+    async function sendProposal() {
+      const loc = document.getElementById('proposeLocation').value.trim();
+      const dt  = document.getElementById('proposeDatetime').value;
+      if (!loc || !dt) { document.getElementById('proposeMsg').textContent = 'Please fill in both fields.'; return; }
+      const btn = document.getElementById('proposeSendBtn');
+      btn.disabled = true; btn.textContent = 'Sending...';
+      await sb.from('card_offers').update({
+        meeting_location: loc,
+        meeting_datetime: new Date(dt).toLocaleString(),
+        meeting_proposed_by: 'offerer',
+        meeting_status: 'pending'
+      }).eq('id', proposingOfferId);
+      btn.disabled = false; btn.textContent = 'Send ✉️';
+      closeProposeModal();
       load();
     }
 

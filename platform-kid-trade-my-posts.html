@@ -139,6 +139,27 @@
     </a>
   </div>
 
+  <!-- Meeting modal -->
+  <div id="meetingModalBg" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;align-items:flex-end;justify-content:center;">
+    <div style="background:white;border-radius:24px 24px 0 0;padding:24px 20px 36px;width:100%;max-width:480px;">
+      <p style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:#333;margin-bottom:4px;">📅 Schedule Meeting</p>
+      <p style="font-size:0.82rem;color:#aaa;margin-bottom:16px;">Propose a time and place to swap cards!</p>
+      <div style="margin-bottom:12px;">
+        <label style="display:block;font-weight:700;font-size:0.8rem;color:#555;margin-bottom:4px;">Meeting location</label>
+        <input type="text" id="meetingLocation" placeholder="e.g. Front of school, park..." style="width:100%;padding:10px 14px;border:2px solid #eee;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.88rem;outline:none;" />
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-weight:700;font-size:0.8rem;color:#555;margin-bottom:4px;">Date and time</label>
+        <input type="datetime-local" id="meetingDatetime" style="width:100%;padding:10px 14px;border:2px solid #eee;border-radius:12px;font-family:'Nunito',sans-serif;font-size:0.88rem;outline:none;" />
+      </div>
+      <p id="meetingMsg" style="font-size:0.8rem;color:#c0392b;margin-bottom:8px;"></p>
+      <div style="display:flex;gap:10px;">
+        <button onclick="closeMeetingModal()" style="flex:1;background:#f0f0f0;border:none;border-radius:50px;padding:11px;font-family:'Fredoka One',cursive;font-size:0.88rem;color:#999;cursor:pointer;">Cancel</button>
+        <button id="meetingConfirmBtn" onclick="confirmMeeting()" style="flex:2;background:linear-gradient(135deg,#a29bfe,#ff9ff3);border:none;border-radius:50px;padding:11px;font-family:'Fredoka One',cursive;font-size:0.88rem;color:white;cursor:pointer;">Send ✉️</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const SUPABASE_URL = 'https://iwmviwhruzhwkokcjcnu.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3bXZpd2hydXpod2tva2NqY251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTE1MzYsImV4cCI6MjA5NjMyNzUzNn0.MtHOeTGyW5Q68HfYSJW7keNJGHpO5GCwJ2735ij_-JA';
@@ -263,14 +284,27 @@
         const cards = o.offer_cards ? `🃏 ${esc(o.offer_cards)}` : '';
         const what = [money,cards].filter(Boolean).join(' · ');
         if (o.status === 'accepted') {
-          return `<div class="offer-row">
-            <div class="offer-what"><strong>${esc(o.offerer_name||'Someone')}</strong>: ${what}</div>
-            <div class="meetup-banner" style="flex:1;"><p>🤝 Bring your cards to each other!</p></div>
-            <button class="reject-btn" style="background:#fff3cd;color:#856404;" onclick="undoAccept('${o.id}','${listingId}')">↩ Undo</button>
+          const hasTime = o.meeting_datetime;
+          const confirmed = o.meeting_status === 'confirmed';
+          const theyProposed = o.meeting_proposed_by === 'offerer';
+          const meetingInfo = hasTime ? `<p style="font-size:0.76rem;color:#27ae60;margin-top:3px;">📍 ${esc(o.meeting_location||'TBD')} · 🕐 ${esc(o.meeting_datetime)}</p>` : '';
+          const meetingStatus = confirmed
+            ? `<span style="font-size:0.76rem;color:#27ae60;font-weight:700;">✅ Time confirmed!</span>`
+            : theyProposed
+              ? `<button class="accept-btn" onclick="acceptMeetingTime('${o.id}')">✅ Accept Time</button>
+                 <button class="reject-btn" onclick="openMeetingModal('${o.id}','${listingId}')">🕐 Propose New</button>`
+              : `<span style="font-size:0.76rem;color:#aaa;">⏳ Waiting for them to confirm...</span>`;
+          return `<div class="offer-row" style="flex-direction:column;align-items:flex-start;gap:5px;">
+            <div style="display:flex;align-items:center;gap:8px;width:100%;">
+              <div class="offer-what"><strong>${esc(o.offerer_name||'Someone')}</strong>: ${what}</div>
+              <div class="meetup-banner" style="flex:1;padding:6px 10px;"><p>🤝 Bring your cards to each other!</p></div>
+            </div>
+            ${meetingInfo}
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">${meetingStatus}</div>
           </div>`;
         }
         const btns = o.status === 'pending'
-          ? `<button class="accept-btn" onclick="respondOffer('${o.id}','${listingId}','accepted')">✅ Accept</button>
+          ? `<button class="accept-btn" onclick="openMeetingModal('${o.id}','${listingId}')">✅ Accept</button>
              <button class="reject-btn" onclick="respondOffer('${o.id}','${listingId}','rejected')">✕ Reject</button>`
           : `<span style="font-size:0.76rem;color:#c0392b;">✕ Rejected</span>`;
         return `<div class="offer-row">
@@ -289,10 +323,39 @@
       if (status === 'accepted') loadMyListings();
     }
 
-    async function undoAccept(offerId, listingId) {
-      if (!confirm('Undo this acceptance? The offer will go back to pending.')) return;
-      await sb.from('card_offers').update({ status: 'pending' }).eq('id', offerId);
-      await sb.from('card_listings').update({ status: 'active' }).eq('id', listingId);
+    let pendingMeetingOfferId = null, pendingMeetingListingId = null;
+
+    function openMeetingModal(offerId, listingId) {
+      pendingMeetingOfferId = offerId;
+      pendingMeetingListingId = listingId;
+      document.getElementById('meetingLocation').value = '';
+      document.getElementById('meetingDatetime').value = '';
+      document.getElementById('meetingMsg').textContent = '';
+      document.getElementById('meetingModalBg').style.display = 'flex';
+    }
+    function closeMeetingModal() { document.getElementById('meetingModalBg').style.display = 'none'; }
+
+    async function confirmMeeting() {
+      const loc = document.getElementById('meetingLocation').value.trim();
+      const dt  = document.getElementById('meetingDatetime').value;
+      if (!loc || !dt) { document.getElementById('meetingMsg').textContent = 'Please fill in both fields.'; return; }
+      const btn = document.getElementById('meetingConfirmBtn');
+      btn.disabled = true; btn.textContent = 'Sending...';
+      await sb.from('card_offers').update({
+        status: 'accepted',
+        meeting_location: loc,
+        meeting_datetime: new Date(dt).toLocaleString(),
+        meeting_proposed_by: 'poster',
+        meeting_status: 'pending'
+      }).eq('id', pendingMeetingOfferId);
+      await sb.from('card_listings').update({ status: 'completed' }).eq('id', pendingMeetingListingId);
+      btn.disabled = false; btn.textContent = 'Send ✉️';
+      closeMeetingModal();
+      loadMyListings();
+    }
+
+    async function acceptMeetingTime(offerId) {
+      await sb.from('card_offers').update({ meeting_status: 'confirmed' }).eq('id', offerId);
       loadMyListings();
     }
 
