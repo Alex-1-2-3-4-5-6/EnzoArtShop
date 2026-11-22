@@ -220,7 +220,8 @@
         if (o.status === 'accepted') {
           return `<div class="offer-row">
             <div class="offer-what"><strong>${esc(o.offerer_name||'Someone')}</strong>: ${what}</div>
-            <div class="meetup-banner" style="margin:0;padding:6px 12px;"><p>🤝 Bring your cards to each other!</p></div>
+            <div class="meetup-banner" style="margin:0;padding:6px 12px;flex:1;"><p>🤝 Bring your cards to each other!</p></div>
+            <button class="reject-btn" style="background:#fff3cd;color:#856404;" onclick="undoAccept('${o.id}','${listingId}')">↩ Undo</button>
           </div>`;
         }
         const btns = o.status === 'pending'
@@ -241,6 +242,13 @@
       }
       loadOffersForListing(listingId);
       if (status === 'accepted') loadMyListings();
+    }
+
+    async function undoAccept(offerId, listingId) {
+      if (!confirm('Undo this acceptance? The offer will go back to pending.')) return;
+      await sb.from('card_offers').update({ status: 'pending' }).eq('id', offerId);
+      await sb.from('card_listings').update({ status: 'active' }).eq('id', listingId);
+      loadMyListings();
     }
 
     async function deleteListing(id) {
