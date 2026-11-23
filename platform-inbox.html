@@ -339,7 +339,7 @@
     async function loadCardOffers() {
       // Pending card offers on listings I posted
       const { data: myListings } = await sb.from('card_listings')
-        .select('id').eq('poster_user_id', currentUser.id).eq('status', 'active');
+        .select('id').eq('poster_user_id', currentUser.id);
       if (!myListings || !myListings.length) return;
       const listingIds = myListings.map(l => l.id);
       const { data } = await sb.from('card_offers')
@@ -347,11 +347,10 @@
         .in('listing_id', listingIds)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
-      const dismissed = getDismissed();
-      const visible = (data || []).filter(o => !dismissed.has('co-' + o.id));
-      if (!visible.length) return;
+      const offers = data || [];
+      if (!offers.length) return;
       document.getElementById('cardOffersPanel').style.display = 'block';
-      document.getElementById('cardOffersList').innerHTML = visible.map(o => {
+      document.getElementById('cardOffersList').innerHTML = offers.map(o => {
         const money = o.offer_money ? `💰 $${Number(o.offer_money).toFixed(2)}` : '';
         const cards = o.offer_cards ? `🃏 ${esc(o.offer_cards)}` : '';
         const what = [money, cards].filter(Boolean).join(' · ');
@@ -364,7 +363,7 @@
               <a class="action-btn btn-purple" href="platform-trade-my-posts.html">Go to My Posts →</a>
             </div>
           </div>
-          <button class="dismiss-btn" onclick="dismiss('co-${o.id}',this.closest('.notif-row'),document.getElementById('cardOffersList'),'cardOffersPanel','')">✕</button>
+          <button class="dismiss-btn" onclick="this.closest('.notif-row').remove();if(!document.querySelector('#cardOffersList .notif-row'))document.getElementById('cardOffersPanel').style.display='none'">✕</button>
         </div>`;
       }).join('');
     }

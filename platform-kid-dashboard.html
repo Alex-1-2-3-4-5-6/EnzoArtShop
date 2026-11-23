@@ -193,7 +193,11 @@
 
     async function init() {
       const { data: { user } } = await sb.auth.getUser();
-      if (!user) { window.location.href = 'platform-login.html'; return; }
+      if (!user) {
+        // Code-based kids (kidSession) belong on the kid shop, not here
+        if (localStorage.getItem('kidSession')) { window.location.href = 'platform-kid-shop.html'; return; }
+        window.location.href = 'platform-login.html'; return;
+      }
       currentUser = user;
 
       const meta = user.user_metadata || {};

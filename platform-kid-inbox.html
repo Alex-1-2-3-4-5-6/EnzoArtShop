@@ -256,7 +256,7 @@
 
     async function loadCardOfferNotifs() {
       const { data: listings } = await sb.from('card_listings')
-        .select('id').eq('poster_user_id', kidSession.kid_id).eq('status', 'active');
+        .select('id').eq('poster_user_id', kidSession.kid_id);
       if (!listings || !listings.length) return;
       const ids = listings.map(l => l.id);
       const { data: offers } = await sb.from('card_offers')
