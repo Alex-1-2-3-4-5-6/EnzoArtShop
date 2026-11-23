@@ -129,10 +129,22 @@
       <div id="purchaseList"><p class="empty">Loading...</p></div>
     </div>
 
-    <!-- Card trade offers received -->
+    <!-- Card trade offers received on my listings -->
     <div class="panel" id="cardOffersPanel" style="display:none;">
       <p class="panel-title">🃏 New Card Trade Offers</p>
-      <div id="cardOffersList"><p class="empty">Loading...</p></div>
+      <div id="cardOffersList"></div>
+    </div>
+
+    <!-- Poster proposed a meeting time to me (I'm the offerer) -->
+    <div class="panel" id="meetingForOffererPanel" style="display:none;">
+      <p class="panel-title">📅 Meeting Time Proposed!</p>
+      <div id="meetingForOffererList"></div>
+    </div>
+
+    <!-- Offerer proposed a different time to me (I'm the poster) -->
+    <div class="panel" id="meetingForPosterPanel" style="display:none;">
+      <p class="panel-title">🔄 They Want a Different Time</p>
+      <div id="meetingForPosterList"></div>
     </div>
   </div>
 
@@ -164,6 +176,8 @@
       loadKidSales();
       loadPurchases();
       loadCardOffers();
+      loadMeetingForOfferer();
+      loadMeetingForPoster();
     }
 
     async function loadKidSales() {
@@ -366,6 +380,76 @@
           <button class="dismiss-btn" onclick="this.closest('.notif-row').remove();if(!document.querySelector('#cardOffersList .notif-row'))document.getElementById('cardOffersPanel').style.display='none'">✕</button>
         </div>`;
       }).join('');
+    }
+
+    // Poster proposed a time → notify offerer
+    async function loadMeetingForOfferer() {
+      const { data } = await sb.from('card_offers')
+        .select('*, listing:listing_id(card_name, card_image_url)')
+        .eq('offerer_user_id', currentUser.id)
+        .eq('status', 'accepted')
+        .eq('meeting_proposed_by', 'poster')
+        .neq('meeting_status', 'confirmed')
+        .order('created_at', { ascending: false });
+      const offers = data || [];
+      if (!offers.length) return;
+      document.getElementById('meetingForOffererPanel').style.display = 'block';
+      document.getElementById('meetingForOffererList').innerHTML = offers.map(o => `
+        <div class="notif-row" id="mfo-${o.id}">
+          <img class="notif-img" src="${esc(o.listing?.card_image_url||'')}" onerror="this.style.display='none'" style="cursor:default;" />
+          <div class="notif-body">
+            <p class="notif-title">Meet-up for "${esc(o.listing?.card_name||'a card')}"</p>
+            <p class="notif-meta">
+              The seller proposed:<br>
+              📍 <strong>${esc(o.meeting_location||'TBD')}</strong> · 🕐 ${esc(o.meeting_datetime||'')}
+            </p>
+            <div class="btn-row">
+              <button class="action-btn btn-green" onclick="acceptTime('${o.id}','mfo-${o.id}','meetingForOffererPanel','meetingForOffererList')">✅ Accept</button>
+              <a class="action-btn btn-purple" href="platform-my-trades.html">💬 Suggest Different Time</a>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    // Offerer counter-proposed a time → notify poster
+    async function loadMeetingForPoster() {
+      const { data: myListings } = await sb.from('card_listings').select('id').eq('poster_user_id', currentUser.id);
+      if (!myListings || !myListings.length) return;
+      const ids = myListings.map(l => l.id);
+      const { data } = await sb.from('card_offers')
+        .select('*, listing:listing_id(card_name, card_image_url)')
+        .in('listing_id', ids)
+        .eq('status', 'accepted')
+        .eq('meeting_proposed_by', 'offerer')
+        .neq('meeting_status', 'confirmed')
+        .order('created_at', { ascending: false });
+      const offers = data || [];
+      if (!offers.length) return;
+      document.getElementById('meetingForPosterPanel').style.display = 'block';
+      document.getElementById('meetingForPosterList').innerHTML = offers.map(o => `
+        <div class="notif-row" id="mfp-${o.id}">
+          <img class="notif-img" src="${esc(o.listing?.card_image_url||'')}" onerror="this.style.display='none'" style="cursor:default;" />
+          <div class="notif-body">
+            <p class="notif-title">New time for "${esc(o.listing?.card_name||'your card')}"</p>
+            <p class="notif-meta">
+              <strong>${esc(o.offerer_name||'The buyer')}</strong> suggested:<br>
+              📍 <strong>${esc(o.meeting_location||'TBD')}</strong> · 🕐 ${esc(o.meeting_datetime||'')}
+            </p>
+            <div class="btn-row">
+              <button class="action-btn btn-green" onclick="acceptTime('${o.id}','mfp-${o.id}','meetingForPosterPanel','meetingForPosterList')">✅ Accept</button>
+              <a class="action-btn btn-purple" href="platform-trade-my-posts.html">💬 Suggest Different Time</a>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    async function acceptTime(offerId, rowId, panelId, listId) {
+      await sb.from('card_offers').update({ meeting_status: 'confirmed' }).eq('id', offerId);
+      document.getElementById(rowId)?.remove();
+      if (!document.querySelector(`#${listId} .notif-row`)) {
+        document.getElementById(panelId).style.display = 'none';
+      }
+      toast('✅ Meeting confirmed! Bring your cards.');
     }
 
     function toast(msg) {

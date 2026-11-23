@@ -101,6 +101,8 @@
     <p class="page-sub" id="kidNameSub">Here's what's happening with your art</p>
 
     <div id="cardOffersSection"></div>
+    <div id="meetingForOffererSection"></div>
+    <div id="meetingForPosterSection"></div>
     <div id="mainContent">
       <p style="text-align:center;padding:40px;color:#ccc;font-family:'Fredoka One',cursive;">Loading...</p>
     </div>
@@ -133,6 +135,8 @@
       kidSession = JSON.parse(raw);
       document.getElementById('kidNameSub').textContent = `Hey ${kidSession.kid_name}! Here's what's happening 🎨`;
       loadCardOfferNotifs();
+      loadMeetingForOffererKid();
+      loadMeetingForPosterKid();
 
       const dismissed = getDismissed();
       const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -292,6 +296,83 @@
       document.getElementById(key)?.remove();
       if (!document.querySelector('#cardOffersList .notif-row')) {
         document.getElementById('cardOffersPanel')?.remove();
+      }
+    }
+
+    // Poster proposed a time → notify offerer (kid sent the offer)
+    async function loadMeetingForOffererKid() {
+      const { data } = await sb.from('card_offers')
+        .select('*, listing:listing_id(card_name, card_image_url)')
+        .eq('offerer_user_id', kidSession.kid_id)
+        .eq('status', 'accepted')
+        .eq('meeting_proposed_by', 'poster')
+        .neq('meeting_status', 'confirmed')
+        .order('created_at', { ascending: false });
+      const offers = data || [];
+      if (!offers.length) return;
+      const panelStyle = 'background:white;border-radius:22px;padding:24px 26px;box-shadow:0 4px 16px rgba(0,0,0,0.06);margin-bottom:20px;';
+      document.getElementById('meetingForOffererSection').innerHTML =
+        `<div style="${panelStyle}">
+          <p style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:#333;margin-bottom:16px;">📅 Meeting Time Proposed!</p>` +
+        offers.map(o => `
+          <div class="notif-row" id="kfo-${o.id}">
+            <img class="notif-img" src="${esc(o.listing?.card_image_url||'')}" onerror="this.style.display='none'" style="cursor:default;" />
+            <div class="notif-body">
+              <p class="notif-title">${esc(o.listing?.card_name||'A card')}</p>
+              <p class="notif-meta">
+                The seller wants to meet:<br>
+                📍 <strong>${esc(o.meeting_location||'TBD')}</strong> · 🕐 ${esc(o.meeting_datetime||'')}
+              </p>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+                <button onclick="acceptTimeKid('${o.id}','kfo-${o.id}','meetingForOffererSection')" style="background:#d4edda;border:none;border-radius:50px;padding:7px 16px;color:#155724;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">✅ Accept</button>
+                <a href="platform-kid-trade-offers.html" style="background:#fff3cd;border:none;border-radius:50px;padding:7px 16px;color:#856404;font-family:'Fredoka One',cursive;font-size:0.8rem;text-decoration:none;display:inline-block;">💬 Suggest Different</a>
+              </div>
+            </div>
+          </div>`).join('') +
+        `</div>`;
+    }
+
+    // Offerer counter-proposed → notify poster (kid posted the card)
+    async function loadMeetingForPosterKid() {
+      const { data: listings } = await sb.from('card_listings').select('id').eq('poster_user_id', kidSession.kid_id);
+      if (!listings || !listings.length) return;
+      const ids = listings.map(l => l.id);
+      const { data } = await sb.from('card_offers')
+        .select('*, listing:listing_id(card_name, card_image_url)')
+        .in('listing_id', ids)
+        .eq('status', 'accepted')
+        .eq('meeting_proposed_by', 'offerer')
+        .neq('meeting_status', 'confirmed')
+        .order('created_at', { ascending: false });
+      const offers = data || [];
+      if (!offers.length) return;
+      const panelStyle = 'background:white;border-radius:22px;padding:24px 26px;box-shadow:0 4px 16px rgba(0,0,0,0.06);margin-bottom:20px;';
+      document.getElementById('meetingForPosterSection').innerHTML =
+        `<div style="${panelStyle}">
+          <p style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:#333;margin-bottom:16px;">🔄 They Want a Different Time</p>` +
+        offers.map(o => `
+          <div class="notif-row" id="kfp-${o.id}">
+            <img class="notif-img" src="${esc(o.listing?.card_image_url||'')}" onerror="this.style.display='none'" style="cursor:default;" />
+            <div class="notif-body">
+              <p class="notif-title">${esc(o.listing?.card_name||'Your card')}</p>
+              <p class="notif-meta">
+                <strong>${esc(o.offerer_name||'The buyer')}</strong> suggested:<br>
+                📍 <strong>${esc(o.meeting_location||'TBD')}</strong> · 🕐 ${esc(o.meeting_datetime||'')}
+              </p>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+                <button onclick="acceptTimeKid('${o.id}','kfp-${o.id}','meetingForPosterSection')" style="background:#d4edda;border:none;border-radius:50px;padding:7px 16px;color:#155724;font-family:'Fredoka One',cursive;font-size:0.8rem;cursor:pointer;">✅ Accept</button>
+                <a href="platform-kid-trade-my-posts.html" style="background:#fff3cd;border:none;border-radius:50px;padding:7px 16px;color:#856404;font-family:'Fredoka One',cursive;font-size:0.8rem;text-decoration:none;display:inline-block;">💬 Suggest Different</a>
+              </div>
+            </div>
+          </div>`).join('') +
+        `</div>`;
+    }
+
+    async function acceptTimeKid(offerId, rowId, sectionId) {
+      await sb.from('card_offers').update({ meeting_status: 'confirmed' }).eq('id', offerId);
+      document.getElementById(rowId)?.remove();
+      if (!document.querySelector(`#${sectionId} .notif-row`)) {
+        document.getElementById(sectionId).innerHTML = '';
       }
     }
 
