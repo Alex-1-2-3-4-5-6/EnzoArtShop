@@ -382,7 +382,89 @@
       }).join('');
     }
 
-    // Poster accepted my offer → I need to respond to the meeting time (or it's waiting)
+    function x(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    function meetingRowHTML(o, rowId, panelId, listId, proposedBy) {
+      const hasTime = o.meeting_datetime;
+      const theyProposed = o.meeting_proposed_by === proposedBy;
+      const isWaiting = hasTime && !theyProposed;
+
+      const timeBlock = hasTime
+        ? `<div style="background:#f4f0ff;border-radius:12px;padding:12px 14px;margin:10px 0;">
+             <p style="font-size:0.82rem;color:#555;margin-bottom:4px;">📍 <strong>${x(o.meeting_location||'TBD')}</strong></p>
+             <p style="font-size:0.82rem;color:#555;">🕐 <strong>${x(o.meeting_datetime)}</strong></p>
+           </div>`
+        : `<p style="font-size:0.82rem;color:#aaa;margin:8px 0;">Waiting for the other person to propose a time...</p>`;
+
+      const actions = isWaiting
+        ? `<p style="font-size:0.8rem;color:#aaa;margin-top:4px;">⏳ Waiting for them to respond to your proposal...</p>`
+        : hasTime && theyProposed
+          ? `<div class="btn-row" style="margin-top:4px;">
+               <button class="action-btn btn-green" onclick="acceptMeetingTime('${o.id}','${rowId}','${panelId}','${listId}')">✅ Accept This Time</button>
+               <button class="action-btn btn-purple" onclick="toggleProposeForm('propose-${o.id}')">🕐 Pick Different Time</button>
+             </div>
+             <div id="propose-${o.id}" style="display:none;margin-top:12px;background:#f9f9f9;border-radius:12px;padding:14px;">
+               <div style="margin-bottom:10px;">
+                 <label style="display:block;font-weight:700;font-size:0.82rem;color:#555;margin-bottom:4px;">Location</label>
+                 <input type="text" id="loc-${o.id}" placeholder="e.g. Front of school, park..." style="width:100%;padding:9px 12px;border:2px solid #eee;border-radius:10px;font-family:'Nunito',sans-serif;font-size:0.88rem;outline:none;" />
+               </div>
+               <div style="margin-bottom:12px;">
+                 <label style="display:block;font-weight:700;font-size:0.82rem;color:#555;margin-bottom:4px;">Date &amp; Time</label>
+                 <input type="datetime-local" id="dt-${o.id}" style="width:100%;padding:9px 12px;border:2px solid #eee;border-radius:10px;font-family:'Nunito',sans-serif;font-size:0.88rem;outline:none;" />
+               </div>
+               <p id="pmsg-${o.id}" style="font-size:0.8rem;color:#c0392b;margin-bottom:8px;display:none;"></p>
+               <button class="action-btn btn-green" onclick="sendCounterProposal('${o.id}','${rowId}','${proposedBy === 'poster' ? 'offerer' : 'poster'}')">Send Proposal ✉️</button>
+             </div>`
+          : '';
+
+      return `<div class="notif-row" id="${rowId}">
+        <img class="notif-img" src="${x(o.listing?.card_image_url||'')}" onerror="this.style.display='none'" style="cursor:default;" />
+        <div class="notif-body" style="flex:1;">
+          <p class="notif-title">${x(o.listing?.card_name||'A card')}</p>
+          ${timeBlock}
+          ${actions}
+        </div>
+      </div>`;
+    }
+
+    function toggleProposeForm(id) {
+      const el = document.getElementById(id);
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function acceptMeetingTime(offerId, rowId, panelId, listId) {
+      await sb.from('card_offers').update({ meeting_status: 'confirmed' }).eq('id', offerId);
+      document.getElementById(rowId)?.remove();
+      if (!document.querySelector(`#${listId} .notif-row`)) document.getElementById(panelId).style.display = 'none';
+      toast('✅ Meeting confirmed! You\'re all set.');
+    }
+
+    async function sendCounterProposal(offerId, rowId, newProposedBy) {
+      const loc = document.getElementById('loc-'+offerId).value.trim();
+      const dt  = document.getElementById('dt-'+offerId).value;
+      const msg = document.getElementById('pmsg-'+offerId);
+      if (!loc || !dt) { msg.textContent='Please fill in both fields.'; msg.style.display='block'; return; }
+      await sb.from('card_offers').update({
+        meeting_location: loc,
+        meeting_datetime: new Date(dt).toLocaleString(),
+        meeting_proposed_by: newProposedBy,
+        meeting_status: 'pending'
+      }).eq('id', offerId);
+      // Update the row to show "waiting" state
+      const row = document.getElementById(rowId);
+      if (row) {
+        row.querySelector('.notif-body').innerHTML = `
+          <p class="notif-title" style="font-family:'Fredoka One',cursive;font-size:1rem;color:#333;">${row.querySelector('.notif-title').textContent}</p>
+          <div style="background:#f4f0ff;border-radius:12px;padding:12px 14px;margin:10px 0;">
+            <p style="font-size:0.82rem;color:#555;margin-bottom:4px;">📍 <strong>${x(loc)}</strong></p>
+            <p style="font-size:0.82rem;color:#555;">🕐 <strong>${new Date(dt).toLocaleString()}</strong></p>
+          </div>
+          <p style="font-size:0.8rem;color:#aaa;">⏳ Waiting for them to respond to your proposal...</p>`;
+      }
+      toast('Proposal sent! ✉️');
+    }
+
+    // Poster proposed a time → notify offerer
     async function loadMeetingForOfferer() {
       const { data, error } = await sb.from('card_offers')
         .select('*, listing:listing_id(card_name, card_image_url)')
@@ -390,36 +472,14 @@
         .eq('status', 'accepted')
         .order('created_at', { ascending: false });
       if (error || !data || !data.length) return;
-      // Show all accepted offers that aren't fully confirmed
       const offers = data.filter(o => o.meeting_status !== 'confirmed');
       if (!offers.length) return;
       document.getElementById('meetingForOffererPanel').style.display = 'block';
-      document.getElementById('meetingForOffererList').innerHTML = offers.map(o => {
-        const hasTime = o.meeting_datetime;
-        const proposedByPoster = o.meeting_proposed_by === 'poster';
-        const meetingInfo = hasTime
-          ? `📍 <strong>${esc(o.meeting_location||'TBD')}</strong> · 🕐 ${esc(o.meeting_datetime)}`
-          : 'The seller will propose a meeting time soon.';
-        const actions = hasTime && proposedByPoster
-          ? `<div class="btn-row" style="margin-top:8px;">
-               <button class="action-btn btn-green" onclick="acceptTime('${o.id}','mfo-${o.id}','meetingForOffererPanel','meetingForOffererList')">✅ Accept This Time</button>
-               <a class="action-btn btn-purple" href="platform-my-trades.html">💬 Suggest Different</a>
-             </div>`
-          : hasTime
-            ? `<p style="font-size:0.8rem;color:#aaa;margin-top:6px;">⏳ Waiting for seller to respond to your proposal...</p>`
-            : `<div class="btn-row" style="margin-top:8px;"><a class="action-btn btn-purple" href="platform-my-trades.html">View in My Offers →</a></div>`;
-        return `<div class="notif-row" id="mfo-${o.id}">
-          <img class="notif-img" src="${esc(o.listing?.card_image_url||'')}" onerror="this.style.display='none'" style="cursor:default;" />
-          <div class="notif-body">
-            <p class="notif-title">Your offer on "${esc(o.listing?.card_name||'a card')}" was accepted!</p>
-            <p class="notif-meta" style="margin-top:4px;">${meetingInfo}</p>
-            ${actions}
-          </div>
-        </div>`;
-      }).join('');
+      document.getElementById('meetingForOffererList').innerHTML =
+        offers.map(o => meetingRowHTML(o, 'mfo-'+o.id, 'meetingForOffererPanel', 'meetingForOffererList', 'poster')).join('');
     }
 
-    // Offerer counter-proposed a time → notify poster
+    // Offerer counter-proposed → notify poster
     async function loadMeetingForPoster() {
       const { data: myListings, error: le } = await sb.from('card_listings').select('id').eq('poster_user_id', currentUser.id);
       if (le || !myListings || !myListings.length) return;
@@ -434,30 +494,12 @@
       const offers = data.filter(o => o.meeting_status !== 'confirmed');
       if (!offers.length) return;
       document.getElementById('meetingForPosterPanel').style.display = 'block';
-      document.getElementById('meetingForPosterList').innerHTML = offers.map(o => `
-        <div class="notif-row" id="mfp-${o.id}">
-          <img class="notif-img" src="${esc(o.listing?.card_image_url||'')}" onerror="this.style.display='none'" style="cursor:default;" />
-          <div class="notif-body">
-            <p class="notif-title">New time for "${esc(o.listing?.card_name||'your card')}"</p>
-            <p class="notif-meta">
-              <strong>${esc(o.offerer_name||'The buyer')}</strong> suggested:<br>
-              📍 <strong>${esc(o.meeting_location||'TBD')}</strong> · 🕐 ${esc(o.meeting_datetime||'')}
-            </p>
-            <div class="btn-row" style="margin-top:8px;">
-              <button class="action-btn btn-green" onclick="acceptTime('${o.id}','mfp-${o.id}','meetingForPosterPanel','meetingForPosterList')">✅ Accept</button>
-              <a class="action-btn btn-purple" href="platform-trade-my-posts.html">💬 Suggest Different</a>
-            </div>
-          </div>
-        </div>`).join('');
+      document.getElementById('meetingForPosterList').innerHTML =
+        offers.map(o => meetingRowHTML(o, 'mfp-'+o.id, 'meetingForPosterPanel', 'meetingForPosterList', 'offerer')).join('');
     }
 
     async function acceptTime(offerId, rowId, panelId, listId) {
-      await sb.from('card_offers').update({ meeting_status: 'confirmed' }).eq('id', offerId);
-      document.getElementById(rowId)?.remove();
-      if (!document.querySelector(`#${listId} .notif-row`)) {
-        document.getElementById(panelId).style.display = 'none';
-      }
-      toast('✅ Meeting confirmed! Bring your cards.');
+      await acceptMeetingTime(offerId, rowId, panelId, listId);
     }
 
     function toast(msg) {
