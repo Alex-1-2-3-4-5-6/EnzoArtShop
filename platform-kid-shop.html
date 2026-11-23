@@ -373,16 +373,32 @@
       const dismissed = new Set(JSON.parse(localStorage.getItem('kidInboxDismissed') || '[]'));
       const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-      const [{ data: sales }, { data: pending }, { data: requests }] = await Promise.all([
+      // Get this kid's listing IDs for card offer checks
+      const { data: myListings } = await sb.from('card_listings').select('id').eq('poster_user_id', kidSession.kid_id);
+      const listingIds = (myListings || []).map(l => l.id);
+
+      const checks = await Promise.all([
         sb.from('purchases').select('id, artworks!artwork_id(kid_id)').eq('status','completed').gte('completed_at', cutoff),
         sb.from('purchases').select('id, artworks!artwork_id(kid_id)').eq('status','pending'),
-        sb.from('art_requests').select('id,status').eq('kid_id', kidSession.kid_id).in('status',['approved','rejected'])
+        sb.from('art_requests').select('id,status').eq('kid_id', kidSession.kid_id).in('status',['approved','rejected']),
+        listingIds.length
+          ? sb.from('card_offers').select('id').in('listing_id', listingIds).eq('status', 'pending')
+          : Promise.resolve({ data: [] }),
+        listingIds.length
+          ? sb.from('card_offers').select('id').in('listing_id', listingIds).eq('status', 'accepted').neq('meeting_status', 'confirmed')
+          : Promise.resolve({ data: [] }),
+        sb.from('card_offers').select('id').eq('offerer_user_id', kidSession.kid_id).eq('status', 'accepted').neq('meeting_status', 'confirmed'),
+        listingIds.length
+          ? sb.from('card_offers').select('id').in('listing_id', listingIds).eq('meeting_status', 'confirmed')
+          : Promise.resolve({ data: [] }),
       ]);
+      const [sales, pending, requests, cardOffers, meetingPoster, meetingOfferer, confirmed] = checks.map(r => r.data || []);
 
       const count =
-        (sales   || []).filter(p => p.artworks?.kid_id === kidSession.kid_id && !dismissed.has('ks-' + p.id)).length +
-        (pending || []).filter(p => p.artworks?.kid_id === kidSession.kid_id && !dismissed.has('kp-' + p.id)).length +
-        (requests|| []).filter(r => !dismissed.has('ar-' + r.id) && !dismissed.has('rr-' + r.id)).length;
+        sales.filter(p => p.artworks?.kid_id === kidSession.kid_id && !dismissed.has('ks-' + p.id)).length +
+        pending.filter(p => p.artworks?.kid_id === kidSession.kid_id && !dismissed.has('kp-' + p.id)).length +
+        requests.filter(r => !dismissed.has('ar-' + r.id) && !dismissed.has('rr-' + r.id)).length +
+        cardOffers.length + meetingPoster.length + meetingOfferer.length + confirmed.length;
 
       if (count > 0) document.getElementById('kidInboxDot').style.display = 'block';
     }

@@ -342,15 +342,29 @@
 
     async function checkInbox(user) {
       const dismissed = new Set(JSON.parse(localStorage.getItem('inboxDismissed') || '[]'));
-      const [{ data: trades }, { data: purchases }, { data: approvals }] = await Promise.all([
-        sb.from('trades').select('id').eq('owner_id', user.id).eq('status', 'pending'),
+      // Get my listing IDs for card offer checks
+      const { data: myListings } = await sb.from('card_listings').select('id').eq('poster_user_id', user.id);
+      const listingIds = (myListings || []).map(l => l.id);
+
+      const checks = await Promise.all([
         sb.from('purchases').select('id').eq('seller_id', user.id).eq('status', 'pending'),
-        sb.from('artworks').select('id').eq('parent_id', user.id).eq('status', 'pending')
+        sb.from('artworks').select('id').eq('parent_id', user.id).eq('status', 'pending'),
+        listingIds.length
+          ? sb.from('card_offers').select('id').in('listing_id', listingIds).eq('status', 'pending')
+          : Promise.resolve({ data: [] }),
+        listingIds.length
+          ? sb.from('card_offers').select('id').in('listing_id', listingIds).eq('status', 'accepted').neq('meeting_status', 'confirmed')
+          : Promise.resolve({ data: [] }),
+        sb.from('card_offers').select('id').eq('offerer_user_id', user.id).eq('status', 'accepted').neq('meeting_status', 'confirmed'),
+        listingIds.length
+          ? sb.from('card_offers').select('id').in('listing_id', listingIds).eq('meeting_status', 'confirmed')
+          : Promise.resolve({ data: [] }),
       ]);
+      const [purchases, approvals, cardOffers, meetingPoster, meetingOfferer, confirmed] = checks.map(r => r.data || []);
       const count =
-        (trades    || []).filter(t => !dismissed.has('tr-' + t.id)).length +
-        (purchases || []).filter(p => !dismissed.has('pr-' + p.id) && !dismissed.has('kr-' + p.id)).length +
-        (approvals || []).filter(a => !dismissed.has('ap-' + a.id)).length;
+        purchases.filter(p => !dismissed.has('pr-' + p.id)).length +
+        approvals.filter(a => !dismissed.has('ap-' + a.id)).length +
+        cardOffers.length + meetingPoster.length + meetingOfferer.length + confirmed.length;
       if (count > 0) document.getElementById('inboxDot').style.display = 'block';
     }
 
