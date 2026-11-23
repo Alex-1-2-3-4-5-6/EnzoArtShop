@@ -181,12 +181,22 @@
     });
 
     async function init() {
+      // Code-based kid already logged in → skip straight to kid shop
+      const kidRaw = localStorage.getItem('kidSession');
+      if (kidRaw) { window.location.href = 'platform-kid-shop.html'; return; }
+
       const { data: { user } } = await sb.auth.getUser();
       if (!user) return;
+
+      // Account-based kid (has kid role or is_kid flag) → go to kid dashboard
+      const meta = user.user_metadata || {};
+      if (meta.role === 'kid' || meta.is_kid) {
+        window.location.href = 'platform-kid-dashboard.html'; return;
+      }
+
       document.getElementById('guestSection').style.display = 'none';
       const card = document.getElementById('loggedCard');
       card.style.display = 'flex';
-      const meta = user.user_metadata || {};
       document.getElementById('loggedName').textContent = meta.full_name || user.email;
       document.getElementById('loggedEmail').textContent = user.email;
       const pfp = document.getElementById('pfp');
