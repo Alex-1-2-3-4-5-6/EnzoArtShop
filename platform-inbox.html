@@ -141,10 +141,16 @@
       <div id="meetingForOffererList"></div>
     </div>
 
-    <!-- Offerer proposed a different time to me (I'm the poster) -->
+    <!-- Poster's active meeting negotiations -->
     <div class="panel" id="meetingForPosterPanel" style="display:none;">
-      <p class="panel-title">🔄 They Want a Different Time</p>
+      <p class="panel-title">📅 Meeting Scheduling</p>
       <div id="meetingForPosterList"></div>
+    </div>
+
+    <!-- Confirmed meetings (both sides) -->
+    <div class="panel" id="confirmedMeetingsPanel" style="display:none;">
+      <p class="panel-title">✅ Confirmed Meetings</p>
+      <div id="confirmedMeetingsList"></div>
     </div>
   </div>
 
@@ -178,6 +184,7 @@
       loadCardOffers();
       loadMeetingForOfferer();
       loadMeetingForPoster();
+      loadConfirmedMeetings();
     }
 
     async function loadKidSales() {
@@ -479,23 +486,61 @@
         offers.map(o => meetingRowHTML(o, 'mfo-'+o.id, 'meetingForOffererPanel', 'meetingForOffererList', 'poster')).join('');
     }
 
-    // Offerer counter-proposed → notify poster
+    // All active meeting negotiations on my listings (I'm the poster)
     async function loadMeetingForPoster() {
-      const { data: myListings, error: le } = await sb.from('card_listings').select('id').eq('poster_user_id', currentUser.id);
-      if (le || !myListings || !myListings.length) return;
+      const { data: myListings } = await sb.from('card_listings').select('id').eq('poster_user_id', currentUser.id);
+      if (!myListings || !myListings.length) return;
       const ids = myListings.map(l => l.id);
-      const { data, error } = await sb.from('card_offers')
+      const { data } = await sb.from('card_offers')
         .select('*, listing:listing_id(card_name, card_image_url)')
         .in('listing_id', ids)
         .eq('status', 'accepted')
-        .eq('meeting_proposed_by', 'offerer')
         .order('created_at', { ascending: false });
-      if (error || !data || !data.length) return;
-      const offers = data.filter(o => o.meeting_status !== 'confirmed');
+      const offers = (data || []).filter(o => o.meeting_status !== 'confirmed');
       if (!offers.length) return;
       document.getElementById('meetingForPosterPanel').style.display = 'block';
       document.getElementById('meetingForPosterList').innerHTML =
         offers.map(o => meetingRowHTML(o, 'mfp-'+o.id, 'meetingForPosterPanel', 'meetingForPosterList', 'offerer')).join('');
+    }
+
+    async function loadConfirmedMeetings() {
+      // As offerer
+      const { data: asOfferer } = await sb.from('card_offers')
+        .select('*, listing:listing_id(card_name, card_image_url)')
+        .eq('offerer_user_id', currentUser.id)
+        .eq('status', 'accepted')
+        .eq('meeting_status', 'confirmed')
+        .order('created_at', { ascending: false });
+      // As poster
+      const { data: myListings } = await sb.from('card_listings').select('id').eq('poster_user_id', currentUser.id);
+      let asPoster = [];
+      if (myListings && myListings.length) {
+        const ids = myListings.map(l => l.id);
+        const { data } = await sb.from('card_offers')
+          .select('*, listing:listing_id(card_name, card_image_url)')
+          .in('listing_id', ids)
+          .eq('status', 'accepted')
+          .eq('meeting_status', 'confirmed')
+          .order('created_at', { ascending: false });
+        asPoster = data || [];
+      }
+      const seen = new Set();
+      const offers = [...(asOfferer||[]), ...asPoster].filter(o => { if (seen.has(o.id)) return false; seen.add(o.id); return true; });
+      if (!offers.length) return;
+      document.getElementById('confirmedMeetingsPanel').style.display = 'block';
+      document.getElementById('confirmedMeetingsList').innerHTML = offers.map(o => `
+        <div class="notif-row" id="cm-${o.id}">
+          <img class="notif-img" src="${x(o.listing?.card_image_url||'')}" onerror="this.style.display='none'" style="cursor:default;" />
+          <div class="notif-body" style="flex:1;">
+            <p class="notif-title">${x(o.listing?.card_name||'A card')}</p>
+            <div style="background:#d4edda;border-radius:12px;padding:11px 14px;margin:8px 0;">
+              <p style="font-size:0.82rem;color:#155724;margin-bottom:3px;">📍 <strong>${x(o.meeting_location||'TBD')}</strong></p>
+              <p style="font-size:0.82rem;color:#155724;">🕐 <strong>${x(o.meeting_datetime||'')}</strong></p>
+            </div>
+            <p style="font-size:0.78rem;color:#27ae60;font-weight:700;">🎉 Meeting confirmed with ${x(o.offerer_name||'buyer')}!</p>
+          </div>
+          <button class="dismiss-btn" onclick="this.closest('.notif-row').remove();if(!document.querySelector('#confirmedMeetingsList .notif-row'))document.getElementById('confirmedMeetingsPanel').style.display='none'">✕</button>
+        </div>`).join('');
     }
 
     async function acceptTime(offerId, rowId, panelId, listId) {

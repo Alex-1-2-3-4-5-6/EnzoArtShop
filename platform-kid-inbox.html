@@ -103,6 +103,7 @@
     <div id="cardOffersSection"></div>
     <div id="meetingForOffererSection"></div>
     <div id="meetingForPosterSection"></div>
+    <div id="confirmedMeetingsSection"></div>
     <div id="mainContent">
       <p style="text-align:center;padding:40px;color:#ccc;font-family:'Fredoka One',cursive;">Loading...</p>
     </div>
@@ -137,6 +138,7 @@
       loadCardOfferNotifs();
       loadMeetingForOffererKid();
       loadMeetingForPosterKid();
+      loadConfirmedMeetingsKid();
 
       const dismissed = getDismissed();
       const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -397,7 +399,7 @@
         `</div>`;
     }
 
-    // Offerer counter-proposed → notify poster (kid posted the card)
+    // All active meeting negotiations on my listings (I'm the poster/kid)
     async function loadMeetingForPosterKid() {
       const { data: listings } = await sb.from('card_listings').select('id').eq('poster_user_id', kidSession.kid_id);
       if (!listings || !listings.length) return;
@@ -406,14 +408,57 @@
         .select('*, listing:listing_id(card_name, card_image_url)')
         .in('listing_id', ids)
         .eq('status', 'accepted')
-        .eq('meeting_proposed_by', 'offerer')
         .order('created_at', { ascending: false });
       const offers = (data || []).filter(o => o.meeting_status !== 'confirmed');
       if (!offers.length) return;
       document.getElementById('meetingForPosterSection').innerHTML =
         `<div style="${P}">
-          <p style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:#333;margin-bottom:16px;">🔄 They Suggested a New Time!</p>` +
+          <p style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:#333;margin-bottom:16px;">📅 Meeting Scheduling</p>` +
         offers.map(o => kidMeetingRowHTML(o, 'kfp-'+o.id, 'meetingForPosterSection', 'offerer')).join('') +
+        `</div>`;
+    }
+
+    async function loadConfirmedMeetingsKid() {
+      // As offerer
+      const { data: asOfferer } = await sb.from('card_offers')
+        .select('*, listing:listing_id(card_name, card_image_url)')
+        .eq('offerer_user_id', kidSession.kid_id)
+        .eq('status', 'accepted')
+        .eq('meeting_status', 'confirmed')
+        .order('created_at', { ascending: false });
+      // As poster
+      const { data: listings } = await sb.from('card_listings').select('id').eq('poster_user_id', kidSession.kid_id);
+      let asPoster = [];
+      if (listings && listings.length) {
+        const ids = listings.map(l => l.id);
+        const { data } = await sb.from('card_offers')
+          .select('*, listing:listing_id(card_name, card_image_url)')
+          .in('listing_id', ids)
+          .eq('status', 'accepted')
+          .eq('meeting_status', 'confirmed')
+          .order('created_at', { ascending: false });
+        asPoster = data || [];
+      }
+      const seen = new Set();
+      const offers = [...(asOfferer||[]), ...asPoster].filter(o => { if(seen.has(o.id)) return false; seen.add(o.id); return true; });
+      if (!offers.length) return;
+      const green = 'background:white;border-radius:22px;padding:24px 26px;box-shadow:0 4px 16px rgba(0,0,0,0.06);margin-bottom:20px;';
+      document.getElementById('confirmedMeetingsSection').innerHTML =
+        `<div style="${green}">
+          <p style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:#333;margin-bottom:16px;">✅ Confirmed Meetings!</p>` +
+        offers.map(o => `
+          <div class="notif-row" id="cm-${o.id}">
+            <img class="notif-img" src="${esc(o.listing?.card_image_url||'')}" onerror="this.style.display='none'" style="cursor:default;" />
+            <div class="notif-body" style="flex:1;">
+              <p class="notif-title">${esc(o.listing?.card_name||'A card')}</p>
+              <div style="background:#d4edda;border-radius:12px;padding:11px 14px;margin:8px 0;">
+                <p style="font-size:0.82rem;color:#155724;margin-bottom:3px;">📍 <strong>${esc(o.meeting_location||'TBD')}</strong></p>
+                <p style="font-size:0.82rem;color:#155724;">🕐 <strong>${esc(o.meeting_datetime||'')}</strong></p>
+              </div>
+              <p style="font-size:0.78rem;color:#27ae60;font-weight:700;">🎉 You're all set! Bring your cards!</p>
+            </div>
+            <button class="dismiss-btn" onclick="this.closest('.notif-row').remove()">✕</button>
+          </div>`).join('') +
         `</div>`;
     }
 
